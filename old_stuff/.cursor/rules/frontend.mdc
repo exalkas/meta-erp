@@ -1,0 +1,94 @@
+---
+alwaysApply: true
+---
+
+# Frontend Development Rules - Greek ERP/CRM System
+
+## Core Technology Stack
+
+- **Framework**: Next.js 15+ with App Router and TypeScript 5.3+
+- **Styling**: ALWAYS use Tailwind CSS - never write custom CSS files
+- **UI Components**: shadcn/ui as base component library
+- **State Management**: Zustand for global state, React Query for server state
+- **Forms**: React Hook Form with Zod validation
+- **Icons**: Lucide React icons consistently
+
+## Component Strategy
+
+- **Reuse First**: Always check shared components before creating new ones
+- **Extend shadcn/ui**: Build on existing base components
+- **Greek Components**: Use AFMInput, DOYSelector, GreekPhoneInput for business data
+- **Extract at 2+**: If pattern repeats twice, extract to shared component
+
+## Styling Rules (MANDATORY)
+
+- **Tailwind Only**: Never write custom CSS files or styled-components
+- **Responsive**: Always include breakpoints (sm:, md:, lg:, xl:)
+- **Consistent Spacing**: Use standard spacing (p-4, m-6, space-y-4)
+- **Theme Colors**: Use maritime color palette (#0066CC primary, #FFF700 accent)
+
+## Form Standards
+
+- **Pattern**: React Hook Form + Zod resolver for ALL forms
+- **Validation**: Client-side validation with server sync
+- **Greek Business**: Use specialized Greek validation components
+
+## Internationalization (MANDATORY)
+
+- **Strategy**: JSON files for static text, database for dynamic content
+- **Languages**: Support Greek and English always
+- **Translation**: Never hardcode text - use t('key') for everything
+- **Namespaces**: Organize by module (crm:, erp:, common:)
+
+## Greek Business Requirements
+
+- **Validation**: Use Greek-specific components for AFM, DOY, phone numbers
+- **AADE Integration**: Include status badges and compliance indicators
+- **Formatting**: Greek date, currency, address formatting
+- **VAT Calculations**: Location-aware Greek VAT rates
+
+## Greek Reference Data Integration (MANDATORY)
+
+- **Region Selector**: Use GreekRegionSelector for address forms - supports VAT zone detection
+- **DOY Selector**: Use DOYSelector with autocomplete from master database
+- **Legal Form Selector**: Use LegalFormSelector for company setup (AE, EPE, OE, EE, IKE, AT)
+- **Bank Selector**: Use GreekBankSelector with SWIFT code validation
+- **VAT Rate Calculator**: Use VATRateCalculator for context-aware rates (takeaway vs dine-in)
+- **Business Activity**: Use KADSelector for business activity codes with hierarchy
+- **Postal Code**: Use PostalCodeInput with geographic validation
+
+## Data Handling
+
+- **API Integration**: React Query for all server state
+- **Loading States**: Use Skeleton components consistently
+- **Error Handling**: Consistent error display patterns
+- **Caching**: Leverage React Query caching strategies
+
+## Security & Access Control
+
+- **Permissions**: Use hasPermission() for conditional rendering
+- **Company Isolation**: Respect multi-tenant boundaries
+- **Greek Data**: Secure handling of AFM and business data
+
+## Performance Standards
+
+- **Optimization**: Memo expensive components, lazy load heavy ones
+- **Bundle Size**: Code splitting for large components
+- **Mobile**: Mobile-first responsive design
+- **Accessibility**: ARIA attributes for all interactive elements
+
+## File Organization
+
+- **Structure**: ui/, shared/, greek/, forms/, layouts/
+- **Naming**: PascalCase components, kebab-case files, camelCase hooks
+- **Imports**: Explicit imports, no barrel exports for performance
+
+## What NOT to Do
+
+- ❌ Never write custom CSS files
+- ❌ Don't hardcode text (always use i18n)
+- ❌ Don't create components without checking shared library
+- ❌ Don't skip responsive design
+- ❌ Don't ignore Greek business validation
+- ❌ Don't skip loading/error states
+- ❌ Don't hardcode Greek reference data (regions, VAT rates, DOY codes) - use database

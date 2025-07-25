@@ -1,0 +1,145 @@
+---
+alwaysApply: true
+---
+
+# Database Rules - Metadata-Driven Platform
+
+## Core Database Architecture
+
+- **Master Database**: Global metadata (components, modules, global entities)
+- **Tenant Databases**: Separate database per tenant with tenant-specific data
+- **Metadata Tables**: Platform metadata (entities, fields, layouts, workflows)
+- **Dynamic Models**: Runtime model generation from EntityDefinitions
+- **Multi-Tenant Isolation**: Complete data separation between tenants
+
+## Master Database Schema (MANDATORY)
+
+- **Component Catalog**: ComponentDefinitions, ModuleManifests, ComponentCategories
+- **Global Metadata**: Global EntityDefinitions, FieldDefinitions, Translations
+- **Platform Users**: Users, Roles, Permissions, AuthSessions
+- **Marketplace**: MarketplaceItems, Reviews, Creator profiles
+- **System Config**: Global settings, feature flags, system themes
+
+## Tenant Database Schema (MANDATORY)
+
+- **Tenant Metadata**: Tenant-specific entities, fields, layouts, workflows
+- **Business Data**: Dynamic tables generated from EntityDefinitions
+- **Customizations**: Tenant overrides for global metadata
+- **Workflow Data**: Tenant-specific workflow instances and logs
+- **Audit Logs**: Complete audit trail for tenant activities
+
+## Metadata Table Design (MANDATORY)
+
+- **Metadata Tables**: Core platform structure with flexible JSONB columns
+- **Tenant Isolation**: NULL tenant_id for global, specific UUID for tenant-specific
+- **Flexible Schema**: Use JSONB for extensible metadata storage
+- **Proper Indexing**: Always index tenant_id and frequently queried columns
+
+## Multi-Tenant Database Strategy (MANDATORY)
+
+- **Database Per Tenant**: Each tenant gets dedicated database
+- **Connection Routing**: Automatic routing based on tenant context
+- **Resource Pooling**: Shared pools for small tenants, dedicated for large
+- **Migration Orchestration**: Parallel schema updates across tenant databases
+- **Backup Strategy**: Per-tenant backup schedules and retention
+
+## Dynamic Model Generation (MANDATORY)
+
+- **Runtime Models**: Generate SQLAlchemy models from EntityDefinitions
+- **Schema Sync**: Keep database schema in sync with metadata changes
+- **Index Management**: Automatic index creation based on field metadata
+- **Constraint Validation**: Dynamic constraint generation from validation rules
+- **Relationship Mapping**: Automatic relationship setup from metadata
+
+- **Model Generation**: Create SQLAlchemy models from metadata at runtime
+- **Field Resolution**: Convert field definitions to appropriate column types
+- **Metadata Integration**: Use metadata_json for additional model configuration
+
+## Query Optimization (MANDATORY)
+
+- **Metadata Caching**: Cache frequently accessed metadata in Redis
+- **Query Planning**: Optimize dynamic queries based on field definitions
+- **Index Strategy**: Create indexes based on searchable field metadata
+- **Partition Management**: Automatic partitioning for large datasets
+- **Connection Pooling**: Optimize connections per tenant size
+
+## Database Migrations (MANDATORY)
+
+- **Metadata Migrations**: Version control for metadata schema changes
+- **Tenant Migrations**: Parallel execution across tenant databases
+- **Data Migrations**: Handle data transformation during schema changes
+- **Rollback Support**: Safe rollback mechanisms for failed migrations
+- **Zero Downtime**: Online migrations without service interruption
+
+- **Safe Migrations**: Always use IF NOT EXISTS for schema changes
+- **Parallel Execution**: Run migrations across all tenant databases simultaneously
+- **Rollback Strategy**: Maintain ability to rollback failed migrations safely
+
+## Component Storage (MANDATORY)
+
+- **Component Definitions**: Store component metadata and JSON schemas
+- **Module Registry**: Track installed modules per tenant
+- **Version Management**: Handle component versioning and updates
+- **Dependency Tracking**: Store component dependency relationships
+- **Installation Status**: Track component installation and configuration
+
+## Workflow Data Management (MANDATORY)
+
+- **Workflow Definitions**: Store workflow metadata and configuration
+- **Execution Logs**: Track workflow execution history and results
+- **Trigger Events**: Store event data that triggers workflows
+- **State Management**: Manage workflow state and context data
+- **Performance Metrics**: Track workflow execution performance
+
+## Backup & Recovery (MANDATORY)
+
+- **Multi-Level Backups**: Different strategies for master vs tenant databases
+- **Metadata Backup**: Special handling for critical platform metadata
+- **Point-in-Time Recovery**: Per-tenant recovery capabilities
+- **Cross-Region Replication**: Geographic distribution of backups
+- **Disaster Recovery**: Automated failover and recovery procedures
+
+## Performance Monitoring (MANDATORY)
+
+- **Query Performance**: Monitor metadata query performance
+- **Database Metrics**: Track per-tenant database utilization
+- **Connection Monitoring**: Monitor connection pool efficiency
+- **Storage Growth**: Track database growth patterns per tenant
+- **Slow Query Detection**: Identify and optimize slow metadata queries
+
+## Security & Access Control (MANDATORY)
+
+- **Row-Level Security**: Enforce tenant boundaries at database level
+- **Metadata Protection**: Secure access to platform metadata tables
+- **Encryption at Rest**: Encrypt sensitive metadata and configuration
+- **Audit Logging**: Database-level audit trails for compliance
+- **Connection Security**: Secure connection strings and access credentials
+
+## Data Integrity (MANDATORY)
+
+- **Referential Integrity**: Maintain relationships between metadata tables
+- **Constraint Validation**: Validate data against metadata rules
+- **Transaction Management**: Ensure consistency in metadata operations
+- **Deadlock Prevention**: Handle concurrent metadata modifications
+- **Data Validation**: Validate against JSON schemas in metadata
+
+## What NOT to Do
+
+- ❌ Never hardcode database schemas - always use metadata
+- ❌ Don't skip tenant isolation in any database query
+- ❌ Never store sensitive data unencrypted in metadata
+- ❌ Don't ignore database performance for metadata queries
+- ❌ Never allow direct access bypassing metadata layer
+- ❌ Don't skip backup verification and testing
+- ❌ Never ignore foreign key constraints in metadata
+- ❌ Don't create indexes without considering tenant scale
+- ❌ Never skip migration testing across multiple tenants
+- ❌ Don't ignore connection pool optimization
+
+## Platform-Specific Rules
+
+- **Metadata First**: All database structure from metadata definitions
+- **Component Aware**: Database must support component-driven features
+- **Tenant Scaling**: Design for thousands of tenant databases
+- **Runtime Flexibility**: Support schema changes without downtime
+- **Marketplace Ready**: Support component installation and updates

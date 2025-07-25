@@ -1,0 +1,120 @@
+---
+alwaysApply: true
+---
+
+# Frontend Development Rules - Metadata-Driven Platform
+
+## Core Technology Stack
+
+- **Framework**: Next.js 15+ with App Router and TypeScript 5.3+
+- **Metadata Rendering**: Dynamic page generation from database metadata
+- **Styling**: ALWAYS use Tailwind CSS - never write custom CSS files
+- **UI Components**: shadcn/ui as base component library with metadata-driven extensions
+- **State Management**: Zustand for global state, React Query for server state
+- **Forms**: React Hook Form with Zod validation + metadata-driven field generation
+- **Icons**: Lucide React icons consistently
+
+## Metadata-First Architecture (MANDATORY)
+
+- **Dynamic Pages**: All pages rendered from PageDefinitions metadata
+- **Component Catalog**: Use ComponentDefinitions for all UI components
+- **Runtime Forms**: Generate forms from FieldDefinitions + LayoutDefinitions
+- **No Hardcoding**: Never hardcode layouts, forms, or entity structures
+- **Module Manifests**: Register components via JSON manifests
+
+## Component Strategy
+
+- **Metadata-Driven**: Build components that accept metadata props
+- **Reuse First**: Always check component catalog before creating new ones
+- **Extend shadcn/ui**: Build on existing base components
+- **Greek Components**: Use AFMInput, DOYSelector, GreekPhoneInput for business data
+- **Extract at 2+**: If pattern repeats twice, extract to component catalog
+
+## Dynamic Page Rendering (MANDATORY)
+
+- **Server Components**: Fetch metadata in server components for optimal performance
+- **Metadata Renderer**: Build components that render from metadata structure
+- **Dynamic Sections**: Map metadata sections to UI components automatically
+- **Runtime Generation**: Never hardcode page structures - always from database
+
+## Styling Rules (MANDATORY)
+
+- **Tailwind Only**: Never write custom CSS files or styled-components
+- **Responsive**: Always include breakpoints (sm:, md:, lg:, xl:)
+- **Consistent Spacing**: Use standard spacing (p-4, m-6, space-y-4)
+- **Theme Colors**: Use CSS custom properties from theme metadata
+
+## Form Standards (MANDATORY)
+
+- **Pattern**: React Hook Form + Zod resolver + metadata-driven fields
+- **Dynamic Generation**: Forms built from FieldDefinitions metadata
+- **Validation**: Client-side validation with server sync
+- **Component Mapping**: Map field types to UI components via metadata
+
+- **Field Mapping**: Map field types to UI components via metadata configuration
+- **Props Injection**: Pass metadata props directly to components
+- **Type Resolution**: Resolve component types from field definitions automatically
+
+## Internationalization (MANDATORY)
+
+- **Strategy**: Database translations + JSON files for static content
+- **Languages**: English (primary), Greek (business compliance)
+- **Translation**: Never hardcode text - use t(labelKey) for everything
+- **Metadata Keys**: All labels stored as translation keys in metadata
+
+## Greek Business Requirements
+
+- **Validation**: Use Greek-specific components for AFM, DOY, phone numbers
+- **AADE Integration**: Include status badges and compliance indicators
+- **Formatting**: Greek date, currency, address formatting
+- **VAT Calculations**: Location-aware Greek VAT rates via tax engine
+
+## Component Catalog Integration (MANDATORY)
+
+- **Registration**: All components must be registered in ComponentDefinitions
+- **Props Schema**: Define JSON schema for component props
+- **Module System**: Package components in modules with manifests
+- **Runtime Discovery**: Components loaded dynamically from metadata
+
+- **JSON Manifests**: Define components in JSON with module grouping
+- **Schema Validation**: Use JSON Schema for component props validation
+- **Type Safety**: Ensure props match expected schema for each component
+
+## Performance Standards
+
+- **Metadata Caching**: Cache metadata queries with React Query
+- **Component Lazy Loading**: Dynamically import components from catalog
+- **Bundle Optimization**: Code splitting for module components
+- **Mobile**: Mobile-first responsive design with metadata-driven layouts
+
+## Security & Access Control
+
+- **Permissions**: Use metadata-driven permission checks
+- **Tenant Isolation**: Respect multi-tenant boundaries in all components
+- **Field Security**: Hide fields based on permission metadata
+- **Component Access**: Restrict component usage based on user roles
+
+## File Organization
+
+- **Structure**: components/dynamic/, metadata/, catalog/, shared/
+- **Dynamic Components**: Components that render from metadata
+- **Catalog Components**: Registered components for the platform
+- **Naming**: PascalCase components, kebab-case files, camelCase hooks
+
+## What NOT to Do
+
+- ❌ Never hardcode page layouts or entity structures
+- ❌ Don't create static forms - use metadata-driven generation
+- ❌ Never write custom CSS files
+- ❌ Don't hardcode text (always use metadata translation keys)
+- ❌ Don't create components without registering in catalog
+- ❌ Don't skip responsive design
+- ❌ Don't ignore metadata validation rules
+- ❌ Don't hardcode business logic - use workflow metadata
+
+## Platform-Specific Rules
+
+- **Keep It Simple**: Choose simplest solution that works with metadata
+- **Plan First**: Show metadata approach before implementing components
+- **Runtime Everything**: UI must be generated at runtime from database
+- **Module Thinking**: Build reusable components for the marketplace

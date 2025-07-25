@@ -1,0 +1,97 @@
+# API Design Rules - Greek ERP/CRM System
+
+## Core API Standards
+
+- **REST Convention**: Standard HTTP methods (GET, POST, PUT, PATCH, DELETE)
+- **Base URL**: `/api/v{version}/` with proper versioning (e.g., `/api/v1/business-entities`)
+- **Status Codes**: Use standard HTTP status codes consistently
+- **Content Type**: `application/json` for all requests and responses
+- **Character Encoding**: UTF-8 to support Greek characters
+- **Response Format**: Consistent JSON structure with success/error fields
+
+## Versioning Strategy
+
+- **URL Versioning**: Include version in URL path (`/api/v1/`, `/api/v2/`)
+- **Backwards Compatibility**: Support previous versions for critical integrations
+- **Deprecation**: Clear deprecation timeline and migration path
+- **Version Validation**: Validate and enforce supported API versions
+
+## Request/Response Standards
+
+- **Pagination**: Cursor-based pagination for large datasets
+- **Filtering**: Query parameters for filtering Greek business data
+- **Sorting**: Multiple sort fields with Greek collation support
+- **Search**: Full-text search with Greek character support
+- **Metadata**: Include pagination and response metadata
+
+## Greek Business API Patterns
+
+- **AFM Validation**: Endpoints for Greek tax number validation
+- **DOY Lookup**: Tax office information and validation endpoints
+- **AADE Integration**: MyDATA submission and status tracking
+- **VAT Calculation**: Location-aware Greek VAT rate calculation
+- **Greek Addressing**: Proper Greek address formatting and validation
+
+## Error Handling Standards
+
+- **Consistent Format**: Standardized error response structure
+- **Error Codes**: Business-specific error codes (AUTH_001, VAL_002, etc.)
+- **Greek Messages**: Error messages in both Greek and English
+- **Field Validation**: Field-specific validation error details
+- **Status Mapping**: Appropriate HTTP status codes for different error types
+
+## Authentication & Authorization
+
+- **JWT Requirements**: Include company context in all tokens
+- **Permission Checks**: Endpoint-level permission validation
+- **Company Isolation**: Enforce multi-tenant boundaries
+- **Rate Limiting**: Protect sensitive endpoints from abuse
+- **Audit Integration**: Log all API access and modifications
+
+## Greek Compliance Endpoints
+
+- **AADE Submission**: Invoice submission to Greek tax authority
+- **VAT Calculation**: Dynamic Greek VAT rate calculation
+- **Tax Reports**: Greek compliance reporting endpoints
+- **Business Validation**: AFM, DOY, and Greek phone validation
+- **Compliance Status**: Real-time compliance status checking
+
+## Performance & Caching
+
+- **Response Caching**: Cache frequently accessed reference data
+- **Company-Specific Keys**: Cache keys with company isolation
+- **Cache Invalidation**: Proper cache invalidation on data changes
+- **Rate Limiting**: Protect against abuse with configurable limits
+- **Response Times**: <200ms for simple operations, <2s for complex
+
+## Documentation Standards
+
+- **OpenAPI Specification**: Complete API documentation with examples
+- **Greek Examples**: Sample requests/responses with Greek business data
+- **Error Documentation**: All possible error codes and responses
+- **Authentication**: Clear authentication and authorization requirements
+- **Versioning**: Document version differences and migration guides
+
+## Monitoring & Health Checks
+
+- **Health Endpoints**: System health and component status
+- **Metrics Collection**: API usage, performance, and error rates
+- **Greek Integration**: Monitor AADE connectivity and submission rates
+- **Alerting**: Automated alerts for system issues and failures
+- **Audit Trails**: Complete request/response logging for compliance
+
+## What NOT to Do
+
+- ❌ Never expose internal error details in production responses
+- ❌ Don't skip input validation for Greek characters and business data
+- ❌ Never return data from other companies (company isolation breach)
+- ❌ Don't hardcode Greek business rules in API logic
+- ❌ Never skip rate limiting on sensitive endpoints
+- ❌ Don't ignore proper HTTP status codes
+- ❌ Never expose sensitive data (AFM, personal info) in logs
+- ❌ Don't skip API versioning for breaking changes
+- ❌ Never allow SQL injection through query parameters
+- ❌ Don't skip caching for frequently accessed reference data
+
+- ❌ Never allow SQL injection through query parameters
+- ❌ Don't skip caching for frequently accessed reference data

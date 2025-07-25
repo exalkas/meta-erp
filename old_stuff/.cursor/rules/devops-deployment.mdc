@@ -1,0 +1,136 @@
+# DevOps & Deployment Rules - Greek ERP/CRM System
+
+## Deployment Strategies
+
+- **Canary Deployment**: Core platform with customer-tier rollout (5% → 20% → 80% → 100%)
+- **Blue/Green**: Critical services (AADE, payments, authentication) for zero downtime
+- **Feature Flags**: Multi-level control (global, tier-based, customer-specific, user-specific)
+- **Rolling Updates**: Support platform microservices with batched updates
+- **Customer-Specific**: Enterprise custom implementations with dedicated staging
+
+## Infrastructure Standards
+
+- **Monorepo Architecture**: Shared packages, standard modules, customer-specific apps
+- **Containerization**: Docker containers for all services and applications
+- **Orchestration**: Kubernetes for container management and scaling
+- **Database Architecture**: Separate PostgreSQL database per company with smart resource pooling
+- **Load Balancing**: Proper traffic distribution and health checks
+- **Service Mesh**: Inter-service communication and security
+
+## Database Infrastructure Management
+
+- **Company Database Provisioning**: Automated database creation with full schema and Greek data seeding
+- **Resource Pooling**: Small companies on shared instances, large companies on dedicated instances
+- **Auto-scaling**: Dynamic migration between shared and dedicated database instances
+- **Migration Orchestration**: Parallel migration execution across all company databases
+- **Connection Management**: Company-specific connection pools and routing
+
+## Environment Management
+
+- **Development**: Local development with Docker Compose and sample company databases
+- **Staging**: Production-like environment with representative company database distribution
+- **Production**: Multi-region deployment with database clustering
+- **Customer Staging**: Dedicated environments for enterprise customers with full database isolation
+- **Desktop**: Local SQLite with cloud synchronization
+
+## CI/CD Pipeline Requirements
+
+- **Automated Testing**: All tests must pass including multi-database scenarios
+- **Database Migration Testing**: Verify migrations across multiple company databases
+- **Code Quality**: Linting, security scanning, dependency checks
+- **Build Process**: Optimized builds for each deployment target
+- **Rollback Capability**: Quick rollback mechanisms for all deployment types
+- **Greek Compliance**: AADE integration testing in pipeline
+
+## Comprehensive Backup Strategy
+
+- **Multi-Level Backups**: Continuous WAL (30s), daily full (3AM), weekly cross-region, monthly archive
+- **Company-Specific Backups**: Individual backup schedules and retention per company
+- **Parallel Backup Execution**: Automated backup orchestration across hundreds of company databases
+- **Encrypted Storage**: Company-specific encryption keys for all backup data
+- **Point-in-Time Recovery**: WAL-based recovery for any timestamp per company
+- **Greek Legal Compliance**: 5+ year retention meeting Greek regulatory requirements
+
+## Monitoring & Observability
+
+- **Response Times**: <200ms for simple operations, <2s for complex
+- **Error Rates**: Monitor and alert on error rate increases per company
+- **Database Performance**: Per-company database metrics and alerting
+- **AADE Integration**: >99% success rate for Greek tax submissions
+- **Uptime Targets**: 99.9% core platform, 99.95% AADE, 99.99% payments
+- **Resource Utilization**: Track database resource usage for auto-scaling decisions
+
+## Performance Requirements
+
+- **Deployment Speed**: Feature flags <1s, traffic routing <5min, blue/green <30s
+- **Database Operations**: Company provisioning <10min, migration across all DBs <60min
+- **Rollback Speed**: Feature flags <1s, traffic routing <2min, full environment <60min
+- **Backup Performance**: Daily backups complete within 4-hour window
+- **Zero Downtime**: Critical services must maintain availability during deployments
+
+## Security Standards
+
+- **Container Security**: Scan images for vulnerabilities before deployment
+- **Database Isolation**: Complete separation between company databases
+- **Secrets Management**: Secure storage and rotation of credentials and API keys
+- **Network Security**: VPC isolation for company database clusters
+- **Access Control**: Role-based access to deployment systems and environments
+- **Audit Logging**: Complete deployment and database operation audit trails
+
+## Greek Compliance Deployment
+
+- **AADE Testing**: Mandatory testing against AADE sandbox before production
+- **Tax Validation**: Verify AFM/DOY validation in all environments
+- **Data Protection**: Ensure GDPR compliance in all deployed versions
+- **Greek Character Sets**: Test proper handling of Greek text in all services
+- **Business Rules**: Validate Greek VAT calculations and business logic
+- **Historical Data Access**: Verify multi-year reporting capabilities via partitioned tables
+
+## Backup & Recovery Operations
+
+- **Automated Orchestration**: Daily backup execution across all company databases
+- **Cross-Region Replication**: Geographically distributed backup storage
+- **Recovery Testing**: Regular disaster recovery testing per company
+- **Data Retention**: Automated lifecycle management for Greek data retention requirements
+- **Backup Verification**: Automated integrity checks for all backup files
+- **Company-Specific Restore**: Individual company database restoration capabilities
+
+## Database Lifecycle Management
+
+- **Company Onboarding**: Automated database provisioning with Greek reference data
+- **Resource Optimization**: Monitor usage patterns and optimize database resource allocation
+- **Archive Management**: Automated data archiving based on access patterns and legal requirements
+- **Performance Tuning**: Automated partition management and query optimization
+- **Decommissioning**: Secure data deletion and backup retention for closed companies
+
+## Customer-Specific Deployments
+
+- **Enterprise Staging**: Exact production replica with dedicated company database
+- **Custom Modules**: Isolated deployment of customer-specific features
+- **Acceptance Testing**: Customer approval process before production deployment
+- **Scheduled Deployment**: Customer-controlled deployment windows
+- **Individual Rollback**: Customer-specific rollback capabilities with database restore
+
+## Desktop Application Deployment
+
+- **Auto-Update**: Background download with user-scheduled installation
+- **Offline Capability**: Ensure functionality during connectivity issues
+- **Local Database**: Safe SQLite migration with backup and recovery
+- **Cloud Sync**: Optional synchronization with company's cloud database
+- **License Validation**: Secure license checking and enforcement
+- **Version Control**: Coordinated updates with cloud platform
+
+## What NOT to Do
+
+- ❌ Never deploy without testing across multiple company databases
+- ❌ Don't skip backup verification and restoration testing
+- ❌ Never deploy during Greek business hours without approval
+- ❌ Don't ignore company-specific database performance metrics
+- ❌ Never skip security scanning and vulnerability checks
+- ❌ Don't deploy without proper database connection routing verification
+- ❌ Never bypass CI/CD pipeline for production deployments
+- ❌ Don't forget to test partition pruning and historical data access
+- ❌ Never skip Greek compliance testing including AADE integration
+- ❌ Don't ignore automated backup failure alerts
+- ❌ Never bypass CI/CD pipeline for production deployments
+- ❌ Don't forget to test Greek character handling

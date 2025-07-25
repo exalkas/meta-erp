@@ -1,0 +1,91 @@
+# Testing Rules - Greek ERP/CRM System
+
+## Core Testing Standards
+
+- **Backend**: pytest with fastapi.testclient, sqlalchemy-utils for database tests
+- **Frontend**: Jest + React Testing Library + Playwright for E2E
+- **Database**: pytest-postgresql with test database isolation
+- **Greek Compliance**: Custom fixtures for AFM, DOY, AADE validation
+- **Performance**: pytest-benchmark for backend, Lighthouse CI for frontend
+- **Coverage**: Minimum 85% code coverage, 95% for Greek compliance modules
+
+## Test Organization
+
+- **Structure**: unit/, integration/, performance/, e2e/ directories
+- **Fixtures**: Shared test data for Greek business scenarios
+- **Isolation**: Each test must be independent and repeatable
+- **Naming**: Descriptive test names explaining the scenario
+
+## Unit Testing Requirements
+
+- **API Endpoints**: Test all FastAPI endpoints with authentication
+- **Models**: SQLAlchemy model validation and relationships
+- **Greek Validation**: AFM checksum, DOY codes, phone numbers
+- **Business Logic**: Service layer methods and calculations
+- **Components**: React component behavior and props
+
+## Integration Testing
+
+- **API Workflows**: Complete business processes (business entity → invoice → AADE)
+- **Database**: Multi-schema operations and constraints
+- **Greek AADE**: Mock AADE integration with realistic responses
+- **Authentication**: Multi-tenant access control scenarios
+- **Performance**: API response times and database query optimization
+
+## Greek Compliance Testing (MANDATORY)
+
+- **AFM Validation**: Valid/invalid Greek tax numbers with checksum
+- **DOY Verification**: Greek tax office code validation
+- **AADE Integration**: Mock MyDATA submission scenarios
+- **VAT Calculations**: Location-specific Greek VAT rates
+- **Greek Text**: Proper handling of Greek characters and formatting
+
+## End-to-End Testing
+
+- **User Workflows**: Complete business entity management and invoicing flows
+- **Multi-Language**: Test Greek and English interface switching
+- **Greek Business**: Realistic Greek company and business entity scenarios
+- **AADE Submission**: End-to-end invoice submission with QR codes
+- **Mobile**: Responsive design testing on various devices
+
+## Test Data Management
+
+- **Fixtures**: Greek reference data (DOY codes, VAT rates)
+- **Realistic Data**: Greek names, addresses, business scenarios
+- **Test Companies**: Multi-tenant test scenarios
+- **Clean State**: Proper test database cleanup between tests
+
+## Performance Testing
+
+- **API Load**: Concurrent request handling under Greek business load
+- **Database**: Query performance with Greek character sets
+- **AADE Simulation**: Bulk submission performance testing
+- **Frontend**: Greek text rendering and component performance
+
+## Security Testing
+
+- **Authentication**: JWT token validation and refresh
+- **Authorization**: Role-based access control scenarios
+- **Company Isolation**: Multi-tenant data boundary testing
+- **Greek Data**: Secure handling of AFM and business information
+
+## CI/CD Integration
+
+- **Automated Execution**: All tests run on every commit
+- **Environment Isolation**: Separate test databases and configurations
+- **Greek Data Seeding**: Automatic test data setup
+- **Coverage Reporting**: Fail builds below coverage thresholds
+
+## What NOT to Do
+
+- ❌ Never skip Greek compliance validation in tests
+- ❌ Don't hardcode test data without proper fixtures
+- ❌ Never run tests against production AADE endpoints
+- ❌ Don't skip performance tests for critical Greek workflows
+- ❌ Never commit tests with actual AFM/VAT numbers
+- ❌ Don't ignore multi-tenancy in test scenarios
+- ❌ Never skip rollback testing for database migrations
+- ❌ Don't test without realistic Greek character sets
+
+- ❌ Never skip rollback testing for database migrations
+- ❌ Don't test without realistic Greek character sets

@@ -1,0 +1,147 @@
+---
+alwaysApply: true
+---
+
+# Security Rules - Metadata-Driven Platform
+
+## Core Security Framework
+
+- **Authentication**: JWT with refresh tokens, 2FA for admin accounts
+- **Authorization**: Metadata-driven RBAC with fine-grained permissions
+- **Encryption**: AES-256 for data at rest, TLS 1.3 for data in transit
+- **Metadata Security**: Secure access to platform metadata and component catalog
+- **Tenant Isolation**: Complete security boundaries between tenants
+- **Component Security**: Secure component installation and execution
+
+## Authentication Standards (MANDATORY)
+
+- **JWT Tokens**: 15-minute access tokens, 7-day refresh tokens with tenant context
+- **Multi-Factor**: 2FA required for admin and financial roles
+- **Password Security**: Bcrypt hashing, never plain text storage
+- **Magic Links**: Secure passwordless authentication with time limits
+- **Tenant Context**: MANDATORY tenant_id in all authentication tokens
+
+## Metadata Security (MANDATORY)
+
+- **Component Catalog**: Secure access to ComponentDefinitions and module manifests
+- **Entity Metadata**: Permission-based access to EntityDefinitions and FieldDefinitions
+- **Layout Security**: Restrict layout and form definitions by user roles
+- **Workflow Security**: Secure workflow definition access and execution
+- **Marketplace Security**: Validate component sources and signatures
+
+- **Permission Patterns**: Use structured permission naming for metadata access
+- **Dynamic Permissions**: Generate permissions from entity and component definitions
+- **Access Validation**: Always check permissions before metadata operations
+
+## Authorization & Access Control (MANDATORY)
+
+- **RBAC Model**: Metadata-driven role and permission system
+- **Dynamic Permissions**: Permissions generated from EntityDefinitions
+- **Component Permissions**: Fine-grained access to platform components
+- **Workflow Permissions**: Secure workflow trigger and action permissions
+- **Field-Level Security**: Hide/protect fields based on metadata permissions
+
+## Multi-Tenant Security (MANDATORY)
+
+- **Complete Isolation**: Absolute separation of tenant data and metadata
+- **Database Security**: Row-level security for tenant boundaries
+- **Component Isolation**: Tenant-specific component installations
+- **Metadata Boundaries**: Prevent cross-tenant metadata access
+- **Workflow Isolation**: Secure tenant-specific workflow execution
+
+## Component & Module Security (MANDATORY)
+
+- **Code Signing**: Verify component authenticity and integrity
+- **Sandbox Execution**: Isolate component execution environments
+- **Permission Declaration**: Components must declare required permissions
+- **Dependency Validation**: Secure dependency resolution and validation
+- **Marketplace Vetting**: Security review for marketplace components
+
+- **Multi-Layer Validation**: Signature, permissions, and vulnerability scanning
+- **Component Integrity**: Verify component authenticity before installation
+- **Security Scanning**: Automated security checks for all marketplace components
+
+## Data Protection & Encryption (MANDATORY)
+
+- **Sensitive Metadata**: Encrypt component code and configuration
+- **Field-Level Encryption**: Encrypt sensitive field values
+- **Key Management**: Environment-based encryption keys, never hardcoded
+- **Transport Security**: TLS 1.3 for all API communications
+- **Backup Encryption**: Encrypt all database backups and metadata exports
+
+## Workflow Security (MANDATORY)
+
+- **Trigger Validation**: Secure workflow trigger conditions
+- **Action Permissions**: Validate permissions for workflow actions
+- **Execution Isolation**: Isolate workflow execution per tenant
+- **External Integration**: Secure external API calls from workflows
+- **Audit Trail**: Complete logging of workflow security events
+
+## Platform API Security (MANDATORY)
+
+- **Metadata API Protection**: Rate limiting and access control for metadata APIs
+- **Component Catalog Security**: Secure component discovery and installation
+- **Dynamic CRUD Security**: Permission validation for generated endpoints
+- **Webhook Security**: Secure webhook endpoints with signature validation
+- **Integration Security**: Secure external system integrations
+
+## Marketplace Security (MANDATORY)
+
+- **Creator Verification**: Identity verification for component creators
+- **Component Review**: Security review process for marketplace submissions
+- **Licensing Validation**: Secure license checking and enforcement
+- **Revenue Security**: Secure payment processing for component sales
+- **Vulnerability Management**: Continuous security monitoring of components
+
+## Input Validation & Sanitization (MANDATORY)
+
+- **Metadata Validation**: Strict validation of all metadata inputs
+- **Component Props**: Validate component props against JSON schemas
+- **Workflow Data**: Sanitize all workflow input and output data
+- **Dynamic Query Protection**: Prevent injection in dynamic queries
+- **Field Validation**: Validate field values against metadata rules
+
+## Security Monitoring & Auditing (MANDATORY)
+
+- **Metadata Access Logging**: Log all metadata access and modifications
+- **Component Activity**: Monitor component installations and executions
+- **Workflow Monitoring**: Track workflow execution and security events
+- **Suspicious Patterns**: Detect unusual metadata or component access
+- **Security Alerts**: Automated alerts for security violations
+
+## Compliance & Privacy (MANDATORY)
+
+- **GDPR Compliance**: Data protection for European tenants
+- **SOC 2 Compliance**: Security controls for enterprise customers
+- **Data Residency**: Respect tenant data location requirements
+- **Right to Delete**: Secure data deletion including metadata
+- **Audit Requirements**: Maintain audit trails for compliance
+
+## Infrastructure Security (MANDATORY)
+
+- **Container Security**: Secure component execution environments
+- **Network Isolation**: VPC isolation for tenant database clusters
+- **Secrets Management**: Secure storage of API keys and certificates
+- **Backup Security**: Encrypted backups with secure access controls
+- **Monitoring**: Security event monitoring and intrusion detection
+
+## What NOT to Do
+
+- ❌ Never expose metadata structure to unauthorized users
+- ❌ Don't skip component signature verification
+- ❌ Never allow cross-tenant metadata access
+- ❌ Don't trust user-submitted component code without validation
+- ❌ Never skip workflow permission validation
+- ❌ Don't store sensitive data in component definitions
+- ❌ Never allow direct database access bypassing metadata security
+- ❌ Don't skip audit logging for security-sensitive operations
+- ❌ Never ignore component dependency security
+- ❌ Don't trust client-side metadata validation alone
+
+## Platform-Specific Security
+
+- **Metadata Integrity**: Protect platform metadata from tampering
+- **Component Sandbox**: Isolate component execution environments
+- **Tenant Boundaries**: Absolute security isolation between tenants
+- **Marketplace Trust**: Build and maintain component marketplace trust
+- **Runtime Security**: Secure dynamic code execution and metadata processing

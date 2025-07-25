@@ -1,0 +1,148 @@
+---
+alwaysApply: true
+---
+
+# Backend Rules - Metadata-Driven Platform
+
+## Core Technology Stack
+
+- **Framework**: FastAPI 0.104+ with Python 3.11+ for async performance
+- **Database**: PostgreSQL 16+ with separate databases per tenant
+- **ORM**: SQLAlchemy 2.0+ with async support and metadata-driven models
+- **Caching**: Redis 7.2+ for metadata caching and session management
+- **Background Jobs**: Celery with Redis broker for workflow automation
+- **Validation**: Pydantic v2 for request/response + metadata validation
+- **Authentication**: JWT with refresh tokens and 2FA support
+
+## Metadata-First Architecture (MANDATORY)
+
+- **Dynamic APIs**: All CRUD endpoints generated from EntityDefinitions
+- **Runtime Validation**: Field validation from FieldDefinitions metadata
+- **Workflow Engine**: Trigger-based automation from WorkflowDefinitions
+- **Component Catalog**: Serve component metadata to frontend
+- **No Hardcoding**: All business logic configurable via metadata
+
+## Architecture Standards
+
+- **Multi-Tenancy**: Separate database per tenant with metadata isolation
+- **Async First**: Use async/await for all I/O operations
+- **Metadata Engines**: Separate engines for pages, data, UI, workflows, etc.
+- **Service Layer**: Business logic separated from API endpoints
+- **Repository Pattern**: Data access layer with metadata awareness
+- **Event-Driven**: Use events for metadata changes and workflow triggers
+
+## Database Standards (MANDATORY)
+
+- **Metadata Tables**: Core platform tables (entities, fields, layouts, etc.)
+- **Tenant Isolation**: Enforce tenant boundaries in all metadata queries
+- **Dynamic Models**: Generate SQLAlchemy models from EntityDefinitions
+- **Audit Logging**: Track all metadata changes with user attribution
+- **Performance**: Proper indexing on metadata queries
+
+- **Runtime Models**: Generate SQLAlchemy models from entity metadata
+- **Field Mapping**: Convert field definitions to SQLAlchemy column types
+- **Relationship Handling**: Create foreign keys and relationships from metadata
+
+## API Design Standards
+
+- **Metadata APIs**: Dedicated endpoints for serving metadata
+- **Dynamic CRUD**: Auto-generated CRUD from EntityDefinitions
+- **Component Catalog**: API for component discovery and installation
+- **Workflow Engine**: API for trigger management and execution
+- **Versioning**: URL-based versioning with metadata compatibility
+
+- **Endpoint Generation**: Create CRUD endpoints from entity definitions
+- **Tenant Context**: Always include tenant isolation in API endpoints
+- **Metadata Validation**: Validate requests against entity metadata rules
+
+## Metadata Engine Implementation
+
+- **Page Engine**: Serve PageDefinitions with component metadata
+- **Data Engine**: Manage EntityDefinitions and FieldDefinitions
+- **UI Engine**: Handle LayoutDefinitions and FormDefinitions
+- **Workflow Engine**: Process WorkflowDefinitions and triggers
+- **Component Engine**: Manage ComponentDefinitions catalog
+
+## Multi-Tenant Database Strategy
+
+- **Master Database**: Global metadata (components, modules, global entities)
+- **Tenant Databases**: Tenant-specific data and metadata overrides
+- **Connection Routing**: Automatic routing based on tenant context
+- **Migration Orchestration**: Parallel migrations across tenant databases
+- **Resource Pooling**: Smart pooling based on tenant size
+
+## Error Handling & Logging (MANDATORY)
+
+- **Structured Logging**: JSON-formatted logs with tenant and metadata context
+- **Metadata Errors**: Specific error handling for metadata validation
+- **Tenant Context**: Always include tenant_id in logs and errors
+- **Component Errors**: Handle missing or invalid component definitions
+- **Workflow Errors**: Comprehensive workflow execution error handling
+
+## Performance Requirements
+
+- **Metadata Caching**: Redis caching for frequently accessed metadata
+- **Dynamic Query Optimization**: Optimize queries based on field definitions
+- **Background Processing**: Async workflow execution and metadata updates
+- **Connection Pooling**: Per-tenant connection management
+- **Response Times**: <200ms for metadata queries, <2s for complex workflows
+
+## Security Implementation (MANDATORY)
+
+- **Metadata Security**: Permission-based access to metadata definitions
+- **Component Security**: Validate component access and installation
+- **Tenant Isolation**: Strict metadata boundaries between tenants
+- **Workflow Security**: Secure workflow execution with permission checks
+- **Audit Trail**: Complete logging of metadata changes and access
+
+## Tax Engine Implementation
+
+- **Jurisdiction Management**: Tax rules per country/region
+- **Rate Calculations**: Dynamic tax rate application
+- **Compliance APIs**: Integration with tax authorities (AADE, etc.)
+- **Multi-Currency**: Support for different currencies and rates
+- **Audit Requirements**: Tax calculation audit trails
+
+## Billing Engine Implementation
+
+- **Payment Processing**: Multi-provider payment integration
+- **Subscription Management**: Usage-based and subscription billing
+- **Revenue Recognition**: Proper accounting for platform revenue
+- **Marketplace Billing**: Revenue sharing for component creators
+- **Compliance**: Financial regulation compliance
+
+## Component & Module System
+
+- **Manifest Processing**: Parse and validate module manifests
+- **Dependency Management**: Handle component dependencies
+- **Installation**: Secure component installation and updates
+- **Marketplace Integration**: Component discovery and purchasing
+- **Version Management**: Component versioning and compatibility
+
+## Development Workflow (MANDATORY)
+
+- **Keep It Simple**: Choose simplest metadata approach
+- **Plan First**: Design metadata structure before implementation
+- **Metadata Validation**: Validate all metadata changes
+- **Testing**: Test with multiple tenant configurations
+- **Documentation**: Document metadata schemas and APIs
+
+## What NOT to Do
+
+- ❌ Never hardcode entity structures or business logic
+- ❌ Don't skip tenant isolation in metadata queries
+- ❌ Never create static CRUD endpoints - use dynamic generation
+- ❌ Don't ignore metadata caching for performance
+- ❌ Never skip workflow permission validation
+- ❌ Don't hardcode tax or billing rules - use engine metadata
+- ❌ Never bypass component catalog for UI rendering
+- ❌ Don't create blocking operations in workflow engine
+- ❌ Never skip audit logging for metadata changes
+- ❌ Don't ignore component dependency validation
+
+## Platform-Specific Standards
+
+- **Runtime Everything**: All business logic from metadata at runtime
+- **Engine Architecture**: Separate, focused engines for each concern
+- **Marketplace Ready**: Build with component sharing in mind
+- **Global Scale**: Design for thousands of tenants and components

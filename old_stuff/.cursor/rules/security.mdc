@@ -1,0 +1,107 @@
+# Security Rules - Greek ERP/CRM System
+
+## Core Security Framework
+
+- **Authentication**: JWT with refresh tokens, 2FA for admin accounts
+- **Authorization**: RBAC with fine-grained permissions and company isolation
+- **Encryption**: AES-256 for data at rest, TLS 1.3 for data in transit
+- **Password Policy**: NIST 800-63B compliant with Greek character support
+- **Session Management**: Secure session handling with timeout policies
+- **GDPR Compliance**: Full compliance for Greek personal data protection
+- **Audit Logging**: Comprehensive audit trail for all business operations
+
+## Authentication Standards
+
+- **JWT Tokens**: 15-minute access tokens, 7-day refresh tokens
+- **Multi-Factor**: 2FA required for admin and financial roles
+- **Password Security**: Bcrypt hashing, never plain text storage
+- **Token Management**: Secure token storage and refresh mechanisms
+- **Company Context**: MANDATORY company_id in all tokens
+
+## Authorization & Access Control
+
+- **RBAC Model**: Role-based permissions (business_entities:create, invoices:edit)
+- **Company Isolation**: MANDATORY on ALL endpoints and data access
+- **Permission Granularity**: Fine-grained business operation permissions
+- **Admin Separation**: Super admin vs company admin role separation
+- **Greek Financial**: Special permissions for AFM/VAT/AADE operations
+
+## Data Protection & Encryption
+
+- **Sensitive Data**: Encrypt AFM, personal info, bank details at rest
+- **Key Management**: Environment-based encryption keys, never hardcoded
+- **Database Security**: Row-level security for company isolation
+- **Transport Security**: TLS 1.3 for all client-server communication
+- **Field-Level**: Encrypt specific columns containing Greek business data
+
+## GDPR & Privacy Compliance
+
+- **Consent Management**: Record and track data processing consent
+- **Data Portability**: Export capabilities for business entity data
+- **Right to Erasure**: Anonymization workflows for data deletion
+- **Audit Trail**: Complete logging of data access and modifications
+- **Greek Context**: Special handling for Greek personal data laws
+
+## Input Validation & Sanitization
+
+- **Greek Characters**: Proper validation and sanitization for Greek text
+- **AFM Validation**: Checksum validation for Greek tax numbers
+- **DOY Validation**: Valid Greek tax office code verification
+- **SQL Injection**: Parameterized queries, never string concatenation
+- **XSS Prevention**: Output encoding and CSP headers
+
+## Security Monitoring & Auditing
+
+- **Audit Logging**: Log ALL business operations with user attribution
+- **Suspicious Activity**: Monitor brute force, unusual access patterns
+- **Greek Data Access**: Special monitoring for AFM/VAT data exports
+- **Failed Attempts**: Rate limiting and lockout mechanisms
+- **Security Alerts**: Automated alerts for security incidents
+
+## API Security Standards
+
+- **Rate Limiting**: Protect endpoints from abuse and DDoS
+- **CORS Configuration**: Proper origin restrictions
+- **Input Validation**: Validate all inputs, especially Greek business data
+- **Error Handling**: Never expose internal details in error responses
+- **API Keys**: Secure management of external service credentials
+
+## Session & State Management
+
+- **Redis Sessions**: Secure session storage with expiration
+- **CSRF Protection**: Token-based CSRF prevention
+- **Session Timeout**: Automatic logout for inactive sessions
+- **Concurrent Sessions**: Limit simultaneous sessions per user
+- **Company Context**: Maintain company isolation in session state
+
+## Greek Compliance Security
+
+- **AFM Protection**: Encrypted storage and secure transmission
+- **AADE Integration**: Secure API communication with Greek tax authority
+- **VAT Data**: Protect tax calculation and rate information
+- **Business Secrets**: Secure storage of Greek business credentials
+- **Compliance Audit**: Greek tax authority audit requirements
+
+## Infrastructure Security
+
+- **Environment Separation**: Clear boundaries between dev/staging/production
+- **Secrets Management**: Secure storage of API keys and credentials
+- **Database Security**: Connection encryption and access controls
+- **Backup Security**: Encrypted backups with access controls
+- **Network Security**: VPC, firewalls, and intrusion detection
+
+## What NOT to Do
+
+- ❌ Never store passwords in plain text or with weak hashing
+- ❌ Don't skip company isolation in any endpoint
+- ❌ Never hardcode encryption keys or secrets in code
+- ❌ Don't allow SQL injection through unvalidated inputs
+- ❌ Never expose sensitive Greek business data in logs
+- ❌ Don't skip input validation for Greek characters
+- ❌ Never disable HTTPS in production environments
+- ❌ Don't ignore GDPR consent requirements
+- ❌ Never skip audit logging for financial transactions
+- ❌ Don't trust client-side validation alone
+
+- ❌ Never skip audit logging for financial transactions
+- ❌ Don't trust client-side validation alone

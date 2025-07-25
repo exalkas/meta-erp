@@ -1,0 +1,103 @@
+# Database Rules - Greek ERP/CRM System
+
+## Core Technology Standards
+
+- **Primary Database**: PostgreSQL 16+ for ACID compliance and JSON support
+- **Cache Database**: Redis 7.2+ for sessions, caching, and job queues
+- **Local Database**: SQLite with encryption for desktop deployments
+- **ORM**: SQLAlchemy with declarative models and Alembic migrations
+- **Connection Pooling**: AsyncPG with connection pooling for performance
+
+## Database Architecture (MANDATORY)
+
+- **Separate Database per Company**: Each company gets dedicated database (erp*company*{id})
+- **Smart Resource Pooling**: Small companies share PostgreSQL instances, large companies get dedicated
+- **Partitioning Strategy**: Yearly partitions for business entities, monthly for high-volume transactions
+- **Multi-Schema**: Use schemas within each company DB (core, crm, erp, config, audit, custom)
+- **No Shared Tables**: Zero write contention, complete performance isolation
+
+## Table Design Standards
+
+- **Primary Keys**: Always use UUID, never auto-increment integers
+- **Audit Fields**: created_at, updated_at, created_by on ALL tables
+- **Soft Deletes**: Use is_deleted flag, never hard delete business data
+- **Custom Fields**: JSONB column for EspoCRM-style extensibility
+- **Partitioning**: Implement on high-volume tables (invoices, orders, transactions)
+
+## Partitioning Strategy (MANDATORY)
+
+- **Business Entity Tables**: Yearly partitions by created_at
+- **Transaction Tables**: Monthly partitions by transaction_date
+- **Historical Access**: All data always available, no fiscal year switching
+- **Automatic Pruning**: PostgreSQL handles partition selection automatically
+- **Archive Strategy**: Hot (current+2 years), Warm (3-7 years), Cold (7+ years)
+
+## Greek Compliance Requirements (When Applicable)
+
+- **AFM Storage**: Encrypted Greek tax numbers with validation
+- **DOY Reference**: Greek tax office lookup tables in each company DB
+- **VAT Rates**: Location-aware Greek VAT rate configuration per company
+- **AADE Integration**: Company-specific tracking tables for MyDATA submissions
+- **Historical Reporting**: Multi-year tax reports via partition unions
+
+## Database Operations Automation
+
+- **Company Provisioning**: Automated database creation with full schema
+- **Migration Management**: Automated migrations across all company databases
+- **Resource Scaling**: Dynamic scaling from shared to dedicated instances
+- **Backup Orchestration**: Company-specific backup schedules and retention
+- **Monitoring**: Per-company database performance monitoring
+
+## Performance Requirements
+
+- **Write Isolation**: Zero cross-company write contention
+- **Partition Pruning**: <50ms for partitioned queries, <500ms for complex joins
+- **Connection Pooling**: Company-specific connection pools
+- **Resource Allocation**: CPU/memory based on company size and usage patterns
+- **Auto-scaling**: Automatic migration between shared/dedicated instances
+
+## Backup & Recovery Strategy
+
+- **Multi-Level Backups**: Continuous WAL, daily full, weekly cross-region, monthly archive
+- **Company-Specific**: Individual backup and restore per company
+- **Point-in-Time Recovery**: WAL-based recovery for any timestamp
+- **Greek Compliance**: 5+ year retention for legal requirements
+- **Encrypted Storage**: All backups encrypted with company-specific keys
+
+## Security Standards
+
+- **Database Isolation**: Complete separation between companies
+- **Encryption**: Sensitive data (AFM, personal info) encrypted at rest
+- **Access Control**: Company-specific database credentials
+- **Network Security**: VPC isolation for company database clusters
+- **Audit Logging**: All database operations logged per company
+
+## Data Seeding Requirements
+
+- **Greek Reference Data**: Tax offices (DOY), VAT rates, postal codes per company
+- **Test Data**: Realistic Greek business scenarios for development
+- **Production Seeds**: Essential configuration and lookup data
+- **Automated Seeding**: New company databases automatically seeded
+
+## Migration Standards
+
+- **Company-Parallel Execution**: Run migrations across all company DBs in parallel
+- **Rollback Strategy**: Per-company rollback capability
+- **Testing**: Test migrations on copy of production company data
+- **Automated Verification**: Verify migration success across all companies
+
+## What NOT to Do
+
+- ❌ Never create shared tables between companies
+- ❌ Don't skip partitioning on high-volume tables
+- ❌ Never hardcode company database connections
+- ❌ Don't create foreign keys across company boundaries
+- ❌ Never skip automated backup verification
+- ❌ Don't store sensitive data unencrypted
+- ❌ Never create migrations without parallel execution strategy
+- ❌ Don't skip Greek compliance validation in database
+- ❌ Never use SELECT \* on partitioned tables without WHERE clause
+- ❌ Don't forget to implement partition pruning strategies
+
+- ❌ Never use SELECT \* in production code
+- ❌ Don't forget to partition large audit tables

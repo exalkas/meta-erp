@@ -1,0 +1,72 @@
+{
+  "name": "metadata-erp",
+  "version": "1.0.0",
+  "description": "Metadata-driven no-code/low-code application platform for building unlimited custom applications",
+  "private": true,
+  "workspaces": [
+    "packages/shared/*",
+    "packages/shared-assets",
+    "packages/ai-services/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:client\"",
+    "dev:all": "concurrently \"npm run dev:python\" \"npm run dev:js\" \"npm run dev:auth\"",
+    "dev:python": "npm run dev:api",
+    "dev:js": "npm run dev:client",
+    "dev:client": "cd apps/client && npm run dev",
+    "dev:client:turbo": "cd apps/client && npm run dev -- --turbo",
+    "copy-assets": "node packages/shared-assets/copy-assets.js",
+    "dev:admin": "cd apps/admin && npm run dev",
+    "dev:marketing": "cd apps/marketing && npm run dev",
+    "dev:setup": "cd apps/setup && npm run dev",
+    "dev:staff-support": "cd apps/staff-support && npm run dev",
+    "dev:user-support": "cd apps/user-support && npm run dev",
+    "dev:api": "cd services/api && poetry run python -m uvicorn main:app --reload --port 8000",
+    "dev:auth": "cd services/auth && poetry run python -m uvicorn main:app --reload --port 8001",
+    "dev:files": "cd services/files && poetry run python -m uvicorn main:app --reload --port 8002",
+    "dev:integrations": "cd services/integrations && poetry run python -m uvicorn main:app --reload --port 8003",
+    "dev:ai-support": "cd packages/ai-services/ai-support-service && poetry run python -m uvicorn main:app --reload --port 8004",
+    "dev:voice": "cd packages/ai-services/voice-service && poetry run python -m uvicorn main:app --reload --port 8005",
+    "install:python": "poetry install --no-root",
+    "install:js": "npm install",
+    "install:both": "npm run install:js ; npm run install:python",
+    "build": "npm run build:packages ; npm run build:apps",
+    "build:packages": "npm run build --workspaces --if-present",
+    "build:apps": "npm run build --workspace=apps/*",
+    "build:shared-ui": "npm run build --workspace=packages/shared/ui",
+    "build:shared-api": "npm run build --workspace=packages/shared/api",
+    "watch:shared-ui": "npm run dev --workspace=packages/shared/ui",
+    "dev:with-shared-ui": "concurrently \"npm run watch:shared-ui\" \"npm run dev:client\"",
+    "dev:full-watch": "concurrently \"npm run watch:shared-ui\" \"npm run dev:client\" \"npm run dev:python\" \"npm run dev:auth\"",
+    "test": "npm run test --workspaces ; npm run test:python",
+    "test:python": "poetry run pytest",
+    "lint": "npm run lint:js ; npm run lint:python",
+    "lint:js": "npm run lint --workspaces --if-present",
+    "lint:python": "poetry run black --check . ; poetry run isort --check-only . ; poetry run flake8 . ; poetry run mypy .",
+    "format": "npm run format:js ; npm run format:python",
+    "format:js": "npm run format --workspaces --if-present",
+    "format:python": "poetry run black . ; poetry run isort ."
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.19",
+    "concurrently": "^8.0.0",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.1.1",
+    "react-hook-form": "^7.60.0",
+    "zod": "^4.0.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "author": "Alkas Software",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alkassoftware/metadata-erp"
+  }
+}
