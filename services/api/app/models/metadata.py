@@ -68,6 +68,7 @@ class Tenant(Base):
     field_definitions = relationship("FieldDefinition", back_populates="tenant", cascade="all, delete-orphan")
     entity_definitions = relationship("EntityDefinition", back_populates="tenant", cascade="all, delete-orphan")
     layout_definitions = relationship("LayoutDefinition", back_populates="tenant", cascade="all, delete-orphan")
+    list_view_definitions = relationship("ListViewDefinition", back_populates="tenant", cascade="all, delete-orphan")
     translations = relationship("Translation", back_populates="tenant", cascade="all, delete-orphan")
     themes = relationship("Theme", back_populates="tenant", cascade="all, delete-orphan")
     
@@ -125,6 +126,7 @@ class EntityDefinition(Base):
     tenant = relationship("Tenant", back_populates="entity_definitions")
     field_definitions = relationship("FieldDefinition", back_populates="entity", cascade="all, delete-orphan")
     layout_definitions = relationship("LayoutDefinition", back_populates="entity", cascade="all, delete-orphan")
+    list_view_definitions = relationship("ListViewDefinition", back_populates="entity", cascade="all, delete-orphan")
     
     # Constraints
     __table_args__ = (
@@ -276,6 +278,81 @@ class LayoutDefinition(Base):
     
     def __repr__(self):
         return f"<LayoutDefinition(layout_name='{self.layout_name}', entity_id='{self.entity_id}')>"
+
+
+class ListViewDefinition(Base):
+    """List view metadata for entity data tables."""
+    
+    __tablename__ = "list_view_definitions"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.tenant_id"), nullable=True)
+    entity_id = Column(UUID(as_uuid=True), ForeignKey("entity_definitions.id"), nullable=False)
+    
+    # View identification
+    view_name = Column(String(100), nullable=False)  # e.g., "all_contacts", "active_customers"
+    display_label = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    
+    # Column configuration
+    columns = Column(JSON, nullable=False)  # Array of column definitions
+    # Example: [{"field": "name", "label": "Name", "sortable": true, "filterable": true, "width": 200}]
+    
+    # Default behavior
+    default_sort_field = Column(String(100), nullable=True)
+    default_sort_order = Column(String(10), default="ASC")  # ASC, DESC
+    default_page_size = Column(Integer, default=25)
+    
+    # Filter configuration
+    quick_filters = Column(JSON, nullable=True)  # Quick filter buttons
+    # Example: [{"field": "status", "label": "Active", "value": "active"}]
+    
+    advanced_filters = Column(JSON, nullable=True)  # Advanced filter configuration
+    # Example: {"enabled": true, "operators": ["equals", "contains", "range"]}
+    
+    # Search configuration  
+    search_enabled = Column(Boolean, default=True)
+    search_fields = Column(JSON, nullable=True)  # Fields to search across
+    global_search = Column(Boolean, default=True)  # Search all visible columns
+    
+    # Pagination configuration
+    pagination_enabled = Column(Boolean, default=True)
+    page_size_options = Column(JSON, default=lambda: [10, 25, 50, 100])
+    show_total_count = Column(Boolean, default=True)
+    
+    # Export and bulk actions
+    export_enabled = Column(Boolean, default=False)
+    export_formats = Column(JSON, default=lambda: ["csv", "excel"])
+    bulk_actions = Column(JSON, nullable=True)  # Available bulk operations
+    
+    # UI configuration
+    row_actions = Column(JSON, nullable=True)  # Row-level actions (edit, delete, etc.)
+    toolbar_actions = Column(JSON, nullable=True)  # Toolbar actions (new, import, etc.)
+    show_row_numbers = Column(Boolean, default=False)
+    striped_rows = Column(Boolean, default=True)
+    
+    # Access control
+    access_roles = Column(JSON, default=lambda: [])
+    is_public = Column(Boolean, default=False)
+    
+    # Metadata
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    created_by = Column(UUID(as_uuid=True), nullable=True)
+    
+    # Relationships
+    tenant = relationship("Tenant", back_populates="list_view_definitions")
+    entity = relationship("EntityDefinition", back_populates="list_view_definitions")
+    
+    # Constraints
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "entity_id", "view_name", name="uq_listview_tenant_entity_name"),
+        Index("idx_listview_tenant_id", "tenant_id"),
+        Index("idx_listview_entity_id", "entity_id"),
+    )
+    
+    def __repr__(self):
+        return f"<ListViewDefinition(view_name='{self.view_name}', entity_id='{self.entity_id}')>"
 
 
 class PicklistValue(Base):

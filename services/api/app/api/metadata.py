@@ -10,11 +10,14 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field
+from datetime import datetime
 
 from app.core.database import get_db
 from app.core.logging import get_logger
 from app.core.exceptions import MetadataERPException, ValidationException, TenantNotFoundException
 from app.engines import PageEngine, DataEngine, ComponentEngine
+from app.services import auth_service
+from app.app import app
 
 logger = get_logger("metadata_api")
 router = APIRouter(prefix="/metadata", tags=["metadata"])
@@ -95,6 +98,56 @@ class CompleteEntityResponse(BaseModel):
     entity: EntityDefinitionResponse
     fields: List[FieldDefinitionResponse]
     picklists: Dict[str, List[Dict[str, Any]]]
+
+
+class ListViewDefinitionResponse(BaseModel):
+    """Response model for list view definitions."""
+    id: str
+    view_name: str
+    display_label: str
+    description: Optional[str] = None
+    entity_id: str
+    
+    # Column configuration
+    columns: List[Dict[str, Any]]
+    
+    # Default behavior
+    default_sort_field: Optional[str] = None
+    default_sort_order: str = "ASC"
+    default_page_size: int = 25
+    
+    # Filter configuration
+    quick_filters: Optional[List[Dict[str, Any]]] = None
+    advanced_filters: Optional[Dict[str, Any]] = None
+    
+    # Search configuration
+    search_enabled: bool = True
+    search_fields: Optional[List[str]] = None
+    global_search: bool = True
+    
+    # Pagination configuration
+    pagination_enabled: bool = True
+    page_size_options: List[int] = [10, 25, 50, 100]
+    show_total_count: bool = True
+    
+    # Export and bulk actions
+    export_enabled: bool = False
+    export_formats: List[str] = ["csv", "excel"]
+    bulk_actions: Optional[List[Dict[str, Any]]] = None
+    
+    # UI configuration
+    row_actions: Optional[List[Dict[str, Any]]] = None
+    toolbar_actions: Optional[List[Dict[str, Any]]] = None
+    show_row_numbers: bool = False
+    striped_rows: bool = True
+    
+    # Access control
+    access_roles: List[str] = []
+    is_public: bool = False
+    
+    # Metadata
+    created_at: datetime
+    updated_at: Optional[datetime] = None
 
 
 # Dependency Functions
@@ -548,4 +601,156 @@ async def list_modules(
         raise HTTPException(
             status_code=500,
             detail="Internal server error while listing modules"
+        ) 
+
+
+@router.get("/list-views/{entity_name}", response_model=List[ListViewDefinitionResponse])
+async def get_entity_list_views(
+    entity_name: str,
+    tenant_id: Optional[str] = None,
+    current_user=Depends(auth_service.get_current_user)
+):
+    """Get all list view definitions for an entity."""
+    
+    try:
+        # Get data engine
+        data_engine = app.engines["data"]
+        
+        # Get entity first to verify it exists
+        entity_data = await data_engine.get_entity_metadata(
+            entity_name=entity_name,
+            tenant_id=tenant_id
+        )
+        
+        if not entity_data:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Entity '{entity_name}' not found"
+            )
+        
+        # Get list view definitions for the entity
+        list_views = await data_engine.get_entity_list_views(
+            entity_name=entity_name,
+            tenant_id=tenant_id
+        )
+        
+        return [ListViewDefinitionResponse(**view) for view in list_views]
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting list views for entity {entity_name}: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error getting list views: {str(e)}"
+        )
+
+
+@router.get("/list-views/{entity_name}/{view_name}", response_model=ListViewDefinitionResponse)
+async def get_list_view_definition(
+    entity_name: str,
+    view_name: str,
+    tenant_id: Optional[str] = None,
+    current_user=Depends(auth_service.get_current_user)
+):
+    """Get a specific list view definition."""
+    
+    try:
+        # Get data engine
+        data_engine = app.engines["data"]
+        
+        # Get list view definition
+        list_view = await data_engine.get_list_view_definition(
+            entity_name=entity_name,
+            view_name=view_name,
+            tenant_id=tenant_id
+        )
+        
+        if not list_view:
+            raise HTTPException(
+                status_code=404,
+                detail=f"List view '{view_name}' not found for entity '{entity_name}'"
+            )
+        
+        return ListViewDefinitionResponse(**list_view)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting list view {view_name} for entity {entity_name}: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error getting list view: {str(e)}"
+        )
+
+
+@router.get("/data/{entity_name}", response_model=Dict[str, Any])
+async def get_entity_data(
+    entity_name: str,
+    view_name: Optional[str] = None,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(25, ge=1, le=1000),
+    sort_field: Optional[str] = None,
+    sort_order: Optional[str] = Query("ASC", regex="^(ASC|DESC)$"),
+    search: Optional[str] = None,
+    search_fields: Optional[str] = None,
+    filters: Optional[str] = None,
+    tenant_id: Optional[str] = None,
+    current_user=Depends(auth_service.get_current_user)
+):
+    """Get paginated entity data with filtering and sorting."""
+    
+    try:
+        # Parse search fields and filters from query params
+        search_fields_list = search_fields.split(",") if search_fields else None
+        filters_dict = {}
+        if filters:
+            try:
+                import json
+                filters_dict = json.loads(filters)
+            except json.JSONDecodeError:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid filters JSON format"
+                )
+        
+        # Get data engine
+        data_engine = app.engines["data"]
+        
+        # Get entity data with pagination and filtering
+        result = await data_engine.get_entity_data(
+            entity_name=entity_name,
+            view_name=view_name,
+            tenant_id=tenant_id,
+            page=page,
+            page_size=page_size,
+            sort_field=sort_field,
+            sort_order=sort_order,
+            search=search,
+            search_fields=search_fields_list,
+            filters=filters_dict
+        )
+        
+        return {
+            "data": result.get("data", []),
+            "total_count": result.get("total_count", 0),
+            "page": page,
+            "page_size": page_size,
+            "total_pages": result.get("total_pages", 0),
+            "has_next": result.get("has_next", False),
+            "has_previous": result.get("has_previous", False),
+            "filters_applied": filters_dict,
+            "sort_field": sort_field,
+            "sort_order": sort_order,
+            "search_query": search,
+            "search_fields": search_fields_list
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting data for entity {entity_name}: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error getting entity data: {str(e)}"
         ) 

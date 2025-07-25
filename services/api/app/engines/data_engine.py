@@ -8,10 +8,10 @@ Supports tenant-specific overrides and global defaults.
 from typing import Dict, List, Optional, Any
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_
+from sqlalchemy import select, and_, or_, text
 from app.core.logging import get_logger, MetadataLogger
 from app.core.exceptions import ValidationException, TenantNotFoundException
-from app.models.metadata import EntityDefinition, FieldDefinition, PicklistValue, LayoutDefinition
+from app.models.metadata import EntityDefinition, FieldDefinition, PicklistValue, LayoutDefinition, ListViewDefinition
 from app.models.metadata import Tenant
 
 logger = get_logger("data_engine")
@@ -412,4 +412,311 @@ class DataEngine:
                 tenant_id=str(tenant_id) if tenant_id else None,
                 error=str(e)
             )
+            raise 
+
+    async def get_entity_list_views(
+        self,
+        entity_name: str,
+        tenant_id: Optional[str] = None,
+        is_public: Optional[bool] = None
+    ) -> List[Dict[str, Any]]:
+        """Get all list view definitions for an entity."""
+        
+        logger.info(f"Getting list views for entity: {entity_name}, tenant: {tenant_id}")
+        
+        try:
+            # First, get the entity to verify it exists
+            entity_data = await self.get_entity_definition(entity_name, tenant_id)
+            if not entity_data:
+                return []
+            
+            entity_id = UUID(entity_data["id"])
+            
+            # Build query conditions
+            conditions = [ListViewDefinition.entity_id == entity_id]
+            
+            # Add tenant condition (tenant-specific or global)
+            if tenant_id:
+                conditions.append(
+                    or_(
+                        ListViewDefinition.tenant_id == tenant_id,
+                        ListViewDefinition.tenant_id.is_(None)
+                    )
+                )
+            else:
+                conditions.append(ListViewDefinition.tenant_id.is_(None))
+            
+            # Add public filter if specified
+            if is_public is not None:
+                conditions.append(ListViewDefinition.is_public == is_public)
+            
+            # Execute query with tenant preference (tenant-specific first)
+            query = select(ListViewDefinition).where(and_(*conditions))
+            if tenant_id:
+                query = query.order_by(
+                    ListViewDefinition.tenant_id.desc().nulls_last(),
+                    ListViewDefinition.view_name
+                )
+            else:
+                query = query.order_by(ListViewDefinition.view_name)
+            
+            result = await self.db.execute(query)
+            list_views = result.scalars().all()
+            
+            # Convert to dictionaries
+            list_view_data = []
+            for view in list_views:
+                view_dict = {
+                    "id": str(view.id),
+                    "view_name": view.view_name,
+                    "display_label": view.display_label,
+                    "description": view.description,
+                    "entity_id": str(view.entity_id),
+                    "columns": view.columns,
+                    "default_sort_field": view.default_sort_field,
+                    "default_sort_order": view.default_sort_order,
+                    "default_page_size": view.default_page_size,
+                    "quick_filters": view.quick_filters,
+                    "advanced_filters": view.advanced_filters,
+                    "search_enabled": view.search_enabled,
+                    "search_fields": view.search_fields,
+                    "global_search": view.global_search,
+                    "pagination_enabled": view.pagination_enabled,
+                    "page_size_options": view.page_size_options,
+                    "show_total_count": view.show_total_count,
+                    "export_enabled": view.export_enabled,
+                    "export_formats": view.export_formats,
+                    "bulk_actions": view.bulk_actions,
+                    "row_actions": view.row_actions,
+                    "toolbar_actions": view.toolbar_actions,
+                    "show_row_numbers": view.show_row_numbers,
+                    "striped_rows": view.striped_rows,
+                    "access_roles": view.access_roles,
+                    "is_public": view.is_public,
+                    "created_at": view.created_at,
+                    "updated_at": view.updated_at
+                }
+                list_view_data.append(view_dict)
+            
+            await self._cache_metadata(
+                entity_type="ListViewDefinitions",
+                cache_key=f"entity_list_views:{entity_name}:{tenant_id}",
+                data=list_view_data,
+                tenant_id=tenant_id
+            )
+            
+            logger.info(f"Found {len(list_view_data)} list views for entity {entity_name}")
+            return list_view_data
+            
+        except Exception as e:
+            logger.error(f"Error getting list views for entity {entity_name}: {str(e)}")
+            raise
+
+
+    async def get_list_view_definition(
+        self,
+        entity_name: str,
+        view_name: str,
+        tenant_id: Optional[str] = None
+    ) -> Optional[Dict[str, Any]]:
+        """Get a specific list view definition."""
+        
+        logger.info(f"Getting list view: {view_name} for entity: {entity_name}, tenant: {tenant_id}")
+        
+        try:
+            # First, get the entity to verify it exists
+            entity_data = await self.get_entity_definition(entity_name, tenant_id)
+            if not entity_data:
+                return None
+            
+            entity_id = UUID(entity_data["id"])
+            
+            # Build query with tenant preference
+            conditions = [
+                ListViewDefinition.entity_id == entity_id,
+                ListViewDefinition.view_name == view_name
+            ]
+            
+            if tenant_id:
+                conditions.append(
+                    or_(
+                        ListViewDefinition.tenant_id == tenant_id,
+                        ListViewDefinition.tenant_id.is_(None)
+                    )
+                )
+            else:
+                conditions.append(ListViewDefinition.tenant_id.is_(None))
+            
+            # Execute query with tenant preference
+            query = select(ListViewDefinition).where(and_(*conditions))
+            if tenant_id:
+                query = query.order_by(ListViewDefinition.tenant_id.desc().nulls_last())
+            
+            result = await self.db.execute(query)
+            list_view = result.scalars().first()
+            
+            if not list_view:
+                return None
+            
+            # Convert to dictionary
+            view_data = {
+                "id": str(list_view.id),
+                "view_name": list_view.view_name,
+                "display_label": list_view.display_label,
+                "description": list_view.description,
+                "entity_id": str(list_view.entity_id),
+                "columns": list_view.columns,
+                "default_sort_field": list_view.default_sort_field,
+                "default_sort_order": list_view.default_sort_order,
+                "default_page_size": list_view.default_page_size,
+                "quick_filters": list_view.quick_filters,
+                "advanced_filters": list_view.advanced_filters,
+                "search_enabled": list_view.search_enabled,
+                "search_fields": list_view.search_fields,
+                "global_search": list_view.global_search,
+                "pagination_enabled": list_view.pagination_enabled,
+                "page_size_options": list_view.page_size_options,
+                "show_total_count": list_view.show_total_count,
+                "export_enabled": list_view.export_enabled,
+                "export_formats": list_view.export_formats,
+                "bulk_actions": list_view.bulk_actions,
+                "row_actions": list_view.row_actions,
+                "toolbar_actions": list_view.toolbar_actions,
+                "show_row_numbers": list_view.show_row_numbers,
+                "striped_rows": list_view.striped_rows,
+                "access_roles": list_view.access_roles,
+                "is_public": list_view.is_public,
+                "created_at": list_view.created_at,
+                "updated_at": list_view.updated_at
+            }
+            
+            await self._cache_metadata(
+                entity_type="ListViewDefinition",
+                cache_key=f"list_view:{entity_name}:{view_name}:{tenant_id}",
+                data=view_data,
+                tenant_id=tenant_id
+            )
+            
+            return view_data
+            
+        except Exception as e:
+            logger.error(f"Error getting list view {view_name} for entity {entity_name}: {str(e)}")
+            raise
+
+
+    async def get_entity_data(
+        self,
+        entity_name: str,
+        tenant_id: Optional[str] = None,
+        view_name: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 25,
+        sort_field: Optional[str] = None,
+        sort_order: str = "ASC",
+        search: Optional[str] = None,
+        search_fields: Optional[List[str]] = None,
+        filters: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Get paginated entity data with filtering and sorting."""
+        
+        logger.info(f"Getting data for entity: {entity_name}, tenant: {tenant_id}")
+        
+        try:
+            # Get entity metadata to verify it exists and get table name
+            entity_data = await self.get_entity_definition(entity_name, tenant_id)
+            if not entity_data:
+                raise Exception(f"Entity '{entity_name}' not found")
+            
+            # For now, we'll use a simplified approach assuming data is in a table
+            # named after the entity (this would be extended for dynamic table creation)
+            table_name = entity_name.lower() + "s"  # Simple pluralization
+            
+            # Build base query
+            query_parts = [f"SELECT * FROM {table_name}"]
+            query_params = {}
+            where_conditions = []
+            
+            # Add tenant isolation if tenant_id is provided
+            if tenant_id:
+                where_conditions.append("tenant_id = :tenant_id")
+                query_params["tenant_id"] = tenant_id
+            
+            # Add search conditions
+            if search and search_fields:
+                search_conditions = []
+                for field in search_fields:
+                    search_conditions.append(f"LOWER({field}::text) LIKE LOWER(:search)")
+                if search_conditions:
+                    where_conditions.append(f"({' OR '.join(search_conditions)})")
+                    query_params["search"] = f"%{search}%"
+            
+            # Add filter conditions
+            if filters:
+                for field, value in filters.items():
+                    if value is not None:
+                        param_name = f"filter_{field}"
+                        where_conditions.append(f"{field} = :{param_name}")
+                        query_params[param_name] = value
+            
+            # Add WHERE clause if we have conditions
+            if where_conditions:
+                query_parts.append(f"WHERE {' AND '.join(where_conditions)}")
+            
+            # Add sorting
+            if sort_field:
+                order_clause = f"ORDER BY {sort_field} {sort_order}"
+                query_parts.append(order_clause)
+            
+            # Build count query for pagination
+            count_query = f"SELECT COUNT(*) as total FROM {table_name}"
+            if where_conditions:
+                count_query += f" WHERE {' AND '.join(where_conditions)}"
+            
+            # Execute count query
+            count_result = await self.db.execute(text(count_query), query_params)
+            total_count = count_result.scalar() or 0
+            
+            # Calculate pagination
+            total_pages = (total_count + page_size - 1) // page_size
+            offset = (page - 1) * page_size
+            
+            # Add pagination to main query
+            query_parts.append(f"LIMIT :page_size OFFSET :offset")
+            query_params["page_size"] = page_size
+            query_params["offset"] = offset
+            
+            # Execute main query
+            main_query = " ".join(query_parts)
+            result = await self.db.execute(text(main_query), query_params)
+            rows = result.fetchall()
+            
+            # Convert rows to dictionaries
+            data = []
+            if rows:
+                columns = result.keys()
+                for row in rows:
+                    row_dict = {}
+                    for i, column in enumerate(columns):
+                        value = row[i]
+                        # Convert UUID objects to strings
+                        if hasattr(value, 'hex'):
+                            value = str(value)
+                        # Convert datetime objects to ISO strings
+                        elif hasattr(value, 'isoformat'):
+                            value = value.isoformat()
+                        row_dict[column] = value
+                    data.append(row_dict)
+            
+            return {
+                "data": data,
+                "total_count": total_count,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": total_pages,
+                "has_next": page < total_pages,
+                "has_previous": page > 1
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting data for entity {entity_name}: {str(e)}")
             raise 
