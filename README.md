@@ -1,9 +1,9 @@
-# 🚀 Metadata-Driven Platform
+# 🏭 Vertical-First Industry Solutions Platform
 
-**A next-generation no-code/low-code application platform that powers unlimited custom applications through runtime metadata.**
+**A metadata-driven platform that deploys deep industry-specific solutions for E-commerce, Automotive, Oil & Gas, AgTech, FinTech, and Insurance/MedTech through vertical packs.**
 
-[![Platform](https://img.shields.io/badge/Platform-Multi--Tenant-blue)](https://github.com/your-org/metadata-erp)
-[![Stack](https://img.shields.io/badge/Stack-Next.js%20%2B%20FastAPI-green)](https://github.com/your-org/metadata-erp)
+[![Platform](https://img.shields.io/badge/Platform-Vertical--First-blue)](https://github.com/your-org/metadata-erp)
+[![Industries](https://img.shields.io/badge/Industries-6%20Verticals-green)](https://github.com/your-org/metadata-erp)
 [![Database](https://img.shields.io/badge/Database-PostgreSQL-orange)](https://github.com/your-org/metadata-erp)
 [![License](https://img.shields.io/badge/License-Private-red)](https://github.com/your-org/metadata-erp)
 
@@ -11,18 +11,68 @@
 
 ## 🎯 **What Is This?**
 
-This is a **WordPress-inspired application platform** that can spawn unlimited custom applications (CRM, ERP, Project Management, E-commerce, etc.) without writing code. Everything is driven by metadata stored in database tables.
+This is a **vertical-first industry platform** that delivers complete, industry-specific solutions rather than generic tools. Each vertical pack contains pre-built entities, workflows, integrations, and compliance features tailored for specific industries.
 
 ### **🌟 Key Capabilities:**
 
-- 📋 **Dynamic Applications** - Build any app (CRM, ERP, etc.) through metadata
-- 🧩 **Component Catalog** - WordPress-style plugin/widget system
+- 🏭 **Vertical Solutions** - Industry-specific solutions deployed as metadata packs
+- ⚡ **Rapid Deployment** - Industry solutions in days, not months
+- 🛒 **E-Commerce Pack** - Shopify/WooCommerce sync, inventory, omni-channel POS
+- 🚗 **Automotive Pack** - Vehicle inventory, VIN decoding, DMS integration
+- ⛽ **Oil & Gas Pack** - Asset tracking, IoT sensors, compliance workflows
+- 🌾 **AgTech Pack** - Farm management, crop planning, weather APIs
+- 💰 **FinTech Pack** - Multi-currency ledger, KYC/AML, payment rails
+- 🏥 **Insurance/MedTech Pack** - Policy management, claims processing, regulatory reporting
 - 🏢 **Multi-Tenant SAAS** - Separate databases per company
-- 🌍 **Multilingual** - English + Greek with database translations
-- 🎨 **Multi-Theme** - Light/Dark themes via CSS custom properties
 - 🔐 **Enterprise Auth** - JWT + 2FA + Magic Links + RBAC
-- 🤖 **AI-Powered** - Built-in AI assistants and insights
-- 📊 **Compliance Ready** - Greek tax/business compliance built-in
+- 🌍 **Global Compliance** - Country-specific tax engines and regulations
+
+---
+
+## 🏭 **Target Verticals & Features**
+
+### **🛒 E-Commerce & Retail** _(Primary Launch)_
+
+- **Native Integrations:** Shopify, WooCommerce, Magento sync
+- **Inventory Management:** Real-time stock levels, barcode scanning, safety thresholds
+- **Omni-Channel:** POS integration (Square, Stripe), ship-from-store
+- **Fulfillment:** Rate shopping, automated labels, tracking notifications
+- **Analytics:** Multichannel dashboards, inventory turnover alerts
+
+### **🚗 Automotive Dealers & Service**
+
+- **Vehicle Inventory:** VIN decoding, new/used tracking, lot management
+- **Sales & Finance:** Deal structuring, trade-in valuation, F&I workflows
+- **Service Management:** Work orders, technician scheduling, warranty tracking
+- **Integrations:** DMS systems (CDK, Reynolds & Reynolds), OEM APIs
+
+### **⛽ Oil & Gas Operations**
+
+- **Asset Tracking:** Well/rig/facility master data with GPS
+- **IoT Integration:** Sensor data ingestion, real-time anomaly detection
+- **Compliance:** Incident reporting, permit-to-work, safety workflows
+- **Procurement:** Tender management, vendor scorecards, contract lifecycle
+
+### **🌾 AgTech & Farming**
+
+- **Farm Management:** Field maps, crop planning, GIS integration
+- **Equipment Tracking:** GPS dispatch, fuel usage, maintenance logs
+- **Yield Analytics:** Sensor data, harvest forecasting, ML-driven models
+- **Traceability:** Batch tracking, certification management, supply chain
+
+### **💰 FinTech Enterprise**
+
+- **Core Ledger:** Multi-currency, multi-entity general ledger
+- **Compliance:** KYC/AML workflows, transaction monitoring
+- **Payment Rails:** ACH, SWIFT, SEPA integration
+- **Risk Management:** Credit scoring, portfolio stress-testing
+
+### **🏥 Insurance & MedTech**
+
+- **Policy Management:** Lifecycle management, quotes, renewals
+- **Claims Processing:** FNOL intake, adjudication rules
+- **Regulatory Compliance:** HIPAA/GDPR, automated filings
+- **Device Integration:** Telematics, wearables, usage-based insurance
 
 ---
 

@@ -1,7 +1,7 @@
 {
   "name": "metadata-erp",
   "version": "1.0.0",
-  "description": "Metadata-driven no-code/low-code application platform for building unlimited custom applications",
+  "description": "Vertical-first industry solutions platform with metadata-driven packs for E-commerce, Automotive, Oil & Gas, AgTech, FinTech, and Insurance/MedTech",
   "private": true,
   "workspaces": [
     "packages/shared/*",
