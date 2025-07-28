@@ -1,0 +1,746 @@
+{
+  "verticalPack": {
+    "id": "ecommerce-complete",
+    "name": "E-commerce Complete",
+    "version": "1.0.0",
+    "description": "Complete e-commerce solution with inventory, orders, customers, and analytics",
+    "industry": "ecommerce",
+    "author": "Axiologic Platform",
+    "installationTime": "15 minutes",
+    "estimatedSetupTime": "1 day"
+  },
+
+  "themes": [
+    {
+      "theme_id": "ecommerce-theme",
+      "name": "ecommerce-theme",
+      "description": "Modern e-commerce theme with green/blue accents",
+      "is_system_theme": false,
+      "is_default": true,
+      "properties": {
+        "--primary-color": "34 197 94",
+        "--primary-foreground": "255 255 255",
+        "--secondary-color": "59 130 246",
+        "--accent-color": "249 115 22",
+        "--success-color": "34 197 94",
+        "--warning-color": "245 158 11",
+        "--error-color": "239 68 68",
+        "--background": "255 255 255",
+        "--foreground": "15 23 42",
+        "--card": "255 255 255",
+        "--border": "226 232 240",
+        "--radius": "0.5rem"
+      }
+    }
+  ],
+
+  "translations": [
+    {
+      "locale": "en",
+      "namespace": "ecommerce",
+      "translations": {
+        "dashboard.title": "E-commerce Dashboard",
+        "products.title": "Products",
+        "orders.title": "Orders",
+        "customers.title": "Customers",
+        "inventory.title": "Inventory",
+        "analytics.title": "Analytics",
+        "products.add": "Add Product",
+        "orders.process": "Process Order",
+        "customers.view": "View Customer",
+        "inventory.restock": "Restock Item"
+      }
+    }
+  ],
+
+  "layouts": [
+    {
+      "layout_id": "ecommerce-dashboard-layout",
+      "name": "ecommerce-dashboard-layout",
+      "display_name": "E-commerce Dashboard Layout",
+      "description": "Full dashboard layout with sidebar navigation and main content area",
+      "category": "dashboard",
+      "sections_json": {
+        "header": {
+          "className": "bg-white shadow-sm border-b border-gray-200 h-16 flex items-center px-6",
+          "maxComponents": 1
+        },
+        "sidebar": {
+          "className": "bg-white shadow-sm border-r border-gray-200 w-64 min-h-screen p-4",
+          "maxComponents": 10
+        },
+        "main": {
+          "className": "flex-1 bg-gray-50 p-6",
+          "maxComponents": 20
+        },
+        "footer": {
+          "className": "bg-white border-t border-gray-200 p-4 text-center text-sm text-gray-600",
+          "maxComponents": 1
+        }
+      },
+      "container_classes": "min-h-screen bg-gray-50 flex",
+      "is_responsive": true,
+      "supports_theming": true,
+      "is_system_layout": false
+    }
+  ],
+
+  "entities": [
+    {
+      "entity_name": "Product",
+      "display_label": "Product",
+      "plural_label": "Products",
+      "description": "E-commerce product catalog",
+      "icon": "package",
+      "color": "#10B981",
+      "vertical": "ecommerce",
+      "supports_attachments": true,
+      "supports_comments": true,
+      "api_name": "products",
+      "fields": [
+        {
+          "field_name": "name",
+          "label_key": "product.name",
+          "data_type": "text",
+          "is_required": true,
+          "is_searchable": true,
+          "is_sortable": true,
+          "is_filterable": true,
+          "validation_rules": {
+            "minLength": 2,
+            "maxLength": 100
+          }
+        },
+        {
+          "field_name": "sku",
+          "label_key": "product.sku",
+          "data_type": "text",
+          "is_required": true,
+          "is_searchable": true,
+          "validation_rules": {
+            "pattern": "^[A-Z0-9-]+$"
+          }
+        },
+        {
+          "field_name": "price",
+          "label_key": "product.price",
+          "data_type": "currency",
+          "is_required": true,
+          "is_sortable": true,
+          "is_filterable": true,
+          "validation_rules": {
+            "min": 0.01
+          }
+        },
+        {
+          "field_name": "category",
+          "label_key": "product.category",
+          "data_type": "picklist",
+          "picklist_name": "product_categories",
+          "is_filterable": true,
+          "is_required": true
+        },
+        {
+          "field_name": "stock_quantity",
+          "label_key": "product.stock",
+          "data_type": "integer",
+          "is_sortable": true,
+          "is_filterable": true,
+          "default_value": 0
+        },
+        {
+          "field_name": "description",
+          "label_key": "product.description",
+          "data_type": "textarea",
+          "is_searchable": true
+        },
+        {
+          "field_name": "is_active",
+          "label_key": "product.active",
+          "data_type": "boolean",
+          "default_value": true,
+          "is_filterable": true
+        }
+      ]
+    },
+    {
+      "entity_name": "Order",
+      "display_label": "Order",
+      "plural_label": "Orders",
+      "description": "Customer orders and sales",
+      "icon": "shopping-cart",
+      "color": "#3B82F6",
+      "vertical": "ecommerce",
+      "supports_workflows": true,
+      "api_name": "orders",
+      "fields": [
+        {
+          "field_name": "order_number",
+          "label_key": "order.number",
+          "data_type": "text",
+          "is_required": true,
+          "is_searchable": true,
+          "validation_rules": {
+            "pattern": "^ORD-[0-9]{6}$"
+          }
+        },
+        {
+          "field_name": "customer_email",
+          "label_key": "order.customer_email",
+          "data_type": "email",
+          "is_required": true,
+          "is_searchable": true,
+          "is_filterable": true
+        },
+        {
+          "field_name": "total_amount",
+          "label_key": "order.total",
+          "data_type": "currency",
+          "is_required": true,
+          "is_sortable": true,
+          "is_filterable": true
+        },
+        {
+          "field_name": "status",
+          "label_key": "order.status",
+          "data_type": "picklist",
+          "picklist_name": "order_statuses",
+          "is_filterable": true,
+          "is_required": true,
+          "default_value": "pending"
+        },
+        {
+          "field_name": "order_date",
+          "label_key": "order.date",
+          "data_type": "datetime",
+          "is_sortable": true,
+          "is_filterable": true,
+          "default_value": "NOW()"
+        }
+      ]
+    },
+    {
+      "entity_name": "Customer",
+      "display_label": "Customer",
+      "plural_label": "Customers",
+      "description": "Customer information and profiles",
+      "icon": "users",
+      "color": "#8B5CF6",
+      "vertical": "ecommerce",
+      "supports_attachments": true,
+      "api_name": "customers",
+      "fields": [
+        {
+          "field_name": "email",
+          "label_key": "customer.email",
+          "data_type": "email",
+          "is_required": true,
+          "is_searchable": true,
+          "is_filterable": true
+        },
+        {
+          "field_name": "first_name",
+          "label_key": "customer.first_name",
+          "data_type": "text",
+          "is_required": true,
+          "is_searchable": true
+        },
+        {
+          "field_name": "last_name",
+          "label_key": "customer.last_name",
+          "data_type": "text",
+          "is_required": true,
+          "is_searchable": true
+        },
+        {
+          "field_name": "phone",
+          "label_key": "customer.phone",
+          "data_type": "phone",
+          "is_searchable": true
+        },
+        {
+          "field_name": "total_orders",
+          "label_key": "customer.total_orders",
+          "data_type": "integer",
+          "is_sortable": true,
+          "is_filterable": true,
+          "default_value": 0
+        },
+        {
+          "field_name": "lifetime_value",
+          "label_key": "customer.lifetime_value",
+          "data_type": "currency",
+          "is_sortable": true,
+          "is_filterable": true,
+          "default_value": 0
+        }
+      ]
+    }
+  ],
+
+  "pages": [
+    {
+      "page_name": "ecommerce_dashboard",
+      "route": "/dashboard",
+      "title": "E-commerce Dashboard",
+      "description": "Main e-commerce management dashboard",
+      "page_type": "dashboard",
+      "layout_id": "ecommerce-dashboard-layout",
+      "sections_data_json": {
+        "header": [
+          {
+            "type": "Navigation",
+            "props": {
+              "title": "E-commerce Platform",
+              "showUserMenu": true,
+              "showNotifications": true
+            }
+          }
+        ],
+        "sidebar": [
+          {
+            "type": "MenuTree",
+            "props": {
+              "items": [
+                { "label": "Dashboard", "route": "/dashboard", "icon": "home" },
+                {
+                  "label": "Products",
+                  "route": "/products",
+                  "icon": "package"
+                },
+                {
+                  "label": "Orders",
+                  "route": "/orders",
+                  "icon": "shopping-cart"
+                },
+                {
+                  "label": "Customers",
+                  "route": "/customers",
+                  "icon": "users"
+                },
+                {
+                  "label": "Analytics",
+                  "route": "/analytics",
+                  "icon": "bar-chart"
+                },
+                {
+                  "label": "Settings",
+                  "route": "/settings",
+                  "icon": "settings"
+                }
+              ]
+            }
+          }
+        ],
+        "main": [
+          {
+            "type": "KPICards",
+            "props": {
+              "metrics": [
+                {
+                  "title": "Total Revenue",
+                  "value": "$45,230",
+                  "change": "+12%",
+                  "icon": "dollar-sign"
+                },
+                {
+                  "title": "Orders Today",
+                  "value": "23",
+                  "change": "+5%",
+                  "icon": "shopping-cart"
+                },
+                {
+                  "title": "Active Products",
+                  "value": "1,204",
+                  "change": "+2%",
+                  "icon": "package"
+                },
+                {
+                  "title": "Customers",
+                  "value": "890",
+                  "change": "+8%",
+                  "icon": "users"
+                }
+              ]
+            }
+          },
+          {
+            "type": "MetadataDataTable",
+            "props": {
+              "entity": "orders",
+              "view": "recent_orders",
+              "title": "Recent Orders",
+              "showFilters": true,
+              "showSearch": true,
+              "pageSize": 10
+            }
+          }
+        ],
+        "footer": [
+          {
+            "type": "StatusBar",
+            "props": {
+              "text": "E-commerce Platform v1.0 - Powered by Axiologic"
+            }
+          }
+        ]
+      },
+      "access_roles": ["admin", "manager", "staff"],
+      "is_public": false
+    },
+    {
+      "page_name": "products_list",
+      "route": "/products",
+      "title": "Products",
+      "description": "Product catalog management",
+      "page_type": "list",
+      "layout_id": "ecommerce-dashboard-layout",
+      "sections_data_json": {
+        "header": [
+          {
+            "type": "Navigation",
+            "props": {
+              "title": "Products",
+              "showUserMenu": true
+            }
+          }
+        ],
+        "sidebar": [
+          {
+            "type": "MenuTree",
+            "props": {
+              "items": [
+                { "label": "Dashboard", "route": "/dashboard", "icon": "home" },
+                {
+                  "label": "Products",
+                  "route": "/products",
+                  "icon": "package",
+                  "active": true
+                },
+                {
+                  "label": "Orders",
+                  "route": "/orders",
+                  "icon": "shopping-cart"
+                },
+                { "label": "Customers", "route": "/customers", "icon": "users" }
+              ]
+            }
+          }
+        ],
+        "main": [
+          {
+            "type": "PageHeader",
+            "props": {
+              "title": "Products",
+              "actions": [
+                {
+                  "label": "Add Product",
+                  "type": "primary",
+                  "action": "create_product"
+                },
+                {
+                  "label": "Import CSV",
+                  "type": "secondary",
+                  "action": "import_products"
+                }
+              ]
+            }
+          },
+          {
+            "type": "MetadataDataTable",
+            "props": {
+              "entity": "products",
+              "view": "all_products",
+              "showFilters": true,
+              "showSearch": true,
+              "showBulkActions": true,
+              "pageSize": 25
+            }
+          }
+        ]
+      },
+      "access_roles": ["admin", "manager", "staff"],
+      "is_public": false
+    }
+  ],
+
+  "listViews": [
+    {
+      "view_name": "all_products",
+      "display_label": "All Products",
+      "entity_id": "products",
+      "columns": [
+        {
+          "field": "name",
+          "label": "Product Name",
+          "sortable": true,
+          "filterable": true,
+          "width": 200
+        },
+        {
+          "field": "sku",
+          "label": "SKU",
+          "sortable": true,
+          "filterable": true,
+          "width": 120
+        },
+        {
+          "field": "category",
+          "label": "Category",
+          "sortable": true,
+          "filterable": true,
+          "width": 150
+        },
+        {
+          "field": "price",
+          "label": "Price",
+          "sortable": true,
+          "filterable": true,
+          "width": 100,
+          "format": "currency"
+        },
+        {
+          "field": "stock_quantity",
+          "label": "Stock",
+          "sortable": true,
+          "filterable": true,
+          "width": 80
+        },
+        {
+          "field": "is_active",
+          "label": "Status",
+          "sortable": true,
+          "filterable": true,
+          "width": 80,
+          "format": "boolean"
+        }
+      ],
+      "default_sort_field": "created_at",
+      "default_sort_order": "DESC",
+      "default_page_size": 25,
+      "search_enabled": true,
+      "search_fields": ["name", "sku", "description"],
+      "quick_filters": [
+        { "field": "is_active", "label": "Active", "value": true },
+        {
+          "field": "stock_quantity",
+          "label": "In Stock",
+          "value": ">0",
+          "operator": "gt"
+        },
+        {
+          "field": "stock_quantity",
+          "label": "Low Stock",
+          "value": "10",
+          "operator": "lt"
+        }
+      ]
+    },
+    {
+      "view_name": "recent_orders",
+      "display_label": "Recent Orders",
+      "entity_id": "orders",
+      "columns": [
+        {
+          "field": "order_number",
+          "label": "Order #",
+          "sortable": true,
+          "width": 120
+        },
+        {
+          "field": "customer_email",
+          "label": "Customer",
+          "sortable": true,
+          "filterable": true,
+          "width": 200
+        },
+        {
+          "field": "total_amount",
+          "label": "Total",
+          "sortable": true,
+          "width": 100,
+          "format": "currency"
+        },
+        {
+          "field": "status",
+          "label": "Status",
+          "sortable": true,
+          "filterable": true,
+          "width": 100
+        },
+        {
+          "field": "order_date",
+          "label": "Date",
+          "sortable": true,
+          "width": 150,
+          "format": "datetime"
+        }
+      ],
+      "default_sort_field": "order_date",
+      "default_sort_order": "DESC",
+      "default_page_size": 10,
+      "search_enabled": true,
+      "search_fields": ["order_number", "customer_email"]
+    }
+  ],
+
+  "workflows": [
+    {
+      "name": "low_stock_alert",
+      "display_name": "Low Stock Alert",
+      "description": "Automatically notify when product stock is low",
+      "trigger_type": "field_change",
+      "trigger_conditions": {
+        "entity": "Product",
+        "field": "stock_quantity",
+        "operator": "lte",
+        "value": 10
+      },
+      "actions": [
+        {
+          "type": "send_notification",
+          "config": {
+            "recipients": ["inventory@company.com"],
+            "subject": "Low Stock Alert: {{product.name}}",
+            "template": "low_stock_email"
+          }
+        },
+        {
+          "type": "create_task",
+          "config": {
+            "title": "Restock {{product.name}}",
+            "assignee": "inventory_manager",
+            "priority": "high"
+          }
+        }
+      ]
+    },
+    {
+      "name": "order_fulfillment",
+      "display_name": "Order Fulfillment Process",
+      "description": "Automated order processing workflow",
+      "trigger_type": "record_create",
+      "trigger_conditions": {
+        "entity": "Order"
+      },
+      "actions": [
+        {
+          "type": "send_email",
+          "config": {
+            "to": "{{order.customer_email}}",
+            "subject": "Order Confirmation - {{order.order_number}}",
+            "template": "order_confirmation"
+          }
+        },
+        {
+          "type": "update_inventory",
+          "config": {
+            "decrease_stock": true
+          }
+        },
+        {
+          "type": "create_task",
+          "config": {
+            "title": "Process Order {{order.order_number}}",
+            "assignee": "fulfillment_team",
+            "due_date": "+1 day"
+          }
+        }
+      ]
+    }
+  ],
+
+  "integrations": [
+    {
+      "name": "shopify_sync",
+      "display_name": "Shopify Integration",
+      "description": "Two-way sync with Shopify store",
+      "type": "api_integration",
+      "config": {
+        "api_url": "https://{{shop_name}}.myshopify.com/admin/api/2023-10",
+        "auth_type": "api_key",
+        "sync_entities": ["products", "orders", "customers"],
+        "sync_frequency": "15_minutes"
+      }
+    },
+    {
+      "name": "stripe_payments",
+      "display_name": "Stripe Payments",
+      "description": "Payment processing via Stripe",
+      "type": "payment_processor",
+      "config": {
+        "api_url": "https://api.stripe.com/v1",
+        "auth_type": "secret_key",
+        "supported_currencies": ["USD", "EUR", "GBP"],
+        "webhook_events": ["payment_succeeded", "payment_failed"]
+      }
+    }
+  ],
+
+  "picklists": [
+    {
+      "name": "product_categories",
+      "values": [
+        { "value": "electronics", "label": "Electronics", "sort_order": 1 },
+        { "value": "clothing", "label": "Clothing", "sort_order": 2 },
+        { "value": "books", "label": "Books", "sort_order": 3 },
+        { "value": "home_garden", "label": "Home & Garden", "sort_order": 4 },
+        { "value": "sports", "label": "Sports & Outdoors", "sort_order": 5 }
+      ]
+    },
+    {
+      "name": "order_statuses",
+      "values": [
+        {
+          "value": "pending",
+          "label": "Pending",
+          "sort_order": 1,
+          "is_default": true
+        },
+        { "value": "processing", "label": "Processing", "sort_order": 2 },
+        { "value": "shipped", "label": "Shipped", "sort_order": 3 },
+        { "value": "delivered", "label": "Delivered", "sort_order": 4 },
+        { "value": "cancelled", "label": "Cancelled", "sort_order": 5 }
+      ]
+    }
+  ],
+
+  "installation": {
+    "dependencies": [
+      "payment_processor",
+      "email_service",
+      "notification_system"
+    ],
+    "database_migrations": [
+      "create_ecommerce_tables.sql",
+      "seed_default_data.sql",
+      "create_indexes.sql"
+    ],
+    "configuration_steps": [
+      {
+        "step": 1,
+        "title": "Configure Payment Processor",
+        "description": "Set up Stripe or PayPal integration",
+        "required": true
+      },
+      {
+        "step": 2,
+        "title": "Import Product Catalog",
+        "description": "Upload initial product data via CSV",
+        "required": false
+      },
+      {
+        "step": 3,
+        "title": "Configure Email Templates",
+        "description": "Customize order confirmation and notification emails",
+        "required": true
+      },
+      {
+        "step": 4,
+        "title": "Set up Integrations",
+        "description": "Connect to Shopify, inventory systems, or other platforms",
+        "required": false
+      }
+    ]
+  }
+}

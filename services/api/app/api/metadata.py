@@ -150,6 +150,48 @@ class ListViewDefinitionResponse(BaseModel):
     updated_at: Optional[datetime] = None
 
 
+class LayoutDefinitionResponse(BaseModel):
+    layout_id: str
+    name: str
+    display_name: str
+    description: Optional[str] = None
+    category: Optional[str] = None
+    sections_json: Dict[str, Any]
+    css_classes_json: Optional[Dict[str, Any]] = None
+    container_classes: Optional[str] = None
+    is_responsive: bool = True
+    supports_theming: bool = True
+    is_system_layout: bool = False
+    tenant_id: Optional[str] = None
+
+
+class TranslationResponse(BaseModel):
+    locale: str
+    key: str
+    text: str
+    namespace: Optional[str] = None
+    context: Optional[str] = None
+
+
+class ThemeResponse(BaseModel):
+    theme_id: str
+    name: str
+    description: Optional[str] = None
+    parent_theme_id: Optional[str] = None
+    is_system_theme: bool = False
+    is_active: bool = True
+    is_default: bool = False
+    properties: Dict[str, str]  # Flattened theme properties
+    tenant_id: Optional[str] = None
+
+
+class ThemePropertyResponse(BaseModel):
+    property_key: str
+    property_value: str
+    property_type: Optional[str] = None
+    category: Optional[str] = None
+
+
 # Dependency Functions
 def get_tenant_id(request: Request) -> Optional[UUID]:
     """Extract tenant ID from request headers or state."""
@@ -617,7 +659,7 @@ async def get_entity_list_views(
         data_engine = app.engines["data"]
         
         # Get entity first to verify it exists
-        entity_data = await data_engine.get_entity_metadata(
+        entity_data = await data_engine.get_entity_definition(
             entity_name=entity_name,
             tenant_id=tenant_id
         )
@@ -754,3 +796,282 @@ async def get_entity_data(
             status_code=500,
             detail=f"Error getting entity data: {str(e)}"
         ) 
+
+# ================================
+# LAYOUT ENDPOINTS
+# ================================
+
+@router.get("/layouts", response_model=List[LayoutDefinitionResponse])
+async def get_layouts(
+    tenant_id: Optional[str] = Query(None),
+    category: Optional[str] = Query(None),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get layout definitions for a tenant."""
+    try:
+        logger.info(f"Getting layouts for tenant: {tenant_id}, category: {category}")
+        
+        from app.models.platform import LayoutDefinition
+        from sqlalchemy import select
+        
+        query = select(LayoutDefinition).where(LayoutDefinition.is_active == True)
+        
+        if tenant_id:
+            query = query.where(
+                (LayoutDefinition.tenant_id == tenant_id) |
+                (LayoutDefinition.tenant_id.is_(None))  # Include global layouts
+            )
+        else:
+            query = query.where(LayoutDefinition.tenant_id.is_(None))
+            
+        if category:
+            query = query.where(LayoutDefinition.category == category)
+            
+        result = await db.execute(query)
+        layouts = result.scalars().all()
+        
+        return [
+            LayoutDefinitionResponse(
+                layout_id=str(layout.layout_id),
+                name=layout.name,
+                display_name=layout.display_name,
+                description=layout.description,
+                category=layout.category,
+                sections_json=layout.sections_json,
+                css_classes_json=layout.css_classes_json,
+                container_classes=layout.container_classes,
+                is_responsive=layout.is_responsive,
+                supports_theming=layout.supports_theming,
+                is_system_layout=layout.is_system_layout,
+                tenant_id=str(layout.tenant_id) if layout.tenant_id else None
+            )
+            for layout in layouts
+        ]
+    except Exception as e:
+        logger.error(f"Error getting layouts: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting layouts: {str(e)}")
+
+
+@router.get("/layouts/{layout_id}", response_model=LayoutDefinitionResponse)
+async def get_layout(
+    layout_id: str,
+    tenant_id: Optional[str] = Query(None),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get a specific layout definition."""
+    try:
+        logger.info(f"Getting layout: {layout_id} for tenant: {tenant_id}")
+        
+        from app.models.platform import LayoutDefinition
+        from sqlalchemy import select
+        
+        query = select(LayoutDefinition).where(
+            LayoutDefinition.layout_id == layout_id,
+            LayoutDefinition.is_active == True
+        )
+        
+        if tenant_id:
+            query = query.where(
+                (LayoutDefinition.tenant_id == tenant_id) |
+                (LayoutDefinition.tenant_id.is_(None))
+            )
+        else:
+            query = query.where(LayoutDefinition.tenant_id.is_(None))
+            
+        result = await db.execute(query)
+        layout = result.scalar_one_or_none()
+        
+        if not layout:
+            raise HTTPException(status_code=404, detail=f"Layout not found: {layout_id}")
+            
+        return LayoutDefinitionResponse(
+            layout_id=str(layout.layout_id),
+            name=layout.name,
+            display_name=layout.display_name,
+            description=layout.description,
+            category=layout.category,
+            sections_json=layout.sections_json,
+            css_classes_json=layout.css_classes_json,
+            container_classes=layout.container_classes,
+            is_responsive=layout.is_responsive,
+            supports_theming=layout.supports_theming,
+            is_system_layout=layout.is_system_layout,
+            tenant_id=str(layout.tenant_id) if layout.tenant_id else None
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting layout {layout_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting layout: {str(e)}")
+
+
+# ================================
+# TRANSLATION ENDPOINTS
+# ================================
+
+@router.get("/translations/{locale}", response_model=Dict[str, str])
+async def get_translations(
+    locale: str,
+    tenant_id: Optional[str] = Query(None),
+    namespace: Optional[str] = Query(None),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get translations for a locale."""
+    try:
+        logger.info(f"Getting translations for locale: {locale}, tenant: {tenant_id}, namespace: {namespace}")
+        
+        from app.models.metadata import Translation
+        from sqlalchemy import select
+        
+        query = select(Translation).where(Translation.locale == locale)
+        
+        if tenant_id:
+            query = query.where(
+                (Translation.tenant_id == tenant_id) |
+                (Translation.tenant_id.is_(None))  # Include global translations
+            )
+        else:
+            query = query.where(Translation.tenant_id.is_(None))
+            
+        if namespace:
+            query = query.where(Translation.namespace == namespace)
+            
+        result = await db.execute(query)
+        translations = result.scalars().all()
+        
+        # Return flattened key-value pairs for easy consumption
+        return {translation.key: translation.text for translation in translations}
+        
+    except Exception as e:
+        logger.error(f"Error getting translations for {locale}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting translations: {str(e)}")
+
+
+# ================================
+# THEME ENDPOINTS  
+# ================================
+
+@router.get("/themes", response_model=List[ThemeResponse])
+async def get_themes(
+    tenant_id: Optional[str] = Query(None),
+    active_only: bool = Query(True),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get theme definitions for a tenant."""
+    try:
+        logger.info(f"Getting themes for tenant: {tenant_id}, active_only: {active_only}")
+        
+        from app.models.metadata import Theme, ThemeProperty
+        from sqlalchemy import select
+        from sqlalchemy.orm import selectinload
+        
+        query = select(Theme).options(selectinload(Theme.theme_properties))
+        
+        if active_only:
+            query = query.where(Theme.is_active == True)
+            
+        if tenant_id:
+            query = query.where(
+                (Theme.tenant_id == tenant_id) |
+                (Theme.tenant_id.is_(None))  # Include global themes
+            )
+        else:
+            query = query.where(Theme.tenant_id.is_(None))
+            
+        result = await db.execute(query)
+        themes = result.scalars().all()
+        
+        return [
+            ThemeResponse(
+                theme_id=str(theme.theme_id),
+                name=theme.name,
+                description=theme.description,
+                parent_theme_id=str(theme.parent_theme_id) if theme.parent_theme_id else None,
+                is_system_theme=theme.is_system_theme,
+                is_active=theme.is_active,
+                is_default=theme.is_default,
+                properties={prop.property_key: prop.property_value for prop in theme.theme_properties},
+                tenant_id=str(theme.tenant_id) if theme.tenant_id else None
+            )
+            for theme in themes
+        ]
+    except Exception as e:
+        logger.error(f"Error getting themes: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting themes: {str(e)}")
+
+
+@router.get("/themes/{theme_id}", response_model=ThemeResponse)
+async def get_theme(
+    theme_id: str,
+    tenant_id: Optional[str] = Query(None),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get a specific theme with its properties."""
+    try:
+        logger.info(f"Getting theme: {theme_id} for tenant: {tenant_id}")
+        
+        from app.models.metadata import Theme, ThemeProperty
+        from sqlalchemy import select
+        from sqlalchemy.orm import selectinload
+        
+        query = select(Theme).options(selectinload(Theme.theme_properties)).where(
+            Theme.theme_id == theme_id,
+            Theme.is_active == True
+        )
+        
+        if tenant_id:
+            query = query.where(
+                (Theme.tenant_id == tenant_id) |
+                (Theme.tenant_id.is_(None))
+            )
+        else:
+            query = query.where(Theme.tenant_id.is_(None))
+            
+        result = await db.execute(query)
+        theme = result.scalar_one_or_none()
+        
+        if not theme:
+            raise HTTPException(status_code=404, detail=f"Theme not found: {theme_id}")
+            
+        return ThemeResponse(
+            theme_id=str(theme.theme_id),
+            name=theme.name,
+            description=theme.description,
+            parent_theme_id=str(theme.parent_theme_id) if theme.parent_theme_id else None,
+            is_system_theme=theme.is_system_theme,
+            is_active=theme.is_active,
+            is_default=theme.is_default,
+            properties={prop.property_key: prop.property_value for prop in theme.theme_properties},
+            tenant_id=str(theme.tenant_id) if theme.tenant_id else None
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting theme {theme_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting theme: {str(e)}")
+
+
+@router.get("/themes/{theme_id}/css", response_model=str)
+async def get_theme_css(
+    theme_id: str,
+    tenant_id: Optional[str] = Query(None),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get theme as CSS custom properties."""
+    try:
+        theme_response = await get_theme(theme_id, tenant_id, db)
+        
+        # Generate CSS custom properties
+        css_properties = []
+        css_properties.append(":root {")
+        
+        for key, value in theme_response.properties.items():
+            css_properties.append(f"  {key}: {value};")
+            
+        css_properties.append("}")
+        
+        return "\n".join(css_properties)
+        
+    except Exception as e:
+        logger.error(f"Error generating CSS for theme {theme_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error generating theme CSS: {str(e)}") 

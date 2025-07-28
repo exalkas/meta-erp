@@ -25,6 +25,58 @@ from .metadata import Base
 
 
 # ================================
+# LAYOUT ENGINE MODELS
+# ================================
+
+class LayoutDefinition(Base):
+    """Layout definitions for section-based page composition."""
+    
+    __tablename__ = "layout_definitions"
+    
+    layout_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.tenant_id"), nullable=True)
+    
+    # Layout identification
+    name = Column(String(100), nullable=False)
+    display_name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    category = Column(String(50), nullable=True)  # auth, dashboard, content, etc.
+    
+    # Layout structure
+    sections_json = Column(JSON, nullable=False)  # {"header": {}, "main": {}, "sidebar": {}, "footer": {}}
+    css_classes_json = Column(JSON, nullable=True)  # Tailwind classes per section
+    container_classes = Column(String(500), nullable=True)  # Main container classes
+    
+    # Layout configuration
+    is_responsive = Column(Boolean, default=True)
+    supports_theming = Column(Boolean, default=True)
+    max_sections = Column(Integer, nullable=True)  # Maximum sections supported
+    
+    # Layout metadata
+    preview_image = Column(String(500), nullable=True)
+    is_system_layout = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
+    
+    # Metadata
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    created_by = Column(UUID(as_uuid=True), nullable=True)
+    
+    # Relationships
+    tenant = relationship("Tenant")
+    pages = relationship("PageDefinition", back_populates="layout")
+    
+    # Constraints
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "name", name="uq_layout_tenant_name"),
+        Index("idx_layout_tenant_id", "tenant_id"),
+        Index("idx_layout_category", "category"),
+        Index("idx_layout_system", "is_system_layout"),
+        Index("idx_layout_active", "is_active"),
+    )
+
+
+# ================================
 # PAGE ENGINE MODELS
 # ================================
 
@@ -39,18 +91,32 @@ class PageDefinition(Base):
     # Page identification
     page_name = Column(String(100), nullable=False)
     route = Column(String(255), nullable=False)
-    title = Column(String(255), nullable=False)  # Changed from title_key
-    description = Column(Text, nullable=True)    # Changed from meta_description
-    page_type = Column(String(50), nullable=False)  # Added missing field
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    page_type = Column(String(50), nullable=False)  # auth, dashboard, content, form, etc.
+    
+    # Layout system (NEW)
+    layout_id = Column(UUID(as_uuid=True), ForeignKey("layout_definitions.layout_id"), nullable=True)
+    sections_data_json = Column(JSON, nullable=True)  # Components per section: {"header": [...], "main": [...]}
+    
+    # Legacy components (for backward compatibility)
+    components = Column(JSON, nullable=False, default=lambda: [])  # Array of component instances
     
     # Page configuration
-    components = Column(JSON, nullable=False)  # Array of component instances
-    metadata_json = Column(JSON, nullable=True)  # Changed from layout_config
+    metadata_json = Column(JSON, nullable=True)  # Additional page configuration
     access_roles = Column(JSON, default=lambda: [])
     is_public = Column(Boolean, default=False)
     
-    # SEO and metadata (keeping these for future use)
-    meta_description = Column(Text, nullable=True)  # Additional SEO description
+    # State management (Enhanced page features)
+    initial_state = Column(JSON, nullable=True)  # Page-level initial state
+    state_bindings = Column(JSON, nullable=True)  # Component state bindings
+    api_endpoints = Column(JSON, nullable=True)  # API endpoint configuration
+    real_time_updates = Column(Boolean, default=False)  # WebSocket support
+    cache_strategy = Column(String(50), nullable=True)  # Caching configuration
+    websocket_events = Column(JSON, nullable=True)  # Real-time event types
+    
+    # SEO and metadata
+    meta_description = Column(Text, nullable=True)
     meta_keywords = Column(JSON, nullable=True)
     
     # Metadata
@@ -60,6 +126,7 @@ class PageDefinition(Base):
     
     # Relationships
     tenant = relationship("Tenant")
+    layout = relationship("LayoutDefinition", back_populates="pages")
     
     # Constraints
     __table_args__ = (
@@ -68,7 +135,8 @@ class PageDefinition(Base):
         Index("idx_page_tenant_id", "tenant_id"),
         Index("idx_page_route", "route"),
         Index("idx_page_public", "is_public"),
-        Index("idx_page_type", "page_type"),  # Added index for page_type
+        Index("idx_page_type", "page_type"),
+        Index("idx_page_layout_id", "layout_id"),  # NEW index for layout
     )
 
 
@@ -92,11 +160,15 @@ class ComponentDefinition(Base):
     # Component configuration
     props_schema = Column(JSON, nullable=False)  # JSON Schema for props
     default_props = Column(JSON, nullable=True)
+    supports_children = Column(Boolean, default=False)  # Can contain child components
+    style_schema = Column(JSON, nullable=True)  # JSON Schema for styling options
+    event_handlers = Column(JSON, default=lambda: [])  # Available event handlers
     
     # UI metadata
     icon = Column(String(100), nullable=True)
     preview_image = Column(String(500), nullable=True)
     tags = Column(JSON, default=lambda: [])
+    documentation_url = Column(String(500), nullable=True)  # Component documentation
     
     # Marketplace info
     is_marketplace_item = Column(Boolean, default=False)
@@ -105,6 +177,7 @@ class ComponentDefinition(Base):
     
     # Status
     is_active = Column(Boolean, default=True)
+    is_system_component = Column(Boolean, default=False)  # System vs custom component
     version = Column(String(20), default="1.0.0")
     
     # Metadata
@@ -121,6 +194,7 @@ class ComponentDefinition(Base):
         Index("idx_component_module", "module"),
         Index("idx_component_active", "is_active"),
         Index("idx_component_marketplace", "is_marketplace_item"),
+        Index("idx_component_system", "is_system_component"),  # Added index
     )
 
 
@@ -129,11 +203,12 @@ class ComponentDependency(Base):
     
     __tablename__ = "component_dependencies"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    dependency_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # Changed from id
     component_id = Column(UUID(as_uuid=True), ForeignKey("component_definitions.component_id"), nullable=False)
-    depends_on_id = Column(UUID(as_uuid=True), ForeignKey("component_definitions.component_id"), nullable=False)
+    depends_on_component_id = Column(UUID(as_uuid=True), ForeignKey("component_definitions.component_id"), nullable=False)  # Changed name
     
     # Dependency configuration
+    dependency_type = Column(String(50), default="required")  # Added dependency_type
     version_constraint = Column(String(50), nullable=True)  # e.g., ">=1.0.0"
     is_optional = Column(Boolean, default=False)
     
@@ -142,13 +217,13 @@ class ComponentDependency(Base):
     
     # Relationships
     component = relationship("ComponentDefinition", foreign_keys=[component_id], back_populates="dependencies")
-    depends_on = relationship("ComponentDefinition", foreign_keys=[depends_on_id])
+    depends_on = relationship("ComponentDefinition", foreign_keys=[depends_on_component_id])
     
     # Constraints
     __table_args__ = (
-        UniqueConstraint("component_id", "depends_on_id", name="uq_component_dependency"),
+        UniqueConstraint("component_id", "depends_on_component_id", name="uq_component_dependency"),
         Index("idx_dependency_component", "component_id"),
-        Index("idx_dependency_depends_on", "depends_on_id"),
+        Index("idx_dependency_depends_on", "depends_on_component_id"),  # Updated field name
     )
 
 
@@ -157,7 +232,8 @@ class ModuleManifest(Base):
     
     __tablename__ = "module_manifests"
     
-    module_id = Column(String(100), primary_key=True)
+    manifest_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # Added manifest_id
+    module_id = Column(String(100), nullable=False, unique=True)  # Made non-primary, unique
     
     # Module information
     name = Column(String(255), nullable=False)
@@ -168,17 +244,24 @@ class ModuleManifest(Base):
     # Module configuration
     components = Column(JSON, nullable=False)  # Array of component definitions
     dependencies = Column(JSON, default=lambda: [])
+    peer_dependencies = Column(JSON, default=lambda: [])  # Peer dependencies
     permissions = Column(JSON, default=lambda: [])
+    configuration_schema = Column(JSON, nullable=True)  # Module configuration schema
     
     # Module metadata
     author = Column(String(255), nullable=True)
     homepage = Column(String(500), nullable=True)
-    repository = Column(String(500), nullable=True)
+    repository_url = Column(String(500), nullable=True)  # Changed from repository
+    documentation_url = Column(String(500), nullable=True)  # Documentation URL
+    keywords = Column(JSON, default=lambda: [])  # Search keywords
     license = Column(String(100), nullable=True)
     
     # Installation info
     is_system_module = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
+    is_published = Column(Boolean, default=False)  # Published to marketplace
+    install_script = Column(Text, nullable=True)  # Installation script
+    uninstall_script = Column(Text, nullable=True)  # Uninstallation script
     
     # Metadata
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -186,8 +269,10 @@ class ModuleManifest(Base):
     
     # Constraints
     __table_args__ = (
+        Index("idx_module_id", "module_id"),  # Added index for module_id
         Index("idx_module_active", "is_active"),
         Index("idx_module_system", "is_system_module"),
+        Index("idx_module_published", "is_published"),  # Added index
     )
 
 

@@ -254,6 +254,11 @@ export { EntityCard } from "./components/business/EntityCard";
 export { default as LoginForm } from "./components/auth/LoginForm";
 export { default as MetadataLoginPage } from "./components/auth/MetadataLoginPage";
 
+// Dynamic components
+export { MetadataDataTable } from "./components/dynamic/MetadataDataTable";
+export { DynamicLayout } from "./components/dynamic/DynamicLayout";
+export { DynamicPage } from "./components/dynamic/DynamicPage";
+
 // Form Components ✅ PHASE 5 COMPLETE
 export { DynamicForm } from "./components/forms/DynamicForm";
 
@@ -323,3 +328,7 @@ export { useDebounce } from "./hooks/useDebounce";
 
 // Contact Management
 export { default as ContactForm } from "./components/contacts/ContactForm";
+
+// Export all services
+export * from "./services";
+export { initializeMockApi } from "./services/mockApiService";

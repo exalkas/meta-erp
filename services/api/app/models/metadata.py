@@ -50,6 +50,12 @@ class Tenant(Base):
     subscription_plan = Column(String(50), default="basic")
     subscription_status = Column(String(20), default="active")
     
+    # Vertical and industry configuration
+    industry_vertical = Column(String(50), nullable=True)  # Primary industry (ecommerce, automotive, etc.)
+    vertical_packs_installed = Column(JSON, default=lambda: [])  # Installed vertical packs
+    onboarding_completed = Column(Boolean, default=False)  # Onboarding wizard completed
+    industry_config = Column(JSON, nullable=True)  # Industry-specific configuration
+    
     # Feature flags
     features_enabled = Column(JSON, default=lambda: {
         "ai_features": True,
@@ -77,6 +83,8 @@ class Tenant(Base):
         Index("idx_tenant_domain", "domain"),
         Index("idx_tenant_status", "status"),
         Index("idx_tenant_created_at", "created_at"),
+        Index("idx_tenant_industry", "industry_vertical"),  # Added index for industry queries
+        Index("idx_tenant_onboarding", "onboarding_completed"),  # Added index for onboarding status
     )
     
     def __repr__(self):
@@ -100,6 +108,11 @@ class EntityDefinition(Base):
     description = Column(Text, nullable=True)
     icon = Column(String(100), nullable=True)  # Icon identifier
     color = Column(String(20), nullable=True)  # Color theme
+    
+    # Vertical-specific configuration
+    vertical = Column(String(50), nullable=True)  # Industry vertical (ecommerce, automotive, etc.)
+    vertical_pack_id = Column(String(100), nullable=True)  # Which vertical pack provides this entity
+    industry_specific_config = Column(JSON, nullable=True)  # Vertical-specific settings
     
     # Business configuration
     is_system_entity = Column(Boolean, default=False)  # System vs custom entity
@@ -134,6 +147,8 @@ class EntityDefinition(Base):
         Index("idx_entity_tenant_id", "tenant_id"),
         Index("idx_entity_name", "entity_name"),
         Index("idx_entity_active", "is_active"),
+        Index("idx_entity_vertical", "vertical"),  # Added index for vertical queries
+        Index("idx_entity_vertical_pack", "vertical_pack_id"),  # Added index for pack queries
     )
     
     def __repr__(self):

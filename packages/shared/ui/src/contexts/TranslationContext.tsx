@@ -772,23 +772,100 @@ interface TranslationProviderProps {
   detectLanguage?: boolean;
   storageKey?: string;
   fallbackLanguage?: Language;
+  tenantId?: string; // NEW: For metadata API
 }
 
 export const TranslationProvider: React.FC<TranslationProviderProps> = ({
   children,
   defaultLanguage = "el",
-  resources = DEFAULT_RESOURCES,
+  resources,
   detectLanguage = true,
   storageKey = LANGUAGE_STORAGE_KEY,
   fallbackLanguage = "en",
+  tenantId, // NEW: Tenant context for metadata
 }) => {
   // Initialize language with stable SSR value
   const [language, setLanguageState] = useState<Language>(defaultLanguage);
   const [translationResources, setTranslationResources] =
-    useState<LanguageResources>(resources);
+    useState<LanguageResources>(resources || {});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
   const [isClient, setIsClient] = useState(false);
+
+  // NEW: Fetch translations from metadata API
+  const fetchTranslations = useCallback(
+    async (locale: Language) => {
+      setIsLoading(true);
+      setError(undefined);
+
+      try {
+        console.log(`🌐 Fetching translations for locale: ${locale}`);
+
+        const response = await fetch(
+          `/api/metadata/translations/${locale}?tenant_id=${tenantId || ""}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch translations: ${response.status}`);
+        }
+
+        const translationsFlat = await response.json();
+
+        // Convert flat translations to nested structure
+        const nestedTranslations = convertFlatToNested(translationsFlat);
+
+        // Update resources
+        setTranslationResources((prev) => ({
+          ...prev,
+          [locale]: nestedTranslations,
+        }));
+
+        console.log(
+          `✅ Loaded ${Object.keys(translationsFlat).length} translations for ${locale}`
+        );
+      } catch (err) {
+        console.error(`❌ Failed to load translations for ${locale}:`, err);
+        setError(err instanceof Error ? err.message : "Unknown error");
+
+        // Fallback to default resources if available
+        if (!resources) {
+          console.log(`📦 Using fallback to DEFAULT_RESOURCES for ${locale}`);
+          setTranslationResources((prev) => ({
+            ...prev,
+            [locale]: DEFAULT_RESOURCES[locale] || {},
+          }));
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [tenantId, resources]
+  );
+
+  // NEW: Convert flat key-value translations to nested structure
+  const convertFlatToNested = (flatTranslations: Record<string, string>) => {
+    const nested: any = {};
+
+    Object.entries(flatTranslations).forEach(([key, value]) => {
+      const parts = key.split(".");
+      let current = nested;
+
+      // Navigate to the correct nested position
+      for (let i = 0; i < parts.length - 1; i++) {
+        const part = parts[i];
+        if (!current[part]) {
+          current[part] = {};
+        }
+        current = current[part];
+      }
+
+      // Set the final value
+      const finalKey = parts[parts.length - 1];
+      current[finalKey] = value;
+    });
+
+    return nested;
+  };
 
   // Fix hydration mismatch by updating language after mount
   useEffect(() => {
@@ -796,28 +873,46 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({
 
     // Only check stored/detected language after client mount
     if (typeof window !== "undefined") {
+      let selectedLanguage = defaultLanguage;
+
       // Try to get from localStorage first
       const stored = localStorage.getItem(storageKey);
       if (stored && (stored === "el" || stored === "en")) {
-        setLanguageState(stored as Language);
-        return;
-      }
-
-      // Auto-detect language if enabled
-      if (detectLanguage) {
+        selectedLanguage = stored as Language;
+      } else if (detectLanguage) {
+        // Auto-detect language if enabled
         const detected =
           detectLanguageFromPath() ||
           detectLanguageFromHeaders() ||
           detectLanguageFromNavigator();
 
         if (detected) {
+          selectedLanguage = detected;
           localStorage.setItem(storageKey, detected);
-          setLanguageState(detected);
-          return;
         }
       }
+
+      setLanguageState(selectedLanguage);
+
+      // Fetch translations for the selected language
+      if (!resources) {
+        fetchTranslations(selectedLanguage);
+      }
     }
-  }, [detectLanguage, storageKey]);
+  }, [
+    detectLanguage,
+    storageKey,
+    defaultLanguage,
+    resources,
+    fetchTranslations,
+  ]);
+
+  // NEW: Fetch translations when language changes
+  useEffect(() => {
+    if (isClient && !resources) {
+      fetchTranslations(language);
+    }
+  }, [language, isClient, resources, fetchTranslations]);
 
   // Language preferences
   const [preferences, setPreferences] = useState<UserLanguagePreferences>(

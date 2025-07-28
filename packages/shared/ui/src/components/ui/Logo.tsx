@@ -68,8 +68,16 @@ export function Logo({
           onError={(e) => {
             // Fallback to smaller logo if the requested size fails to load
             const target = e.target as HTMLImageElement;
-            if (target.src !== "/axiologic_logo_32.png") {
+            // Prevent infinite loops - only try fallback once
+            if (
+              target.src !== "/axiologic_logo_32.png" &&
+              !target.dataset.fallbackAttempted
+            ) {
+              target.dataset.fallbackAttempted = "true";
               target.src = "/axiologic_logo_32.png";
+            } else {
+              // If fallback also fails, hide the image to prevent infinite loops
+              target.style.display = "none";
             }
           }}
         />

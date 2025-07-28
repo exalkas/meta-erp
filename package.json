@@ -4,6 +4,7 @@
   "description": "Vertical-first industry solutions platform with metadata-driven packs for E-commerce, Automotive, Oil & Gas, AgTech, FinTech, and Insurance/MedTech",
   "private": true,
   "workspaces": [
+    "apps/*",
     "packages/shared/*",
     "packages/shared-assets",
     "packages/ai-services/*"

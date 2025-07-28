@@ -17,7 +17,7 @@ import { Select } from "../ui/Select";
 import { Badge } from "../ui/Badge";
 import { SearchInput } from "../ui/SearchInput";
 import { QuickFilter } from "../ui/QuickFilter";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../contexts/TranslationContext";
 
 export interface ListViewDefinition {
   id: string;
@@ -506,7 +506,10 @@ export const MetadataDataTable: React.FC<MetadataDataTableProps> = ({
                 showSizeChanger: true,
                 pageSizeOptions:
                   listViewDefinition.page_size_options.map(String),
-                showTotal: listViewDefinition.show_total_count,
+                showTotal: listViewDefinition.show_total_count
+                  ? (total: number, range: [number, number]) =>
+                      `${range[0]}-${range[1]} of ${total} items`
+                  : undefined,
                 onChange: handlePageChange,
               }
             : undefined
