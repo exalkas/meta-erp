@@ -115,31 +115,37 @@ export default function MetadataLoginPage({
     try {
       console.log("🔐 Attempting login through metadata-driven auth");
 
-      // Mock authentication logic (replace with real auth service call)
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-        }),
-      });
+      // Import authApiClient dynamically to avoid SSR issues
+      const { authApiClient } = await import("../../services/authApiClient");
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Login failed");
+      console.log("🚀 Using real auth service for authentication");
+      const authResponse = await authApiClient.loginWithPassword(
+        data.email,
+        data.password,
+        undefined, // Use default tenant_id
+        "Web Browser" // Device name
+      );
+
+      console.log("✅ Authentication successful through auth service");
+
+      // Store authentication data
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          "auth_tokens",
+          JSON.stringify({
+            accessToken: authResponse.access_token,
+            refreshToken: authResponse.refresh_token,
+            expiresIn: authResponse.expires_in,
+            expiresAt: new Date(
+              Date.now() + authResponse.expires_in * 1000
+            ).toISOString(),
+          })
+        );
+        localStorage.setItem("auth_user", JSON.stringify(authResponse.user));
       }
 
-      const result = await response.json();
-
-      if (result.success || result.access_token) {
-        console.log("✅ Login successful, calling success handler");
-        onLoginSuccess?.(redirectTo);
-      } else {
-        throw new Error(result.message || "Login failed");
-      }
+      console.log("✅ Login successful, calling success handler");
+      onLoginSuccess?.(redirectTo);
     } catch (err) {
       console.error("❌ Login error:", err);
       throw err;

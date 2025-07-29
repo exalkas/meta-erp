@@ -2,6 +2,8 @@
  * Authentication Context for Multi-App Axiologic System
  * Handles JWT authentication, token management, and user session
  * Used by all 6 apps: admin, client, setup, staff-support, user-support, marketing
+ *
+ * UPDATED: Now connects to real FastAPI auth service at localhost:8001
  */
 
 import React, {
@@ -13,29 +15,49 @@ import React, {
   ReactNode,
 } from "react";
 import { AppName } from "../types/constants";
+import { authApiClient, LoginResponse } from "../services/authApiClient";
 
-// Authentication types
+// Authentication types - Updated to match auth service response
 export interface AuthUser {
-  id: string;
+  user_id: string;
+  tenant_id: string;
   email: string;
-  name: string;
-  role: string;
-  companyId: string;
-  permissions: string[];
-  isActive: boolean;
+  first_name: string;
+  last_name: string;
+  display_name: string;
+  status: string;
+  is_verified: boolean;
+  phone?: string;
+  phone_verified: boolean;
+  avatar_url?: string;
+  timezone?: string;
+  locale?: string;
+  two_factor_enabled: boolean;
+  passkey_enabled: boolean;
+  compliance_level: string;
+  last_login?: string;
+  created_at: string;
+
+  // Legacy compatibility fields
+  id: string; // maps to user_id
+  name: string; // maps to display_name
+  role: string; // maps to compliance_level
+  companyId: string; // maps to tenant_id
+  permissions: string[]; // TODO: implement from roles
+  isActive: boolean; // maps to status === 'active'
   canBeDeleted: boolean;
   canChangePassword: boolean;
-  lastLogin?: string;
-  createdAt: string;
-  updatedAt: string;
+  lastLogin?: string; // maps to last_login
+  createdAt: string; // maps to created_at
+  updatedAt: string; // TODO: implement
 }
 
 export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-  tokenType: string;
-  expiresIn: number;
-  expiresAt: string;
+  accessToken: string; // maps to access_token
+  refreshToken: string; // maps to refresh_token
+  tokenType: string; // always 'bearer'
+  expiresIn: number; // maps to expires_in
+  expiresAt: string; // calculated from expires_in
 }
 
 export interface LoginData {
@@ -86,69 +108,89 @@ interface AuthContextValue extends AuthState {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-// Auth API client
-class AuthApiClient {
-  private baseUrl: string;
+// Helper functions to map auth service response to legacy format
+function mapAuthUserFromResponse(authResponse: LoginResponse): AuthUser {
+  const user = authResponse.user;
 
-  constructor() {
-    this.baseUrl =
-      process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || "http://localhost:8001";
-  }
+  return {
+    // Auth service fields
+    user_id: user.user_id,
+    tenant_id: user.tenant_id,
+    email: user.email,
+    first_name: user.first_name,
+    last_name: user.last_name,
+    display_name: user.display_name,
+    status: user.status,
+    is_verified: user.is_verified,
+    phone: user.phone,
+    phone_verified: user.phone_verified,
+    avatar_url: user.avatar_url,
+    timezone: user.timezone,
+    locale: user.locale,
+    two_factor_enabled: user.two_factor_enabled,
+    passkey_enabled: user.passkey_enabled,
+    compliance_level: user.compliance_level,
+    last_login: user.last_login,
+    created_at: user.created_at,
 
+    // Legacy compatibility fields
+    id: user.user_id,
+    name: user.display_name,
+    role: user.compliance_level,
+    companyId: user.tenant_id,
+    permissions: [], // TODO: implement from roles/permissions
+    isActive: user.status === "active",
+    canBeDeleted: true, // TODO: implement from permissions
+    canChangePassword: true, // TODO: implement from permissions
+    lastLogin: user.last_login,
+    createdAt: user.created_at,
+    updatedAt: user.created_at, // TODO: implement updated_at field
+  };
+}
+
+function mapAuthTokensFromResponse(authResponse: LoginResponse): AuthTokens {
+  return {
+    accessToken: authResponse.access_token,
+    refreshToken: authResponse.refresh_token,
+    tokenType: "bearer",
+    expiresIn: authResponse.expires_in,
+    expiresAt: new Date(
+      Date.now() + authResponse.expires_in * 1000
+    ).toISOString(),
+  };
+}
+
+// Auth API client wrapper - now uses the dedicated authApiClient
+class AuthContextApiClient {
   async login(
     data: LoginData
   ): Promise<{ user: AuthUser; tokens: AuthTokens }> {
-    const response = await fetch(`${this.baseUrl}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: data.email,
-        password: data.password,
-        remember_me: data.rememberMe || false,
-      }),
-    });
+    try {
+      console.log("🔐 AuthContext: Starting login process with auth service");
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || "Login failed");
+      const authResponse = await authApiClient.loginWithPassword(
+        data.email,
+        data.password,
+        undefined, // Use default tenant_id
+        "Web Browser" // Default device name
+      );
+
+      console.log("✅ AuthContext: Login successful, mapping response");
+
+      const user = mapAuthUserFromResponse(authResponse);
+      const tokens = mapAuthTokensFromResponse(authResponse);
+
+      console.log("📥 AuthContext: Mapped user and tokens", {
+        user_id: user.id,
+        email: user.email,
+        expires_in: tokens.expiresIn,
+      });
+
+      return { user, tokens };
+    } catch (error) {
+      console.error("❌ AuthContext: Login failed:", error);
+      throw error;
     }
-
-    const responseData = await response.json();
-
-    // Map auth service response to expected format
-    const user: AuthUser = {
-      id: responseData.user.id,
-      email: responseData.user.email,
-      name:
-        responseData.user.full_name ||
-        `${responseData.user.first_name} ${responseData.user.last_name}`,
-      role: responseData.user.role,
-      companyId: responseData.user.company_id,
-      permissions: [
-        ...(responseData.user.permissions || []),
-        ...(responseData.user.custom_permissions || []),
-      ],
-      isActive: responseData.user.is_active,
-      canBeDeleted: responseData.user.can_be_deleted !== false,
-      canChangePassword: responseData.user.can_change_password !== false,
-      lastLogin: responseData.user.last_login,
-      createdAt: responseData.user.created_at,
-      updatedAt: responseData.user.updated_at,
-    };
-
-    const tokens: AuthTokens = {
-      accessToken: responseData.access_token,
-      refreshToken: responseData.refresh_token,
-      tokenType: responseData.token_type,
-      expiresIn: responseData.expires_in,
-      expiresAt: new Date(
-        Date.now() + responseData.expires_in * 1000
-      ).toISOString(),
-    };
-
-    return { user, tokens };
   }
 
   async logout(
@@ -156,51 +198,27 @@ class AuthApiClient {
     refreshToken: string,
     logoutAllDevices = false
   ): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/auth/logout`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify({
-        refresh_token: refreshToken,
-        logout_all_devices: logoutAllDevices,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || "Logout failed");
+    try {
+      console.log("🚪 AuthContext: Starting logout process");
+      await authApiClient.logout(accessToken);
+      console.log("✅ AuthContext: Logout successful");
+    } catch (error) {
+      console.warn("⚠️ AuthContext: Logout failed, but continuing:", error);
+      // Don't throw on logout failure - allow user to be logged out locally
     }
   }
 
   async refreshToken(refreshToken: string): Promise<AuthTokens> {
-    const response = await fetch(`${this.baseUrl}/auth/refresh`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        refresh_token: refreshToken,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || "Token refresh failed");
+    try {
+      console.log("🔄 AuthContext: Refreshing token");
+      const authResponse = await authApiClient.refreshToken(refreshToken);
+      const tokens = mapAuthTokensFromResponse(authResponse);
+      console.log("✅ AuthContext: Token refresh successful");
+      return tokens;
+    } catch (error) {
+      console.error("❌ AuthContext: Token refresh failed:", error);
+      throw error;
     }
-
-    const responseData = await response.json();
-
-    return {
-      accessToken: responseData.access_token,
-      refreshToken: refreshToken, // Keep the same refresh token
-      tokenType: responseData.token_type,
-      expiresIn: responseData.expires_in,
-      expiresAt: new Date(
-        Date.now() + responseData.expires_in * 1000
-      ).toISOString(),
-    };
   }
 
   async validateToken(token: string): Promise<{
@@ -208,55 +226,64 @@ class AuthApiClient {
     user?: AuthUser;
     permissions?: string[];
   }> {
-    const response = await fetch(`${this.baseUrl}/auth/validate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
+    try {
+      console.log("🔍 AuthContext: Validating token");
+      const isValid = await authApiClient.validateSession(token);
+      console.log("✅ AuthContext: Token validation result:", isValid);
+      return { valid: isValid };
+    } catch (error) {
+      console.error("❌ AuthContext: Token validation failed:", error);
       return { valid: false };
     }
-
-    return response.json();
   }
 
   async getCurrentUser(token: string): Promise<AuthUser> {
-    const response = await fetch(`${this.baseUrl}/auth/me`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    try {
+      console.log("👤 AuthContext: Getting current user");
+      const userData = await authApiClient.getCurrentUser(token);
+      console.log("✅ AuthContext: User data retrieved");
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || "Failed to get user info");
+      // Map the response to our AuthUser format
+      const mappedUser: AuthUser = {
+        // Auth service fields
+        user_id: userData.user_id,
+        tenant_id: userData.tenant_id,
+        email: userData.email,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        display_name: userData.display_name,
+        status: userData.status,
+        is_verified: userData.is_verified,
+        phone: userData.phone,
+        phone_verified: userData.phone_verified,
+        avatar_url: userData.avatar_url,
+        timezone: userData.timezone,
+        locale: userData.locale,
+        two_factor_enabled: userData.two_factor_enabled,
+        passkey_enabled: userData.passkey_enabled,
+        compliance_level: userData.compliance_level,
+        last_login: userData.last_login,
+        created_at: userData.created_at,
+
+        // Legacy compatibility fields
+        id: userData.user_id,
+        name: userData.display_name,
+        role: userData.compliance_level,
+        companyId: userData.tenant_id,
+        permissions: [], // TODO: implement from roles/permissions
+        isActive: userData.status === "active",
+        canBeDeleted: true, // TODO: implement from permissions
+        canChangePassword: true, // TODO: implement from permissions
+        lastLogin: userData.last_login,
+        createdAt: userData.created_at,
+        updatedAt: userData.created_at, // TODO: implement updated_at field
+      };
+
+      return mappedUser;
+    } catch (error) {
+      console.error("❌ AuthContext: Get current user failed:", error);
+      throw error;
     }
-
-    const responseData = await response.json();
-    const userData = responseData.user || responseData;
-
-    return {
-      id: userData.id,
-      email: userData.email,
-      name:
-        userData.full_name || `${userData.first_name} ${userData.last_name}`,
-      role: userData.role,
-      companyId: userData.company_id,
-      permissions: [
-        ...(userData.permissions || []),
-        ...(userData.custom_permissions || []),
-      ],
-      isActive: userData.is_active,
-      canBeDeleted: userData.can_be_deleted !== false,
-      canChangePassword: userData.can_change_password !== false,
-      lastLogin: userData.last_login,
-      createdAt: userData.created_at,
-      updatedAt: userData.updated_at,
-    };
   }
 
   async changePassword(
@@ -264,26 +291,15 @@ class AuthApiClient {
     currentPassword: string,
     newPassword: string
   ): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/auth/password/change`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        current_password: currentPassword,
-        new_password: newPassword,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || "Password change failed");
-    }
+    // TODO: Implement password change in auth service
+    console.warn(
+      "⚠️ AuthContext: Password change not yet implemented in auth service"
+    );
+    throw new Error("Password change not yet implemented");
   }
 }
 
-const authApi = new AuthApiClient();
+const authApi = new AuthContextApiClient();
 
 // Token storage utilities
 const TOKEN_STORAGE_KEY = "auth_tokens";

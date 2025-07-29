@@ -15,8 +15,8 @@ import {
   MockThemeEngine,
 } from "./mockDataService";
 
-// Flag to enable/disable mock mode
-let MOCK_MODE_ENABLED = true;
+// Flag to enable/disable mock mode - DISABLED: We now use real auth service
+let MOCK_MODE_ENABLED = false;
 
 // Enable/disable mock mode
 export const setMockMode = (enabled: boolean) => {
@@ -321,8 +321,8 @@ const mockFetch = async (
         return createMockResponse(
           {
             success: true,
-            access_token: authResult.accessToken,
-            refresh_token: authResult.refreshToken,
+            access_token: authResult.session.access_token,
+            refresh_token: authResult.session.refresh_token,
             user: authResult.user,
           },
           200

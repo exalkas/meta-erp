@@ -79,9 +79,35 @@ export default function LoginPage() {
   }) => {
     console.log("🔐 Login attempt with:", data);
     try {
-      // TODO: Replace with actual authentication API call
-      // For now, simulate login success
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
+      // Import the authApiClient here to avoid SSR issues
+      const { authApiClient } = await import("@erp/shared-ui");
+
+      console.log("🚀 Attempting login with real auth service");
+      const authResponse = await authApiClient.loginWithPassword(
+        data.email,
+        data.password,
+        undefined, // Use default tenant_id
+        "Web Browser" // Device name
+      );
+
+      console.log("✅ Login successful:", authResponse.user.email);
+
+      // Store tokens securely (you might want to use a more secure method)
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          "auth_tokens",
+          JSON.stringify({
+            accessToken: authResponse.access_token,
+            refreshToken: authResponse.refresh_token,
+            expiresIn: authResponse.expires_in,
+            expiresAt: new Date(
+              Date.now() + authResponse.expires_in * 1000
+            ).toISOString(),
+          })
+        );
+        localStorage.setItem("auth_user", JSON.stringify(authResponse.user));
+      }
+
       handleLoginSuccess();
     } catch (error) {
       console.error("❌ Login failed:", error);
