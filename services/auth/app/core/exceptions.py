@@ -1,237 +1,526 @@
 """
-Authentication Service Exceptions
+SAP-Style Authentication Exceptions
 
-Custom exceptions and handlers for authentication operations.
+Comprehensive exception hierarchy for enterprise authentication system
+with proper error codes, detailed messaging, and compliance tracking.
 """
 
-from typing import Dict, Any, Optional
-from fastapi import Request, HTTPException, status
-from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
+from typing import Optional, Dict, Any, List
+from enum import Enum
 
-from app.core.logging import get_logger
+class ErrorCode(Enum):
+    """Standardized error codes for authentication system"""
+    
+    # Authentication errors (1000-1999)
+    INVALID_CREDENTIALS = "AUTH_1001"
+    USER_NOT_FOUND = "AUTH_1002"
+    PASSWORD_EXPIRED = "AUTH_1003"
+    ACCOUNT_DISABLED = "AUTH_1004"
+    ACCOUNT_LOCKED = "AUTH_1005"
+    EMAIL_NOT_VERIFIED = "AUTH_1006"
+    PHONE_NOT_VERIFIED = "AUTH_1007"
+    
+    # Two-factor authentication errors (2000-2999)
+    TWO_FACTOR_REQUIRED = "AUTH_2001"
+    INVALID_TOTP_CODE = "AUTH_2002"
+    BACKUP_CODE_REQUIRED = "AUTH_2003"
+    TWO_FACTOR_NOT_ENABLED = "AUTH_2004"
+    
+    # Session errors (3000-3999)
+    SESSION_EXPIRED = "AUTH_3001"
+    SESSION_INVALID = "AUTH_3002"
+    SESSION_REVOKED = "AUTH_3003"
+    MAX_SESSIONS_EXCEEDED = "AUTH_3004"
+    CONCURRENT_SESSION_LIMIT = "AUTH_3005"
+    
+    # Magic link errors (4000-4999)
+    MAGIC_LINK_EXPIRED = "AUTH_4001"
+    MAGIC_LINK_INVALID = "AUTH_4002"
+    MAGIC_LINK_USED = "AUTH_4003"
+    MAGIC_LINK_REVOKED = "AUTH_4004"
+    
+    # Authorization errors (5000-5999)
+    INSUFFICIENT_PERMISSIONS = "AUTH_5001"
+    ROLE_NOT_FOUND = "AUTH_5002"
+    PERMISSION_DENIED = "AUTH_5003"
+    RESOURCE_ACCESS_DENIED = "AUTH_5004"
+    TENANT_ACCESS_DENIED = "AUTH_5005"
+    
+    # Compliance errors (6000-6999)
+    COMPLIANCE_VIOLATION = "AUTH_6001"
+    KYC_REQUIRED = "AUTH_6002"
+    DOCUMENT_VERIFICATION_REQUIRED = "AUTH_6003"
+    TERMS_ACCEPTANCE_REQUIRED = "AUTH_6004"
+    PRIVACY_ACCEPTANCE_REQUIRED = "AUTH_6005"
+    RISK_ASSESSMENT_REQUIRED = "AUTH_6006"
+    
+    # Validation errors (7000-7999)
+    INVALID_EMAIL_FORMAT = "AUTH_7001"
+    INVALID_PHONE_FORMAT = "AUTH_7002"
+    PASSWORD_TOO_WEAK = "AUTH_7003"
+    PASSWORD_POLICY_VIOLATION = "AUTH_7004"
+    INVALID_USER_DATA = "AUTH_7005"
+    
+    # Rate limiting errors (8000-8999)
+    RATE_LIMIT_EXCEEDED = "AUTH_8001"
+    TOO_MANY_ATTEMPTS = "AUTH_8002"
+    TEMPORARY_LOCKOUT = "AUTH_8003"
+    
+    # System errors (9000-9999)
+    INTERNAL_ERROR = "AUTH_9001"
+    DATABASE_ERROR = "AUTH_9002"
+    EXTERNAL_SERVICE_ERROR = "AUTH_9003"
+    CONFIGURATION_ERROR = "AUTH_9004"
 
-logger = get_logger("auth_exceptions")
-
-
-class AuthenticationException(Exception):
-    """Base exception for authentication errors."""
+class BaseAuthException(Exception):
+    """Base exception for all authentication-related errors"""
+    
     def __init__(
         self,
         message: str,
-        error_code: str,
-        status_code: int = status.HTTP_401_UNAUTHORIZED,
+        error_code: ErrorCode,
         details: Optional[Dict[str, Any]] = None,
+        tenant_id: Optional[str] = None,
+        user_id: Optional[str] = None,
+        correlation_id: Optional[str] = None
     ):
         self.message = message
         self.error_code = error_code
-        self.status_code = status_code
         self.details = details or {}
+        self.tenant_id = tenant_id
+        self.user_id = user_id
+        self.correlation_id = correlation_id
         super().__init__(self.message)
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert exception to dictionary for API responses"""
+        return {
+            "error": {
+                "code": self.error_code.value,
+                "message": self.message,
+                "details": self.details,
+                "tenant_id": self.tenant_id,
+                "user_id": self.user_id,
+                "correlation_id": self.correlation_id
+            }
+        }
 
+# =============================================
+# AUTHENTICATION EXCEPTIONS
+# =============================================
 
-class InvalidCredentialsException(AuthenticationException):
-    """Invalid email/password credentials."""
-    def __init__(self, message: str = "Invalid email or password"):
+class AuthenticationException(BaseAuthException):
+    """General authentication failure"""
+    
+    def __init__(self, message: str = "Authentication failed", **kwargs):
         super().__init__(
             message=message,
-            error_code="INVALID_CREDENTIALS",
-            status_code=status.HTTP_401_UNAUTHORIZED
+            error_code=ErrorCode.INVALID_CREDENTIALS,
+            **kwargs
         )
 
-
-class AccountLockedException(AuthenticationException):
-    """Account is locked due to too many failed attempts."""
-    def __init__(self, unlock_time: str = None):
-        details = {"unlock_time": unlock_time} if unlock_time else {}
+class UserNotFoundException(BaseAuthException):
+    """User not found in tenant"""
+    
+    def __init__(self, email: str, tenant_id: str, **kwargs):
         super().__init__(
-            message="Account is locked due to too many failed login attempts",
-            error_code="ACCOUNT_LOCKED",
-            status_code=status.HTTP_423_LOCKED,
-            details=details
+            message=f"User {email} not found",
+            error_code=ErrorCode.USER_NOT_FOUND,
+            details={"email": email},
+            tenant_id=tenant_id,
+            **kwargs
         )
 
-
-class InvalidTokenException(AuthenticationException):
-    """Invalid or expired JWT token."""
-    def __init__(self, message: str = "Invalid or expired token"):
+class AccountDisabledException(BaseAuthException):
+    """User account is disabled"""
+    
+    def __init__(self, user_id: str, reason: str = "Account disabled", **kwargs):
         super().__init__(
-            message=message,
-            error_code="INVALID_TOKEN",
-            status_code=status.HTTP_401_UNAUTHORIZED
+            message=f"Account disabled: {reason}",
+            error_code=ErrorCode.ACCOUNT_DISABLED,
+            details={"reason": reason},
+            user_id=user_id,
+            **kwargs
         )
 
-
-class SessionExpiredException(AuthenticationException):
-    """User session has expired."""
-    def __init__(self):
-        super().__init__(
-            message="Session has expired. Please log in again.",
-            error_code="SESSION_EXPIRED",
-            status_code=status.HTTP_401_UNAUTHORIZED
-        )
-
-
-class SingleSessionViolationException(AuthenticationException):
-    """Another session is already active for this user."""
-    def __init__(self):
-        super().__init__(
-            message="Another session is already active. Previous session has been terminated.",
-            error_code="SINGLE_SESSION_VIOLATION",
-            status_code=status.HTTP_409_CONFLICT
-        )
-
-
-class InvalidMagicLinkException(AuthenticationException):
-    """Invalid or expired magic link."""
-    def __init__(self):
-        super().__init__(
-            message="Invalid or expired magic link",
-            error_code="INVALID_MAGIC_LINK",
-            status_code=status.HTTP_400_BAD_REQUEST
-        )
-
-
-class PasswordValidationException(AuthenticationException):
-    """Password doesn't meet security requirements."""
-    def __init__(self, message: str = "Password doesn't meet security requirements"):
+class AccountLockedException(BaseAuthException):
+    """User account is locked due to security reasons"""
+    
+    def __init__(
+        self,
+        user_id: str,
+        locked_until: Optional[str] = None,
+        reason: str = "Too many failed attempts",
+        **kwargs
+    ):
+        message = f"Account locked: {reason}"
+        if locked_until:
+            message += f" until {locked_until}"
+        
         super().__init__(
             message=message,
-            error_code="PASSWORD_VALIDATION_FAILED",
-            status_code=status.HTTP_400_BAD_REQUEST
+            error_code=ErrorCode.ACCOUNT_LOCKED,
+            details={"locked_until": locked_until, "reason": reason},
+            user_id=user_id,
+            **kwargs
         )
 
-
-class UserNotFoundException(AuthenticationException):
-    """User not found."""
-    def __init__(self):
+class EmailNotVerifiedException(BaseAuthException):
+    """Email verification required"""
+    
+    def __init__(self, email: str, **kwargs):
         super().__init__(
-            message="User not found",
-            error_code="USER_NOT_FOUND",
-            status_code=status.HTTP_404_NOT_FOUND
+            message="Email verification required",
+            error_code=ErrorCode.EMAIL_NOT_VERIFIED,
+            details={"email": email},
+            **kwargs
         )
 
-
-class EmailAlreadyExistsException(AuthenticationException):
-    """Email already registered."""
-    def __init__(self):
+class PhoneNotVerifiedException(BaseAuthException):
+    """Phone verification required"""
+    
+    def __init__(self, phone: str, **kwargs):
         super().__init__(
-            message="Email address is already registered",
-            error_code="EMAIL_ALREADY_EXISTS",
-            status_code=status.HTTP_409_CONFLICT
+            message="Phone verification required",
+            error_code=ErrorCode.PHONE_NOT_VERIFIED,
+            details={"phone": phone},
+            **kwargs
         )
 
+# =============================================
+# TWO-FACTOR AUTHENTICATION EXCEPTIONS
+# =============================================
 
-def create_error_response(
-    message: str,
-    error_code: str,
-    status_code: int,
-    details: Optional[Dict[str, Any]] = None,
-    request_id: Optional[str] = None
-) -> Dict[str, Any]:
-    """Create standardized error response."""
-    error_response = {
-        "error": {
-            "message": message,
-            "code": error_code,
-            "details": details or {}
-        },
-        "success": False,
-        "timestamp": "2024-01-01T00:00:00Z"  # Will be replaced with actual timestamp
-    }
+class TwoFactorRequiredException(BaseAuthException):
+    """Two-factor authentication required"""
     
-    if request_id:
-        error_response["request_id"] = request_id
-    
-    return error_response
-
-
-async def auth_exception_handler(request: Request, exc: AuthenticationException) -> JSONResponse:
-    """Handle authentication exceptions."""
-    request_id = getattr(request.state, 'request_id', None)
-    
-    logger.warning(
-        "Authentication exception",
-        error_code=exc.error_code,
-        message=exc.message,
-        status_code=exc.status_code,
-        details=exc.details,
-        request_id=request_id
-    )
-    
-    return JSONResponse(
-        status_code=exc.status_code,
-        content=create_error_response(
-            message=exc.message,
-            error_code=exc.error_code,
-            status_code=exc.status_code,
-            details=exc.details,
-            request_id=request_id
+    def __init__(self, methods: Optional[List[str]] = None, **kwargs):
+        super().__init__(
+            message="Two-factor authentication required",
+            error_code=ErrorCode.TWO_FACTOR_REQUIRED,
+            details={"available_methods": methods or ["totp"]},
+            **kwargs
         )
-    )
 
-
-async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
-    """Handle request validation exceptions."""
-    request_id = getattr(request.state, 'request_id', None)
+class InvalidTOTPCodeException(BaseAuthException):
+    """Invalid TOTP code provided"""
     
-    logger.warning(
-        "Request validation failed",
-        errors=exc.errors(),
-        request_id=request_id
-    )
-    
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content=create_error_response(
-            message="Request validation failed",
-            error_code="VALIDATION_ERROR",
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            details={"validation_errors": exc.errors()},
-            request_id=request_id
+    def __init__(self, attempts_remaining: int = 0, **kwargs):
+        super().__init__(
+            message="Invalid authenticator code",
+            error_code=ErrorCode.INVALID_TOTP_CODE,
+            details={"attempts_remaining": attempts_remaining},
+            **kwargs
         )
-    )
 
-
-async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
-    """Handle HTTP exceptions."""
-    request_id = getattr(request.state, 'request_id', None)
+class BackupCodeRequiredException(BaseAuthException):
+    """Backup code required for 2FA"""
     
-    logger.warning(
-        "HTTP exception",
-        status_code=exc.status_code,
-        detail=exc.detail,
-        request_id=request_id
-    )
-    
-    return JSONResponse(
-        status_code=exc.status_code,
-        content=create_error_response(
-            message=str(exc.detail),
-            error_code="HTTP_ERROR",
-            status_code=exc.status_code,
-            request_id=request_id
+    def __init__(self, **kwargs):
+        super().__init__(
+            message="Backup code required",
+            error_code=ErrorCode.BACKUP_CODE_REQUIRED,
+            **kwargs
         )
-    )
 
+# =============================================
+# SESSION EXCEPTIONS
+# =============================================
 
-async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    """Handle unexpected exceptions."""
-    request_id = getattr(request.state, 'request_id', None)
+class SessionExpiredException(BaseAuthException):
+    """User session has expired"""
     
-    logger.exception(
-        "Unexpected exception",
-        exception_type=type(exc).__name__,
-        exception_message=str(exc),
-        request_id=request_id
-    )
-    
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content=create_error_response(
-            message="Internal server error",
-            error_code="INTERNAL_ERROR",
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            request_id=request_id
+    def __init__(self, session_id: str, **kwargs):
+        super().__init__(
+            message="Session expired",
+            error_code=ErrorCode.SESSION_EXPIRED,
+            details={"session_id": session_id},
+            **kwargs
         )
-    ) 
+
+class SessionInvalidException(BaseAuthException):
+    """Invalid session token"""
+    
+    def __init__(self, **kwargs):
+        super().__init__(
+            message="Invalid session",
+            error_code=ErrorCode.SESSION_INVALID,
+            **kwargs
+        )
+
+class SessionRevokedException(BaseAuthException):
+    """Session has been revoked"""
+    
+    def __init__(self, session_id: str, reason: str, **kwargs):
+        super().__init__(
+            message=f"Session revoked: {reason}",
+            error_code=ErrorCode.SESSION_REVOKED,
+            details={"session_id": session_id, "reason": reason},
+            **kwargs
+        )
+
+class MaxSessionsExceededException(BaseAuthException):
+    """Maximum concurrent sessions exceeded"""
+    
+    def __init__(self, max_sessions: int, current_sessions: int, **kwargs):
+        super().__init__(
+            message=f"Maximum sessions exceeded ({current_sessions}/{max_sessions})",
+            error_code=ErrorCode.MAX_SESSIONS_EXCEEDED,
+            details={"max_sessions": max_sessions, "current_sessions": current_sessions},
+            **kwargs
+        )
+
+# =============================================
+# MAGIC LINK EXCEPTIONS
+# =============================================
+
+class MagicLinkExpiredException(BaseAuthException):
+    """Magic link has expired or is invalid"""
+    
+    def __init__(self, reason: str = "expired", **kwargs):
+        super().__init__(
+            message=f"Magic link {reason}",
+            error_code=ErrorCode.MAGIC_LINK_EXPIRED,
+            details={"reason": reason},
+            **kwargs
+        )
+
+class MagicLinkUsedException(BaseAuthException):
+    """Magic link already used"""
+    
+    def __init__(self, **kwargs):
+        super().__init__(
+            message="Magic link already used",
+            error_code=ErrorCode.MAGIC_LINK_USED,
+            **kwargs
+        )
+
+# =============================================
+# AUTHORIZATION EXCEPTIONS
+# =============================================
+
+class AuthorizationException(BaseAuthException):
+    """General authorization failure"""
+    
+    def __init__(self, message: str = "Access denied", **kwargs):
+        super().__init__(
+            message=message,
+            error_code=ErrorCode.INSUFFICIENT_PERMISSIONS,
+            **kwargs
+        )
+
+class InsufficientPermissionsException(BaseAuthException):
+    """User lacks required permissions"""
+    
+    def __init__(
+        self,
+        required_permission: str,
+        user_permissions: Optional[List[str]] = None,
+        **kwargs
+    ):
+        super().__init__(
+            message=f"Insufficient permissions: {required_permission} required",
+            error_code=ErrorCode.INSUFFICIENT_PERMISSIONS,
+            details={
+                "required_permission": required_permission,
+                "user_permissions": user_permissions or []
+            },
+            **kwargs
+        )
+
+class ResourceAccessDeniedException(BaseAuthException):
+    """Access denied to specific resource"""
+    
+    def __init__(self, resource_type: str, resource_id: str, action: str, **kwargs):
+        super().__init__(
+            message=f"Access denied: {action} on {resource_type} {resource_id}",
+            error_code=ErrorCode.RESOURCE_ACCESS_DENIED,
+            details={
+                "resource_type": resource_type,
+                "resource_id": resource_id,
+                "action": action
+            },
+            **kwargs
+        )
+
+class TenantAccessDeniedException(BaseAuthException):
+    """Access denied to tenant resources"""
+    
+    def __init__(self, tenant_id: str, user_tenant_id: str, **kwargs):
+        super().__init__(
+            message="Cross-tenant access denied",
+            error_code=ErrorCode.TENANT_ACCESS_DENIED,
+            details={
+                "requested_tenant": tenant_id,
+                "user_tenant": user_tenant_id
+            },
+            tenant_id=tenant_id,
+            **kwargs
+        )
+
+# =============================================
+# COMPLIANCE EXCEPTIONS
+# =============================================
+
+class ComplianceException(BaseAuthException):
+    """General compliance violation"""
+    
+    def __init__(self, message: str, compliance_requirement: str, **kwargs):
+        super().__init__(
+            message=message,
+            error_code=ErrorCode.COMPLIANCE_VIOLATION,
+            details={"compliance_requirement": compliance_requirement},
+            **kwargs
+        )
+
+class KYCRequiredException(BaseAuthException):
+    """KYC verification required"""
+    
+    def __init__(self, required_documents: Optional[List[str]] = None, **kwargs):
+        super().__init__(
+            message="KYC verification required",
+            error_code=ErrorCode.KYC_REQUIRED,
+            details={"required_documents": required_documents or []},
+            **kwargs
+        )
+
+class DocumentVerificationRequiredException(BaseAuthException):
+    """Document verification required"""
+    
+    def __init__(self, document_types: List[str], **kwargs):
+        super().__init__(
+            message="Document verification required",
+            error_code=ErrorCode.DOCUMENT_VERIFICATION_REQUIRED,
+            details={"required_documents": document_types},
+            **kwargs
+        )
+
+class TermsAcceptanceRequiredException(BaseAuthException):
+    """Terms of service acceptance required"""
+    
+    def __init__(self, terms_version: str, **kwargs):
+        super().__init__(
+            message="Terms of service acceptance required",
+            error_code=ErrorCode.TERMS_ACCEPTANCE_REQUIRED,
+            details={"terms_version": terms_version},
+            **kwargs
+        )
+
+# =============================================
+# VALIDATION EXCEPTIONS
+# =============================================
+
+class ValidationException(BaseAuthException):
+    """Data validation failure"""
+    
+    def __init__(self, field: str, message: str, **kwargs):
+        super().__init__(
+            message=f"Validation error: {field} - {message}",
+            error_code=ErrorCode.INVALID_USER_DATA,
+            details={"field": field, "validation_message": message},
+            **kwargs
+        )
+
+class PasswordPolicyException(BaseAuthException):
+    """Password does not meet policy requirements"""
+    
+    def __init__(self, requirements: List[str], **kwargs):
+        super().__init__(
+            message="Password does not meet policy requirements",
+            error_code=ErrorCode.PASSWORD_POLICY_VIOLATION,
+            details={"requirements": requirements},
+            **kwargs
+        )
+
+# =============================================
+# RATE LIMITING EXCEPTIONS
+# =============================================
+
+class RateLimitExceededException(BaseAuthException):
+    """Rate limit exceeded"""
+    
+    def __init__(
+        self,
+        limit: int,
+        window_seconds: int,
+        retry_after: Optional[int] = None,
+        **kwargs
+    ):
+        super().__init__(
+            message=f"Rate limit exceeded: {limit} requests per {window_seconds} seconds",
+            error_code=ErrorCode.RATE_LIMIT_EXCEEDED,
+            details={
+                "limit": limit,
+                "window_seconds": window_seconds,
+                "retry_after": retry_after
+            },
+            **kwargs
+        )
+
+class TooManyAttemptsException(BaseAuthException):
+    """Too many failed attempts"""
+    
+    def __init__(
+        self,
+        attempts: int,
+        max_attempts: int,
+        lockout_duration: Optional[int] = None,
+        **kwargs
+    ):
+        super().__init__(
+            message=f"Too many failed attempts ({attempts}/{max_attempts})",
+            error_code=ErrorCode.TOO_MANY_ATTEMPTS,
+            details={
+                "attempts": attempts,
+                "max_attempts": max_attempts,
+                "lockout_duration": lockout_duration
+            },
+            **kwargs
+        )
+
+# =============================================
+# SYSTEM EXCEPTIONS
+# =============================================
+
+class InternalErrorException(BaseAuthException):
+    """Internal system error"""
+    
+    def __init__(self, message: str = "Internal server error", **kwargs):
+        super().__init__(
+            message=message,
+            error_code=ErrorCode.INTERNAL_ERROR,
+            **kwargs
+        )
+
+class DatabaseErrorException(BaseAuthException):
+    """Database operation error"""
+    
+    def __init__(self, operation: str, **kwargs):
+        super().__init__(
+            message=f"Database error during {operation}",
+            error_code=ErrorCode.DATABASE_ERROR,
+            details={"operation": operation},
+            **kwargs
+        )
+
+class ExternalServiceErrorException(BaseAuthException):
+    """External service integration error"""
+    
+    def __init__(self, service: str, error: str, **kwargs):
+        super().__init__(
+            message=f"External service error: {service} - {error}",
+            error_code=ErrorCode.EXTERNAL_SERVICE_ERROR,
+            details={"service": service, "error": error},
+            **kwargs
+        )
+
+class ConfigurationErrorException(BaseAuthException):
+    """System configuration error"""
+    
+    def __init__(self, config_key: str, **kwargs):
+        super().__init__(
+            message=f"Configuration error: {config_key}",
+            error_code=ErrorCode.CONFIGURATION_ERROR,
+            details={"config_key": config_key},
+            **kwargs
+        ) 

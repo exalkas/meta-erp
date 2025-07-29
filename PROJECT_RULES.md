@@ -2,9 +2,9 @@
 
 ## Metadata-Driven No-Code/Low-Code Application Platform
 
-> **Version:** 1.2.0  
-> **Last Updated:** July 24, 2025  
-> **Target:** Vertical-First Industry Solutions Platform
+> **Version:** 1.6.0
+> **Last Updated:** July 29, 2025
+> **Target:** SAP-Style Vertical-First Industry Solutions Platform
 
 ---
 
@@ -167,39 +167,136 @@ Each vertical deploys as a **metadata module** containing:
 
 ---
 
-## 🏛️ **DATABASE ARCHITECTURE**
+## 🏛️ **SAP-STYLE DATABASE ARCHITECTURE**
 
-### **Master Database Schema**
+### **Master Database (`metadata_platform_master`)**
 
-```sql
--- Global system tables
-tenants (tenant_id, name, domain, default_locale, default_theme_id, status)
-field_definitions (tenant_id, entity_name, field_name, label_key, data_type, is_required)
-entity_definitions (tenant_id, entity_name, display_label, plural_label)
-layout_definitions (tenant_id, entity_name, layout_name, sections_json)
-picklist_values (picklist_name, value, sort_order)
-translations (tenant_id, locale, key, text)
-themes (theme_id, tenant_id, name, parent_theme_id)
-theme_properties (theme_id, property_key, property_value)
-```
-
-### **Tenant Database Schema**
+**Core Principle:** Global platform metadata, SAP customizing tables, and industry packages.
 
 ```sql
--- Tenant-specific business data
-accounts (id, tenant_id, name, type, custom_fields_json)
-contacts (id, tenant_id, account_id, name, custom_fields_json)
-opportunities (id, tenant_id, account_id, amount, custom_fields_json)
-invoices (id, tenant_id, account_id, amount, custom_fields_json)
--- ... all business entities
+-- SAP-Style Customizing Tables (Business Logic as Data)
+T_AUTH_IMG_ACTIVITY (activity_id, parent_id, description, table_name, maintenance_view)
+T_AUTH_CUSTOMIZING (tenant_id, activity_id, field_name, field_value, is_active)
+T_AUTH_SESSION_CONFIG (config_id, tenant_id, max_sessions, timeout_minutes, single_session_mode)
+T_AUTH_METHOD_CONFIG (config_id, tenant_id, method_type, is_enabled, settings_json)
+T_AUTH_RULE_CONFIG (rule_id, rule_name, condition_json, action_json, priority)
+T_AUTH_BUSINESS_OBJECT (object_id, object_name, methods_json, events_json)
+T_AUTH_TRANSPORT_REQUEST (transport_id, description, source_env, target_env, status)
+T_AUTH_TRANSPORT_OBJECT (transport_id, object_type, object_name, change_type)
+T_AUTH_INDUSTRY_PACKAGE (package_id, package_name, industry, config_json, install_script)
+
+-- Component Catalog & Platform Metadata
+component_definitions (component_id, name, props_schema, supports_children, is_system)
+module_manifests (manifest_id, name, version, components, dependencies, install_script)
+vertical_packs (pack_id, industry, entities_json, workflows_json, integrations_json)
+
+-- Global Reference Data
+countries (country_code, name, currency_code, time_zone)
+currencies (currency_code, symbol, decimal_places)
+languages (language_code, name, direction)
+
+-- Platform Administration
+platform_users (user_id, email, role, permissions_json)
+tenant_registry (tenant_id, database_name, industry_vertical, status)
 ```
 
-### **Migration Strategy**
+### **Tenant Databases (`metadata_tenant_{tenant_id}`)**
 
-- Custom migration system (no Alembic)
-- PowerShell scripts for Windows development
-- Schema comparison and data transformation
-- Automated backup/restore during migrations
+**Core Principle:** Business data and tenant-specific customizing overrides.
+
+```sql
+-- Business Users & Authentication
+users (user_id, tenant_id, email, auth_methods_json, compliance_level)
+auth_sessions (session_id, user_id, device_type, ip_address, expires_at, risk_score)
+auth_methods (method_id, user_id, method_type, credentials_json, is_primary)
+
+-- Business Entities (Dynamic based on EntityDefinitions)
+customers (id, tenant_id, name, industry, custom_fields_json)
+products (id, tenant_id, name, category, price, custom_fields_json)
+orders (id, tenant_id, customer_id, total_amount, status, custom_fields_json)
+-- ... all industry-specific business entities
+
+-- Tenant-Specific Customizing Overrides
+tenant_auth_config (config_id, setting_name, setting_value, overrides_master)
+tenant_workflow_config (workflow_id, tenant_id, config_json, is_active)
+
+-- Audit & Compliance
+audit_logs (log_id, tenant_id, user_id, action, object_type, timestamp, details_json)
+compliance_records (record_id, tenant_id, compliance_type, status, evidence_json)
+```
+
+### **Multi-Database Strategy**
+
+- **Master Database:** Single database for all global platform data, SAP customizing, and industry packages
+- **Tenant Databases:** One database per tenant for complete data isolation and security
+- **Connection Routing:** Automatic routing based on tenant context in all API calls
+- **Industry Packages:** Transportable metadata from master to tenant (IS-FINTECH, IS-ECOMMERCE, etc.)
+- **Cross-Tenant Security:** Absolute data boundaries enforced at database level
+
+### **SAP-Style Migration System (NO ALEMBIC)**
+
+**Philosophy:** Direct Python + SQL approach based on proven custom migration system.
+
+```bash
+scripts/migrations/
+├── sap_migration_system.py          # Main orchestrator (like complete_migration.py)
+├── master_db_schema_manager.py      # Manage master DB schema and SAP tables
+├── tenant_db_schema_manager.py      # Manage all tenant databases
+├── sap_schema_extractor.py          # Extract current schemas from both DB types
+├── sap_schema_comparator.py         # Compare current vs target schemas
+├── sap_data_transformer.py          # Transform data during migrations
+├── industry_package_installer.py    # Install IS-* packages from master to tenant
+├── transport_manager.py             # SAP-style transport system (DEV→QAS→PRD)
+└── cross_platform_runner.py         # Windows PowerShell + Linux Bash compatibility
+
+Cross-Platform Scripts:
+├── setup-master-db.ps1/.sh          # Initialize master database
+├── create-tenant-db.ps1/.sh          # Create new tenant database
+├── migrate-all-dbs.ps1/.sh           # Migrate master + all tenant databases
+├── install-industry-pack.ps1/.sh     # Install industry package to tenant
+└── transport-changes.ps1/.sh         # Apply transport across environments
+```
+
+### **Industry Package System**
+
+**IS-FINTECH Package:**
+
+- Single session enforcement (max_sessions: 1)
+- Mandatory 2FA for all users
+- KYC compliance workflows
+- Risk assessment rules
+- 1-hour session timeout
+
+**IS-ECOMMERCE Package:**
+
+- Multi-session support (max_sessions: 5)
+- Optional 2FA
+- Guest checkout workflows
+- Social login integration
+- 24-hour session timeout
+
+**IS-OILGAS Package:**
+
+- Single session enforcement
+- Safety certification requirements
+- Permit-to-work integration
+- 8-hour session timeout
+
+### **SAP Transport System**
+
+**Environment Progression:** DEV → QAS → PRD
+
+```sql
+-- Transport Request Example
+transport_id: TR001
+description: "Setup FinTech Authentication Rules"
+objects: [
+  {type: "T_AUTH_SESSION_CONFIG", change: "INSERT"},
+  {type: "T_AUTH_METHOD_CONFIG", change: "UPDATE"},
+  {type: "T_AUTH_RULE_CONFIG", change: "INSERT"}
+]
+status: "DEV_COMPLETE" → "QAS_APPLIED" → "PRD_READY"
+```
 
 ---
 
@@ -516,91 +613,525 @@ ENABLE_VOICE_INTEGRATION = True
 
 ### **DO**
 
-✅ Use metadata for all UI generation  
-✅ Plan before implementing, reflect after  
-✅ Use tools to verify code, don't guess  
-✅ Follow SOLID principles  
-✅ Implement comprehensive error handling  
-✅ Write production-ready code  
-✅ Test thoroughly before deployment  
+✅ Use metadata for all UI generation
+✅ Plan before implementing, reflect after
+✅ Use tools to verify code, don't guess
+✅ Follow SOLID principles
+✅ Implement comprehensive error handling
+✅ Write production-ready code
+✅ Test thoroughly before deployment
 ✅ Document architecture decisions
 
 ### **DON'T**
 
-❌ Hardcode schemas or layouts  
-❌ Use shared database architecture  
-❌ Skip error handling  
-❌ Use fallback solutions  
-❌ Implement without planning  
-❌ Guess implementation details  
-❌ Skip testing and verification  
+❌ Hardcode schemas or layouts
+❌ Use shared database architecture
+❌ Skip error handling
+❌ Use fallback solutions
+❌ Implement without planning
+❌ Guess implementation details
+❌ Skip testing and verification
 ❌ Create code without documentation
 
 ---
 
 ## 🏗️ **PLATFORM ENGINES**
 
-This platform provides complete vertical solutions through metadata-driven engines that power industry-specific features:
+This platform provides complete vertical solutions through **SAP-style metadata-driven engines** that power industry-specific features. Each engine is responsible for a specific domain and can be configured via metadata.
 
-### **🔐 Authentication Engine**
+---
 
-- Multi-method auth (email/password, magic links, 2FA)
-- Role-based access control with fine-grained permissions
-- Session management and audit logging
+### **🔧 BACKEND ENGINES** (FastAPI Services)
 
-### **📱 Dynamic Page Engine**
+#### **🔐 Authentication & Security Engines**
 
-- Runtime page generation from metadata
-- Component catalog with JSON schema props
-- Module manifests for plugin architecture
+**Auth Engine** (`services/auth/`)
 
-### **🏗️ Dynamic Data Engine**
+- Multi-method authentication (email/password, magic links, passkeys, 2FA)
+- Tenant-specific auth flows and compliance rules
+- Session management with JWT + refresh tokens
+- Account security (lockout, rate limiting, password policies)
+
+**Permission Engine** (`services/auth/`)
+
+- SAP-style role-based access control (RBAC)
+- Dynamic permission definitions from metadata
+- Fine-grained entity and field-level permissions
+- Hierarchical role inheritance and delegation
+
+**Compliance Engine** (`services/auth/`)
+
+- Industry-specific compliance rules (KYC, HIPAA, SOX, GDPR)
+- Automated compliance validation and reporting
+- Risk assessment and management workflows
+- Regulatory requirement tracking per vertical
+
+**Audit Engine** (`services/auth/`)
+
+- Complete audit trail for all system activities
+- Tamper-proof audit log storage
+- Compliance reporting and data export
+- User activity monitoring and analytics
+
+#### **📋 Metadata Management Engines**
+
+**Page Engine** (`services/api/`)
+
+- Runtime page generation from PageDefinitions metadata
+- Dynamic routing and page composition
+- Layout integration with component placement
+- Page versioning and A/B testing support
+
+**Data Engine** (`services/api/`)
 
 - Runtime entity and field definitions
-- Relationship management and validation
-- Picklist and lookup management
+- Dynamic database table generation
+- Relationship management and referential integrity
+- Custom field types and validation rules
 
-### **🎨 Dynamic UI Engine**
+**Component Engine** (`services/api/`)
 
-- Layout definitions with section-based arrangements
-- Form builder with component integration
-- Dashboard and list view configurations
+- Component catalog with JSON schema props
+- Module manifests and dependency management
+- WordPress-style plugin architecture
+- Component versioning and marketplace integration
 
-### **🚀 Workflow Engine**
+**Layout Engine** (`services/api/`)
 
-- Trigger-based automation (create, update, schedule)
-- Condition logic and action definitions
-- Pipeline management for sales/projects
+- Section-based layout definitions
+- Responsive design templates
+- Theme integration and CSS generation
+- Layout inheritance and customization
 
-### **💰 Billing Engine** (Payment Processing)
+#### **🚀 Business Logic Engines**
 
-- Multi-provider payment processing (Stripe, PayPal, Square)
-- Subscription and usage-based billing
-- Revenue management and reporting
+**Workflow Engine** (`services/api/`)
 
-### **📊 Tax Engine** (Country-Specific Invoicing)
+- Trigger-based automation (create, update, schedule, external events)
+- Condition logic with complex business rules
+- Action execution with parallel and sequential flows
+- Pipeline management for sales, projects, and operations
 
+**Business Rule Engine** (`services/api/`)
+
+- SAP-style decision tables and rule evaluation
+- Complex conditional logic and rule chaining
+- Priority-based rule execution
+- Rule versioning and testing frameworks
+
+**Calculation Engine** (`services/api/`)
+
+- Dynamic pricing calculations with volume discounts
 - Multi-jurisdiction tax calculations
-- Country-specific tax rules (VAT, GST, Sales Tax)
-- Compliance with local regulations (Greek AADE, etc.)
+- Financial formulas and commission structures
+- Real-time calculation with caching optimization
 
-### **🔌 Integration Engine**
+**Process Engine** (`services/api/`)
 
-- External API connectors and webhooks
-- Data transformation and mapping
+- End-to-end business process orchestration
+- Process state management and persistence
+- Human task assignment and escalation
+- Process analytics and optimization
+
+#### **🔌 Integration & Communication Engines**
+
+**Integration Engine** (`services/integrations/`)
+
+- External API connectors with rate limiting
+- Data transformation and mapping pipelines
 - Real-time and batch synchronization
+- Error handling and retry mechanisms
 
-### **🏪 Marketplace Engine**
+**Translation Engine** (`services/api/`)
 
-- Component and module marketplace
-- Revenue sharing for creators
-- Installation and dependency management
+- Multi-language content management
+- Tenant-specific translation overrides
+- Dynamic translation loading and caching
+- Translation workflow for content creators
 
-### **🤖 AI Engine**
+**Theme Engine** (`services/api/`)
 
-- Predictive insights and recommendations
-- AI-powered assistants and automation
-- Document processing and data extraction
+- Dynamic CSS custom property management
+- Theme inheritance and customization
+- Dark/light mode and accessibility support
+- Brand customization per tenant
+
+**File Engine** (`services/files/`)
+
+- Secure file upload and storage
+- Document processing and metadata extraction
+- File versioning and access control
+- CDN integration and optimization
+
+**Notification Engine** (`services/api/`)
+
+- Multi-channel notifications (email, SMS, push, in-app)
+- Template management and personalization
+- Delivery tracking and analytics
+- Notification preferences and opt-out management
+
+#### **📊 Analytics & Search Engines**
+
+**Search Engine** (`services/api/`)
+
+- Full-text search across all entities
+- Advanced filtering and faceted search
+- Search analytics and optimization
+- Real-time indexing and updates
+
+**Analytics Engine** (`services/api/`)
+
+- Business intelligence and reporting
+- KPI calculation and dashboard generation
+- Predictive analytics and forecasting
+- Data visualization and export capabilities
+
+#### **⚙️ Infrastructure Engines**
+
+**Cache Engine** (`services/api/`)
+
+- Multi-level caching strategies (Redis, in-memory)
+- Metadata caching with intelligent invalidation
+- Query result caching and optimization
+- Cache warming and preloading
+
+**SAP Migration Engine** (`scripts/migrations/`)
+
+- Custom Python-based migration system (NO Alembic)
+- Master + Tenant database schema management
+- SAP-style transport system (DEV → QAS → PRD)
+- Industry package installation and deployment
+- Cross-platform compatibility (Windows PowerShell + Linux Bash)
+- Schema extraction, comparison, and data transformation
+- Parallel execution across multiple tenant databases
+
+**SAP Customizing Engine** (`services/auth/`)
+
+- Read business logic from T*AUTH*\* customizing tables
+- IMG-style hierarchical configuration management
+- Industry package configuration application
+- Runtime rule evaluation from metadata
+- Transport object management and versioning
+
+**Deployment Engine** (`services/api/`)
+
+- Automated app deployment from vertical packs
+- Infrastructure provisioning and configuration
+- Health monitoring and auto-scaling
+- Blue-green deployment strategies
+
+---
+
+### **🎨 FRONTEND ENGINES** (React/Next.js)
+
+#### **🖼️ UI Rendering Engines**
+
+**Rendering Engine** (`packages/shared/ui/`)
+
+- Dynamic UI rendering from metadata definitions
+- Component lazy loading and code splitting
+- Server-side rendering optimization
+- Error boundaries and fallback handling
+
+**State Engine** (`packages/shared/ui/`)
+
+- Metadata-driven state management
+- Component state bindings from page definitions
+- Real-time state synchronization
+- State persistence and hydration
+
+**Form Engine** (`packages/shared/ui/`)
+
+- Dynamic form generation from FieldDefinitions
+- Multi-step wizards and conditional fields
+- Real-time validation and error handling
+- Form state management and persistence
+
+**Validation Engine** (`packages/shared/ui/`)
+
+- Client-side validation from metadata rules
+- Real-time field validation and feedback
+- Server-side validation synchronization
+- Custom validation rule execution
+
+#### **🧭 Navigation & Layout Engines**
+
+**Navigation Engine** (`packages/shared/ui/`)
+
+- Dynamic routing from page metadata
+- Breadcrumb generation and navigation history
+- Permission-based navigation filtering
+- Deep linking and URL state management
+
+**Layout Engine FE** (`packages/shared/ui/`)
+
+- Dynamic layout rendering from LayoutDefinitions
+- Responsive breakpoint management
+- Section-based component placement
+- Layout animation and transitions
+
+#### **🎨 Presentation Engines**
+
+**Theme Engine FE** (`packages/shared/ui/`)
+
+- CSS custom property injection
+- Real-time theme switching
+- Component-level theme overrides
+- Theme persistence and user preferences
+
+**Translation Engine FE** (`packages/shared/ui/`)
+
+- Client-side i18n with dynamic loading
+- Namespace-based translation organization
+- Fallback language handling
+- Real-time language switching
+
+#### **🔧 Component & Event Engines**
+
+**Component Engine FE** (`packages/shared/ui/`)
+
+- Dynamic component loading from catalog
+- Component prop injection from metadata
+- Component lifecycle management
+- Component error handling and recovery
+
+**Event Engine** (`packages/shared/ui/`)
+
+- Metadata-driven event handling and callbacks
+- Custom event system with type safety
+- Event delegation and performance optimization
+- Analytics event tracking
+
+#### **⚡ Performance & Error Engines**
+
+**Cache Engine FE** (`packages/shared/ui/`)
+
+- Client-side metadata caching
+- API response caching with stale-while-revalidate
+- Image and asset caching optimization
+- Cache invalidation strategies
+
+**Error Engine** (`packages/shared/ui/`)
+
+- Comprehensive error handling and recovery
+- User-friendly error messaging
+- Error reporting and analytics
+- Graceful degradation strategies
+
+---
+
+### **🔄 ENGINE COMMUNICATION**
+
+Engines communicate through:
+
+- **REST APIs** for synchronous operations
+- **Event Streams** for asynchronous notifications
+- **Shared Cache** for performance optimization
+- **Message Queues** for background processing
+- **WebSockets** for real-time updates
+
+### **📊 ENGINE MONITORING**
+
+- Health checks for all engines
+- Performance metrics and SLA monitoring
+- Error tracking and alerting
+- Resource utilization optimization
+- Automated scaling based on load
+
+## **CROSS-PLATFORM DEVELOPMENT NOTES**
+
+### **PowerShell Icon Limitations**
+
+- PowerShell terminals may not render Unicode emoji icons correctly
+- Use text-based indicators instead: `[OK]`, `[ERROR]`, `[INFO]`, `[WARN]`
+- Provides better compatibility across different terminal environments
+
+### **PostgreSQL Path Detection**
+
+- PostgreSQL installations vary by platform and version
+- Scripts automatically detect common installation paths:
+  - `C:\Program Files\PostgreSQL\17\bin\psql.exe` (Windows)
+  - `C:\Program Files\PostgreSQL\16\bin\psql.exe` (Windows)
+  - Standard PATH locations (Linux/macOS)
+- No manual PATH configuration required for most installations
+
+### **Development Philosophy: Step-by-Step Approach**
+
+**🎯 MANDATORY: One Step at a Time**
+
+- **Complete each phase fully** before moving to the next
+- **Test thoroughly** after each step to ensure stability
+- **Verify all functionality** before proceeding
+- **Document any issues** encountered during testing
+- **Fix problems immediately** rather than accumulating technical debt
+
+**Testing Workflow:**
+
+1. ✅ **Implement** - Complete the current step/phase
+2. ✅ **Test** - Verify functionality works as expected
+3. ✅ **Validate** - Check integration with existing systems
+4. ✅ **Document** - Update guides and changelog
+5. ✅ **Proceed** - Only then move to next step
+
+---
+
+## 🛠️ **MULTI-DATABASE DEVELOPMENT COMMANDS**
+
+### **Database Management Scripts**
+
+**Master Database Operations:**
+
+```bash
+# Initialize master database with SAP customizing tables
+npm run db:master:init
+
+# Reset master database (development only)
+npm run db:master:reset
+
+# Migrate master database schema
+npm run db:master:migrate
+
+# Seed master database with SAP defaults and industry packages
+npm run db:master:seed
+```
+
+**Tenant Database Operations:**
+
+```bash
+# Create new tenant database
+npm run db:tenant:create -- --tenant-id=demo-ecommerce --industry=ecommerce
+
+# Migrate all tenant databases
+npm run db:tenant:migrate-all
+
+# List all tenant databases
+npm run db:tenant:list
+
+# Reset specific tenant database (development only)
+npm run db:tenant:reset -- --tenant-id=demo-ecommerce
+```
+
+**SAP Industry Package Management:**
+
+```bash
+# Install FinTech industry package to tenant
+npm run sap:install-fintech -- --tenant-id=demo-fintech
+
+# Install E-commerce industry package to tenant
+npm run sap:install-ecommerce -- --tenant-id=demo-ecommerce
+
+# Install Oil & Gas industry package to tenant
+npm run sap:install-oilgas -- --tenant-id=demo-oilgas
+
+# List available industry packages
+npm run sap:list-packages
+
+# Verify package installation
+npm run sap:verify-package -- --tenant-id=demo-fintech --package=IS-FINTECH
+```
+
+**SAP Transport System (DEV → QAS → PRD):**
+
+```bash
+# Create transport request for configuration changes
+npm run sap:create-transport -- --description="Setup FinTech Auth Rules"
+
+# Apply transport to target environment
+npm run sap:apply-transport -- --transport-id=TR001 --env=QAS
+
+# Transport from DEV to QAS
+npm run sap:transport-dev-qas -- --transport-id=TR001
+
+# Transport from QAS to PRD (production deployment)
+npm run sap:transport-qas-prd -- --transport-id=TR001
+```
+
+**Cross-Platform Setup Commands:**
+
+```bash
+# Complete new environment setup (new laptop/server)
+npm run setup:new-environment
+
+# Install all dependencies (Python + JavaScript)
+npm run install:python && npm run install:js
+
+# Setup development data with demo tenants
+npm run setup:demo-data
+```
+
+**Development Services:**
+
+```bash
+# Start all services (frontend + backend)
+npm run dev:all
+
+# Start authentication service only
+npm run dev:auth
+
+# Start with specific tenant context
+npm run dev:auth -- --tenant-context=demo-fintech
+
+# Development with full debugging
+npm run dev:debug
+```
+
+### **Cross-Platform Compatibility**
+
+All database scripts automatically detect and run platform-appropriate commands:
+
+- **Windows Development:** PowerShell scripts (`.ps1`)
+- **Linux Production:** Bash scripts (`.sh`)
+- **Automatic Detection:** Based on `process.platform`
+
+**Example Usage:**
+
+```bash
+# Works on both Windows and Linux
+npm run db:master:init
+
+# Windows: Runs scripts/migrations/setup-master-db.ps1
+# Linux:   Runs scripts/migrations/setup-master-db.sh
+```
+
+### **Environment Setup for New Team Members**
+
+**Complete Setup (One Command):**
+
+```bash
+npm run setup:new-environment
+```
+
+This command:
+
+1. ✅ Checks prerequisites (PostgreSQL, Python, Node.js)
+2. ✅ Creates Master database with SAP customizing tables
+3. ✅ Creates demo tenant databases (FinTech, E-commerce)
+4. ✅ Installs industry packages (IS-FINTECH, IS-ECOMMERCE)
+5. ✅ Seeds demo data and creates test users
+6. ✅ Starts all development services
+
+**Ready to code in 5 minutes! 🚀**
+
+---
+
+## 📖 **SETUP GUIDES**
+
+**Step-by-step guides for platform setup are located in:**
+
+📁 **[`docs/setup/`](docs/setup/README.md)** - Complete setup documentation
+
+### **Quick Guide Index:**
+
+1. **[Create Master Database](docs/setup/01-master-database.md)** - SAP customizing tables, component catalog
+2. **[Create Tenant Database](docs/setup/02-tenant-database.md)** - Business data tables, authentication
+3. **[Create First User](docs/setup/03-first-user.md)** - Admin accounts with authentication methods
+4. **[Run Database Migrations](docs/setup/04-migrations.md)** - Custom migration system _(Phase 2)_
+5. **[Install Industry Package](docs/setup/05-industry-packages.md)** - FinTech, E-commerce packages _(Phase 2)_
+6. **[Complete Development Setup](docs/setup/06-development-setup.md)** - Full environment _(Phase 3)_
+
+**🎯 Follow guides in order, test each step thoroughly before proceeding.**
+
+---
 
 ## 📚 **REFERENCE ARCHITECTURE**
 

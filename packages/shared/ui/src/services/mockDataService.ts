@@ -1,35 +1,25 @@
 /**
  * Mock Data Service - Complete Metadata Platform Testing
  *
- * Provides comprehensive mock data for testing the metadata-driven platform
- * with realistic data to test the complete metadata system without database.
+ * REFACTORED: Now delegates to specialized services for better maintainability
+ *
+ * This service now acts as a facade/coordinator for the specialized services:
+ * - MockAuthService: Authentication and user management
+ * - MockPageService: Page definitions and layouts
+ * - MockEntityService: Entity and field definitions (coming next)
+ * - MockTranslationService: i18n translations (coming next)
+ * - MockThemeService: Theme management (coming next)
  */
 
-// Types from the actual system
-interface PageDefinition {
-  page_id: string;
-  page_name: string;
-  route: string;
-  title: string;
-  description?: string;
-  page_type: string;
-  layout_id?: string;
-  sections_data_json?: any;
-  components: any[];
-  initial_state?: any;
-  state_bindings?: any;
-  api_endpoints?: any;
-  callbacks?: any;
-  real_time_updates?: boolean;
-  cache_strategy?: string;
-  websocket_events?: any;
-  metadata_json?: any;
-  access_roles: string[];
-  is_public: boolean;
-  tenant_id?: string;
-  created_at: string;
-  updated_at: string;
-}
+// Import specialized services
+import MockAuthService, { type User } from "./auth/MockAuthService";
+import MockPageService, {
+  type PageDefinition,
+  type LayoutDefinition,
+} from "./metadata/MockPageService";
+
+// Re-export types for backward compatibility
+export type { User, PageDefinition, LayoutDefinition };
 
 interface EntityDefinition {
   id: string;
@@ -119,30 +109,7 @@ interface ComponentDefinition {
   recommended_for?: string;
 }
 
-interface User {
-  user_id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  is_active: boolean;
-  roles: string[];
-  tenant_id: string;
-}
-
-interface LayoutDefinition {
-  layout_id: string;
-  name: string;
-  display_name: string;
-  description?: string;
-  category?: string;
-  sections_json: any;
-  css_classes_json?: any;
-  container_classes?: string;
-  is_responsive: boolean;
-  supports_theming: boolean;
-  is_system_layout: boolean;
-  tenant_id?: string;
-}
+// User and LayoutDefinition types now imported from specialized services
 
 interface Translation {
   locale: string;
@@ -1380,7 +1347,7 @@ class MockDataStore {
     };
   }
 
-  // User Management
+  // User Management (Legacy - will be removed when fully migrated to MockAuthService)
   private initializeUsers() {
     this.users = [
       {
@@ -1391,6 +1358,12 @@ class MockDataStore {
         is_active: true,
         roles: ["admin", "manager"],
         tenant_id: "dev-tenant-001",
+        created_at: new Date().toISOString(),
+        email_verified: true,
+        phone_verified: false,
+        two_factor_enabled: false,
+        passkey_enabled: false,
+        login_attempts: 0,
       },
       {
         user_id: "demo-user-001",
@@ -1400,6 +1373,12 @@ class MockDataStore {
         is_active: true,
         roles: ["user"],
         tenant_id: "dev-tenant-001",
+        created_at: new Date().toISOString(),
+        email_verified: true,
+        phone_verified: false,
+        two_factor_enabled: false,
+        passkey_enabled: false,
+        login_attempts: 0,
       },
     ];
 
@@ -1448,57 +1427,8 @@ class MockDataStore {
 // Singleton mock data store
 const mockDataStore = new MockDataStore();
 
-// Mock Page Engine
-export class MockPageEngine {
-  static async getPageDefinition(
-    route: string,
-    tenantId?: string
-  ): Promise<PageDefinition | null> {
-    console.log(`🎭 MockPageEngine.getPageDefinition(${route}, ${tenantId})`);
-
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    // Strip query parameters from route for matching
-    const cleanRoute = route.split("?")[0];
-    console.log(`🔍 Cleaned route for lookup: ${cleanRoute}`);
-
-    const pages = mockDataStore.getPages();
-    const page = pages.find((p) => p.route === cleanRoute);
-
-    if (page) {
-      console.log(`✅ Found page: ${page.page_name} (${page.page_id})`);
-    } else {
-      console.log(`❌ Page not found for route: ${cleanRoute}`);
-      console.log(
-        `📋 Available routes:`,
-        pages.map((p) => p.route)
-      );
-    }
-
-    return page || null;
-  }
-
-  static async listPagesForTenant(
-    tenantId?: string,
-    pageType?: string
-  ): Promise<PageDefinition[]> {
-    console.log(
-      `🎭 MockPageEngine.listPagesForTenant(${tenantId}, ${pageType})`
-    );
-
-    await new Promise((resolve) => setTimeout(resolve, 150));
-
-    let pages = mockDataStore.getPages();
-
-    if (pageType) {
-      pages = pages.filter((p) => p.page_type === pageType);
-    }
-
-    console.log(`✅ Found ${pages.length} pages`);
-    return pages;
-  }
-}
+// Re-export MockPageService as MockPageEngine for backward compatibility
+export { MockPageService as MockPageEngine } from "./metadata/MockPageService";
 
 // Mock Data Engine
 export class MockDataEngine {
@@ -1716,78 +1646,8 @@ export class MockComponentEngine {
   }
 }
 
-// Mock Auth Service
-export class MockAuthService {
-  static async authenticate(
-    email: string,
-    password: string
-  ): Promise<{ user: User; accessToken: string; refreshToken: string } | null> {
-    console.log(`🔐 MockAuthService.authenticate(${email})`);
-
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    const users = mockDataStore.getUsers();
-    const passwords = mockDataStore.getPasswords();
-
-    const user = users.find((u) => u.email === email);
-    const correctPassword = passwords[email];
-
-    if (!user) {
-      console.log(`❌ User not found: ${email}`);
-      return null;
-    }
-
-    if (password !== correctPassword) {
-      console.log(`❌ Invalid password for: ${email}`);
-      return null;
-    }
-
-    if (!user.is_active) {
-      console.log(`❌ User account inactive: ${email}`);
-      return null;
-    }
-
-    // Generate mock JWT tokens
-    const accessToken = `mock-access-token-${user.user_id}-${Date.now()}`;
-    const refreshToken = `mock-refresh-token-${user.user_id}-${Date.now()}`;
-
-    console.log(`✅ Authentication successful for: ${email}`);
-
-    return {
-      user,
-      accessToken,
-      refreshToken,
-    };
-  }
-
-  static async getCurrentUser(token: string): Promise<User | null> {
-    console.log(
-      `🔐 MockAuthService.getCurrentUser(${token.substring(0, 20)}...)`
-    );
-
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    // Extract user ID from mock token
-    const match = token.match(/mock-access-token-([^-]+)-/);
-    if (!match) {
-      console.log(`❌ Invalid token format`);
-      return null;
-    }
-
-    const userId = match[1];
-    const users = mockDataStore.getUsers();
-    const user = users.find((u) => u.user_id === userId);
-
-    if (user) {
-      console.log(`✅ Found user: ${user.email}`);
-    } else {
-      console.log(`❌ User not found for token`);
-    }
-
-    return user || null;
-  }
-}
+// Re-export MockAuthService from specialized service
+export { default as MockAuthService } from "./auth/MockAuthService";
 
 // =============================================
 // MOCK LAYOUT ENGINE
