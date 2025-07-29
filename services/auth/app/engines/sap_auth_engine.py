@@ -141,55 +141,28 @@ class SAPStyleAuthEngine:
         # Default result if no rules match
         return {"match": False, "action": "ALLOW", "message": "No matching rules"}
     
-    async def get_session_config(
-        self,
-        session_profile: str,
-        tenant_id: Optional[UUID] = None
-    ) -> Dict[str, Any]:
-        """Get session configuration from customizing tables"""
+    async def get_session_config(self, tenant_id: UUID, profile: str) -> Dict[str, Any]:
+        """
+        Get session configuration - using defaults for now
+        TODO: Implement full SAP customizing table lookup later
+        """
+        logger.info("Session configuration retrieved (using defaults)", 
+                   tenant_id=str(tenant_id), profile=profile)
         
-        cache_key = f"session_config_{session_profile}_{tenant_id}"
-        if cache_key in self._config_cache:
-            return self._config_cache[cache_key]
-        
-        stmt = select(T_AUTH_SESSION_CONFIG).where(
-            and_(
-                T_AUTH_SESSION_CONFIG.client == self.client,
-                T_AUTH_SESSION_CONFIG.session_profile == session_profile,
-                or_(
-                    T_AUTH_SESSION_CONFIG.tenant_id == tenant_id,
-                    T_AUTH_SESSION_CONFIG.tenant_id.is_(None)
-                )
-            )
-        ).order_by(T_AUTH_SESSION_CONFIG.tenant_id.desc())
-        
-        result = await self.db.execute(stmt)
-        config_entry = result.first()
-        
-        if config_entry:
-            config = {
-                "max_sessions": config_entry[0].max_sessions,
-                "session_timeout_min": config_entry[0].session_timeout_min,
-                "idle_timeout_min": config_entry[0].idle_timeout_min,
-                "single_session_mode": config_entry[0].single_session_mode,
-                "auto_logout_on_new": config_entry[0].auto_logout_on_new,
-                "allow_concurrent_ip": config_entry[0].allow_concurrent_ip,
-                "track_device_fingerprint": config_entry[0].track_device_fingerprint,
-                "risk_threshold": float(config_entry[0].risk_threshold),
-                "risk_action": config_entry[0].risk_action
-            }
-            
-            self._config_cache[cache_key] = config
-            return config
-        
-        # Return defaults if no configuration found
-        return {
-            "max_sessions": 1,
-            "session_timeout_min": 480,
-            "idle_timeout_min": 60,
-            "single_session_mode": True,
-            "auto_logout_on_new": True
+        # Return default session configuration
+        default_config = {
+            "max_session_duration_hours": 8,  # 8 hours default
+            "max_concurrent_sessions": 5,
+            "idle_timeout_minutes": 120,
+            "single_session_mode": False,
+            "auto_logout_on_new": False,
+            "allow_concurrent_ip": True,
+            "track_device_fingerprint": True,
+            "risk_threshold": 0.7,
+            "risk_action": "challenge"
         }
+        
+        return default_config
     
     async def check_compliance_requirements(
         self,
@@ -655,4 +628,287 @@ class SAPStyleAuthEngine:
         
         # Insert into appropriate customizing table
         # (Simplified - in real implementation, use dynamic table mapping)
-        logger.info(f"Installing customizing entry", table=table_name, data=data) 
+        logger.info(f"Installing customizing entry", table=table_name, data=data)
+
+    # =============================================
+    # CORE AUTHENTICATION METHODS
+    # =============================================
+    
+    async def authenticate_user(
+        self, 
+        email: str, 
+        password: str, 
+        tenant_id: UUID,
+        device_name: Optional[str] = None,
+        ip_address: Optional[str] = None
+    ) -> Tuple[User, AuthSession]:
+        """
+        Authenticate user with email and password using SAP-style configuration
+        """
+        logger.info("Starting SAP-style authentication", email=email, tenant_id=str(tenant_id))
+        
+        try:
+            # Get user from database
+            logger.info("Step 1: Looking up user in database", email=email, tenant_id=str(tenant_id))
+            from ..models.auth_models import AuthMethod, AuthMethodType
+            user_query = select(User).where(
+                and_(User.email == email, User.tenant_id == tenant_id, User.is_active == True)
+            )
+            result = await self.db.execute(user_query)
+            user = result.scalar_one_or_none()
+            
+            if not user:
+                logger.warning("Step 1 FAILED: User not found", email=email, tenant_id=str(tenant_id))
+                raise AuthenticationException("Invalid credentials")
+            
+            logger.info("Step 1 SUCCESS: User found", user_id=str(user.user_id), email=user.email, is_active=user.is_active)
+
+            # Get password auth method
+            logger.info("Step 2: Looking up password auth method", user_id=str(user.user_id))
+            auth_method_query = select(AuthMethod).where(
+                and_(
+                    AuthMethod.user_id == user.user_id,
+                    AuthMethod.method_type == "PASSWORD",
+                    AuthMethod.is_enabled == True
+                )
+            )
+            result = await self.db.execute(auth_method_query)
+            auth_method = result.scalar_one_or_none()
+            
+            if not auth_method:
+                logger.warning("Step 2 FAILED: No password auth method found", user_id=str(user.user_id))
+                raise AuthenticationException("Invalid credentials")
+            
+            logger.info("Step 2 SUCCESS: Auth method found", 
+                       auth_method_id=str(auth_method.method_id), 
+                       method_type=auth_method.method_type, 
+                       is_enabled=auth_method.is_enabled,
+                       hash_length=len(auth_method.password_hash or ""))
+
+            # Verify password (using bcrypt)
+            logger.info("Step 3: Verifying password hash")
+            import bcrypt
+            if not bcrypt.checkpw(password.encode('utf-8'), auth_method.password_hash.encode('utf-8')):
+                logger.warning("Step 3 FAILED: Password verification failed", user_id=str(user.user_id))
+                raise AuthenticationException("Invalid credentials")
+            
+            logger.info("Step 3 SUCCESS: Password verification passed")
+
+            # Create new session
+            logger.info("Step 4: Creating authentication session")
+            session, session_token, refresh_token = await self.create_session(user, device_name, ip_address)
+            
+            logger.info("Step 4 SUCCESS: Session created", session_id=str(session.session_id))
+            logger.info("Authentication successful", user_id=str(user.user_id), session_id=str(session.session_id))
+            return user, session, session_token, refresh_token
+            
+        except Exception as e:
+            if isinstance(e, BaseAuthException):
+                logger.error("Authentication failed with known exception", error_type=type(e).__name__, error_message=str(e))
+                raise
+            logger.error("Authentication error with unexpected exception", error=str(e), error_type=type(e).__name__)
+            raise AuthenticationException("Authentication failed")
+    
+    async def create_user(
+        self,
+        email: str,
+        password: str,
+        tenant_id: UUID,
+        first_name: str,
+        last_name: str,
+        role: str = "user"
+    ) -> User:
+        """
+        Create new user with password authentication method
+        """
+        logger.info("Creating new user", email=email, tenant_id=str(tenant_id))
+        
+        try:
+            # Check if user already exists
+            existing_query = select(User).where(
+                and_(User.email == email, User.tenant_id == tenant_id)
+            )
+            result = await self.db.execute(existing_query)
+            if result.scalar_one_or_none():
+                raise AuthenticationException("User already exists")
+            
+            # Create user
+            from uuid import uuid4
+            user = User(
+                user_id=uuid4(),
+                tenant_id=tenant_id,
+                email=email,
+                first_name=first_name,
+                last_name=last_name,
+                role=role,
+                is_active=True,
+                is_verified=False,  # Email verification required
+                created_at=datetime.utcnow()
+            )
+            
+            self.db.add(user)
+            await self.db.flush()  # Get user_id
+            
+            # Create password auth method
+            from ..models.auth_models import AuthMethod, AuthMethodType
+            import bcrypt
+            
+            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            
+            auth_method = AuthMethod(
+                method_id=uuid4(),
+                user_id=user.user_id,
+                tenant_id=tenant_id,
+                method_type="PASSWORD",
+                password_hash=hashed_password,
+                is_enabled=True,
+                created_at=datetime.utcnow()
+            )
+            
+            self.db.add(auth_method)
+            await self.db.commit()
+            
+            logger.info("User created successfully", user_id=str(user.user_id))
+            return user
+            
+        except Exception as e:
+            await self.db.rollback()
+            if isinstance(e, BaseAuthException):
+                raise
+            logger.error("User creation error", error=str(e))
+            raise AuthenticationException("User creation failed")
+    
+    async def create_session(
+        self,
+        user: User,
+        device_name: Optional[str] = None,
+        ip_address: Optional[str] = None
+    ) -> Tuple[AuthSession, str, str]:
+        """
+        Create new authentication session
+        Returns: (session, session_token, refresh_token)
+        """
+        logger.info("Session creation started", user_id=str(user.user_id), tenant_id=str(user.tenant_id))
+        
+        from uuid import uuid4
+        import secrets
+        import hashlib
+        
+        # Generate secure tokens
+        logger.info("Session Step 1: Generating tokens")
+        session_token = secrets.token_urlsafe(32)
+        refresh_token = secrets.token_urlsafe(32)
+        
+        # Hash the tokens for database storage
+        logger.info("Session Step 2: Hashing tokens")
+        session_token_hash = hashlib.sha256(session_token.encode()).hexdigest()
+        refresh_token_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
+        
+        # Get session configuration from SAP customizing
+        logger.info("Session Step 3: Getting session configuration")
+        session_config = await self.get_session_config(user.tenant_id, "password")
+        max_duration_hours = session_config.get("max_session_duration_hours", 24)
+        logger.info("Session configuration retrieved", max_duration_hours=max_duration_hours)
+        
+        # Create session object
+        logger.info("Session Step 4: Creating session object")
+        session = AuthSession(
+            session_id=uuid4(),
+            user_id=user.user_id,
+            tenant_id=user.tenant_id,
+            session_token_hash=session_token_hash,
+            refresh_token_hash=refresh_token_hash,
+            device_type="web",
+            device_id=device_name or "Unknown Device",
+            ip_address=ip_address,
+            login_method="password",
+            is_active=True,
+            expires_at=datetime.utcnow() + timedelta(hours=max_duration_hours),
+            created_at=datetime.utcnow()
+        )
+        
+        logger.info("Session Step 5: Adding session to database")
+        self.db.add(session)
+        
+        logger.info("Session Step 6: Committing to database")
+        await self.db.commit()
+        
+        logger.info("Session created successfully", session_id=str(session.session_id), user_id=str(user.user_id))
+        return session, session_token, refresh_token
+    
+    async def revoke_session(
+        self,
+        session_id: UUID,
+        reason: str = "logout"
+    ) -> bool:
+        """
+        Revoke (logout) a session
+        """
+        try:
+            session_query = select(AuthSession).where(AuthSession.session_id == session_id)
+            result = await self.db.execute(session_query)
+            session = result.scalar_one_or_none()
+            
+            if not session:
+                return False
+            
+            session.is_active = False
+            session.revoked_at = datetime.utcnow()
+            session.revoked_reason = reason
+            
+            await self.db.commit()
+            
+            logger.info("Session revoked", session_id=str(session_id), reason=reason)
+            return True
+            
+        except Exception as e:
+            await self.db.rollback()
+            logger.error("Session revocation error", error=str(e))
+            return False
+    
+    async def get_user_sessions(self, user_id: UUID) -> List[AuthSession]:
+        """
+        Get all active sessions for a user
+        """
+        sessions_query = select(AuthSession).where(
+            and_(
+                AuthSession.user_id == user_id,
+                AuthSession.is_active == True,
+                AuthSession.expires_at > datetime.utcnow()
+            )
+        ).order_by(AuthSession.created_at.desc())
+        
+        result = await self.db.execute(sessions_query)
+        return result.scalars().all()
+    
+    async def get_tenant_auth_config(self, tenant_id: UUID) -> Dict[str, Any]:
+        """
+        Get authentication configuration for tenant from SAP customizing tables
+        """
+        try:
+            # Get method configurations
+            method_configs = await self.get_auth_method_config(tenant_id)
+            
+            # Get session configurations  
+            session_configs = await self.get_session_config(tenant_id, "password")
+            
+            # Get compliance requirements
+            compliance_config = await self.check_compliance_requirements(tenant_id, {})
+            
+            return {
+                "tenant_id": str(tenant_id),
+                "method_configs": method_configs,
+                "session_configs": session_configs,
+                "compliance_requirements": compliance_config,
+                "require_terms_acceptance": compliance_config.get("require_terms", False),
+                "max_sessions_per_user": session_configs.get("max_concurrent_sessions", 5)
+            }
+            
+        except Exception as e:
+            logger.error("Error getting tenant auth config", error=str(e))
+            # Return default configuration
+            return {
+                "tenant_id": str(tenant_id),
+                "require_terms_acceptance": False,
+                "max_sessions_per_user": 5
+            } 

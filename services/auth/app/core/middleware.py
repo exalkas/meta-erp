@@ -10,10 +10,10 @@ from typing import Callable
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from app.core.logging import get_logger, get_auth_logger
+from app.core.logging import get_logger
 
 logger = get_logger("auth_middleware")
-auth_logger = get_auth_logger("auth_middleware")
+auth_logger = get_logger("auth_middleware")
 
 
 class RequestLoggingMiddleware(BaseHTTPMiddleware):

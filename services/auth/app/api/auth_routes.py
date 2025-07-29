@@ -78,7 +78,7 @@ async def get_current_user_from_token(
     try:
         # TODO: Implement JWT token verification
         # For now, treat token as session access_token
-        auth_engine = AuthEngine(db)
+        auth_engine = SAPStyleAuthEngine(db)
         
         # Look up session by access token
         from sqlalchemy import select, and_
@@ -121,7 +121,7 @@ async def require_current_user(
         )
     return user_session
 
-def create_auth_response(user: User, session: AuthSession) -> AuthSuccessResponse:
+def create_auth_response(user: User, session: AuthSession, session_token: str, refresh_token: str) -> AuthSuccessResponse:
     """Create standardized authentication success response"""
     
     # Calculate token expiry
@@ -132,37 +132,37 @@ def create_auth_response(user: User, session: AuthSession) -> AuthSuccessRespons
             user_id=user.user_id,
             tenant_id=user.tenant_id,
             email=user.email,
-            first_name=user.first_name,
-            last_name=user.last_name,
-            display_name=user.display_name,
-            status=user.status,
+            first_name=user.first_name or "",
+            last_name=user.last_name or "",
+            display_name=user.display_name or f"{user.first_name} {user.last_name}".strip(),
+            status="active" if user.is_active else "inactive",
             is_verified=user.is_verified,
-            phone=user.phone,
-            phone_verified=user.phone_verified,
-            avatar_url=user.avatar_url,
+            phone=None,  # Not in our simplified model
+            phone_verified=user.phone_verified if hasattr(user, 'phone_verified') else False,
+            avatar_url=None,  # Not in our simplified model
             timezone=user.timezone,
-            locale=user.locale,
-            two_factor_enabled=user.two_factor_enabled,
-            passkey_enabled=user.passkey_enabled,
-            compliance_level=user.compliance_level,
-            last_login=user.last_login,
+            locale=user.preferred_language,
+            two_factor_enabled=False,  # Not in our simplified model
+            passkey_enabled=False,  # Not in our simplified model
+            compliance_level=user.compliance_level.lower() if user.compliance_level else "basic",
+            last_login=user.last_login_at,
             created_at=user.created_at
         ),
         session=SessionResponse(
             session_id=session.session_id,
-            status=session.status,
-            device_name=session.device_name,
+            status="active" if session.is_active else "inactive",
+            device_name=session.device_id,
             device_type=session.device_type,
             ip_address=session.ip_address,
-            location_country=session.location_country,
-            location_city=session.location_city,
+            location_country=session.country_code,
+            location_city=session.city,
             created_at=session.created_at,
             expires_at=session.expires_at,
-            last_activity=session.last_activity,
+            last_activity=session.last_activity_at,
             is_current=True
         ),
-        access_token=session.access_token,
-        refresh_token=session.refresh_token,
+        access_token=session_token,
+        refresh_token=refresh_token,
         expires_in=expires_in
     )
 
@@ -194,17 +194,14 @@ async def login_with_password(
         try:
             auth_engine = SAPStyleAuthEngine(db)
             
-            # TODO: Implement SAP-style authentication
-            # For now, return a placeholder response
-            raise HTTPException(
-                status_code=status.HTTP_501_NOT_IMPLEMENTED,
-                detail="SAP-style authentication not yet implemented"
+            # Authenticate user with SAP-style engine
+            user, session, session_token, refresh_token = await auth_engine.authenticate_user(
+                email=request_data.email,
+                password=request_data.password,
+                tenant_id=request_data.tenant_id,
+                device_name=request_data.device_name,
+                ip_address=ip_address
             )
-            
-            # Update session with device name if provided
-            if request_data.device_name:
-                session.device_name = request_data.device_name
-                await db.commit()
             
             logger.info(
                 "Password authentication successful",
@@ -212,7 +209,7 @@ async def login_with_password(
                 session_id=str(session.session_id)
             )
             
-            return create_auth_response(user, session)
+            return create_auth_response(user, session, session_token, refresh_token)
             
         except TwoFactorRequiredException as e:
             logger.warning("2FA required", details=e.details)
@@ -251,7 +248,7 @@ async def send_magic_link(
         )
         
         try:
-            auth_engine = AuthEngine(db)
+            auth_engine = SAPStyleAuthEngine(db)
             
             # Send magic link
             token = await auth_engine.send_magic_link(
@@ -291,7 +288,7 @@ async def verify_magic_link(
         logger.info("Magic link verification attempt", ip_address=ip_address)
         
         try:
-            auth_engine = AuthEngine(db)
+            auth_engine = SAPStyleAuthEngine(db)
             
             # Verify magic link
             user, session = await auth_engine.verify_magic_link(
@@ -311,7 +308,7 @@ async def verify_magic_link(
                 session_id=str(session.session_id)
             )
             
-            return create_auth_response(user, session)
+            return create_auth_response(user, session, session.access_token, session.refresh_token)
             
         except BaseAuthException as e:
             logger.warning("Magic link verification failed", error_code=e.error_code.value)
@@ -340,7 +337,7 @@ async def register_user(
         )
         
         try:
-            auth_engine = AuthEngine(db)
+            auth_engine = SAPStyleAuthEngine(db)
             
             # Get tenant config for validation
             auth_config = await auth_engine.get_tenant_auth_config(request_data.tenant_id)
@@ -390,7 +387,7 @@ async def register_user(
                     session_id=str(session.session_id)
                 )
                 
-                return create_auth_response(user, session)
+                return create_auth_response(user, session, session.access_token, session.refresh_token)
             
             else:
                 # Send verification email (magic link)
@@ -440,7 +437,7 @@ async def logout(
         logger.info("User logout request")
         
         try:
-            auth_engine = AuthEngine(db)
+            auth_engine = SAPStyleAuthEngine(db)
             
             # Determine which sessions to revoke
             if request_data.session_id:
@@ -495,7 +492,7 @@ async def get_user_sessions(
         user_id=str(user.user_id)
     ):
         try:
-            auth_engine = AuthEngine(db)
+            auth_engine = SAPStyleAuthEngine(db)
             
             # Get all sessions
             all_sessions = await auth_engine.get_user_sessions(user.user_id, active_only=False)
@@ -548,7 +545,7 @@ async def revoke_session(
         user_id=str(user.user_id)
     ):
         try:
-            auth_engine = AuthEngine(db)
+            auth_engine = SAPStyleAuthEngine(db)
             
             success = await auth_engine.revoke_session(session_id, reason)
             
@@ -586,7 +583,7 @@ async def get_tenant_config(
     """Get tenant authentication configuration (public endpoint)"""
     
     try:
-        auth_engine = AuthEngine(db)
+        auth_engine = SAPStyleAuthEngine(db)
         config = await auth_engine.get_tenant_auth_config(tenant_id)
         
         if not config:

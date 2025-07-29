@@ -9,10 +9,27 @@ Pydantic models for FastAPI endpoints with:
 """
 
 from datetime import datetime
-from typing import Optional, List, Dict, Any, Union
-from pydantic import BaseModel, EmailStr, Field, validator
+from typing import Optional, List, Dict, Any, Annotated
+from pydantic import BaseModel, Field, field_validator
 from enum import Enum
 from uuid import UUID
+import re
+
+# Custom email type that allows .local domains for development
+def validate_development_email(v: str) -> str:
+    """Validate email allowing .local domains for development"""
+    if not isinstance(v, str):
+        raise ValueError('string required')
+    
+    # Basic email regex that allows .local domains
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$|^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.local$'
+    if not re.match(email_pattern, v):
+        raise ValueError('invalid email format')
+    
+    return v
+
+# Development email type using Annotated
+DevelopmentEmail = Annotated[str, Field(description="Email address supporting .local domains")]
 
 # =============================================
 # ENUMS
@@ -58,11 +75,15 @@ class UserStatusSchema(str, Enum):
 class PasswordAuthRequest(BaseModel):
     """Password authentication request"""
     tenant_id: UUID
-    email: EmailStr
+    email: DevelopmentEmail
     password: str = Field(..., min_length=1, max_length=255)
     totp_code: Optional[str] = Field(None, min_length=6, max_length=8)
-    device_name: Optional[str] = Field(None, max_length=200)
-    remember_me: bool = False
+    device_name: Optional[str] = Field(None, max_length=255)
+    
+    @field_validator('email')
+    @classmethod
+    def validate_email(cls, v):
+        return validate_development_email(v)
     
     class Config:
         json_schema_extra = {
@@ -79,10 +100,15 @@ class PasswordAuthRequest(BaseModel):
 class MagicLinkRequest(BaseModel):
     """Magic link authentication request"""
     tenant_id: UUID
-    email: EmailStr
+    email: DevelopmentEmail
     purpose: MagicLinkPurposeSchema = MagicLinkPurposeSchema.LOGIN
     registration_data: Optional[Dict[str, Any]] = None
     redirect_url: Optional[str] = Field(None, max_length=500)
+    
+    @field_validator('email')
+    @classmethod
+    def validate_email(cls, v):
+        return validate_development_email(v)
     
     class Config:
         json_schema_extra = {
@@ -110,19 +136,24 @@ class MagicLinkVerifyRequest(BaseModel):
 class UserRegistrationRequest(BaseModel):
     """User registration request"""
     tenant_id: UUID
-    email: EmailStr
+    email: DevelopmentEmail
     password: Optional[str] = Field(None, min_length=8, max_length=255)
     first_name: str = Field(..., min_length=1, max_length=100)
     last_name: str = Field(..., min_length=1, max_length=100)
     phone: Optional[str] = Field(None, max_length=20)
-    timezone: Optional[str] = Field("UTC", max_length=50)
-    locale: Optional[str] = Field("en", max_length=10)
+    language: str = Field("en", min_length=2, max_length=5)
+    timezone: str = Field("UTC", max_length=50)
     terms_accepted: bool = False
     privacy_accepted: bool = False
     marketing_consent: bool = False
     
-    @validator('password')
-    def validate_password(cls, v):
+    @field_validator('email')
+    @classmethod
+    def validate_email(cls, v):
+        return validate_development_email(v)
+    
+    @field_validator('password')
+    def validate_password(cls, v, info):
         if v and len(v) < 8:
             raise ValueError('Password must be at least 8 characters long')
         return v

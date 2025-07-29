@@ -50,25 +50,17 @@ def create_database_engine() -> AsyncEngine:
         "future": True,  # Use SQLAlchemy 2.0 style
     }
     
-    # Connection pool configuration
+    # Connection pool configuration for async engine
     if settings.ENVIRONMENT == "production":
-        # Production: Use connection pooling
+        # Production: Use NullPool for async (recommended)
         engine_kwargs.update({
-            "poolclass": QueuePool,
-            "pool_size": 20,           # Number of persistent connections
-            "max_overflow": 30,        # Additional connections beyond pool_size
-            "pool_timeout": 30,        # Timeout for getting connection from pool
-            "pool_recycle": 3600,      # Recycle connections after 1 hour
+            "poolclass": NullPool,
             "pool_pre_ping": True,     # Validate connections before use
         })
     else:
-        # Development: Simpler configuration
+        # Development: Use NullPool for async (recommended)
         engine_kwargs.update({
-            "poolclass": QueuePool,
-            "pool_size": 5,
-            "max_overflow": 10,
-            "pool_timeout": 10,
-            "pool_recycle": 1800,
+            "poolclass": NullPool,
             "pool_pre_ping": True,
         })
     

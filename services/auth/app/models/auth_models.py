@@ -11,8 +11,9 @@ Enterprise-grade authentication system with:
 
 from sqlalchemy import (
     Column, String, Text, Integer, Boolean, DateTime, JSON, UUID,
-    ForeignKey, Index, UniqueConstraint, Enum as SQLEnum, DECIMAL
+    ForeignKey, Index, UniqueConstraint, Enum as SQLEnum, DECIMAL, func
 )
+from sqlalchemy.dialects.postgresql import INET
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -65,7 +66,7 @@ class UserStatus(enum.Enum):
 # =============================================
 
 class User(Base):
-    """Enhanced User model with enterprise security features"""
+    """Simplified User model matching our actual database schema"""
     __tablename__ = "users"
     
     # Primary identification
@@ -73,72 +74,67 @@ class User(Base):
     tenant_id = Column(UUID(as_uuid=True), nullable=False, index=True)
     
     # Basic information
-    email = Column(String(255), nullable=False, index=True)
-    first_name = Column(String(100), nullable=False)
-    last_name = Column(String(100), nullable=False)
-    username = Column(String(100), nullable=True, unique=True)
+    username = Column(String(100), nullable=True)
+    email = Column(String(255), nullable=False, unique=True)
+    first_name = Column(String(100), nullable=True)
+    last_name = Column(String(100), nullable=True)
     display_name = Column(String(200), nullable=True)
     
-    # Account status and security
-    status = Column(SQLEnum(UserStatus), default=UserStatus.PENDING_VERIFICATION, nullable=False)
-    is_active = Column(Boolean, default=True, nullable=False)
-    is_superuser = Column(Boolean, default=False, nullable=False)
-    is_verified = Column(Boolean, default=False, nullable=False)
+    # Authentication methods (stored as JSONB for flexibility)
+    auth_methods_json = Column(JSON, default={})
     
-    # Contact information
-    phone = Column(String(20), nullable=True)
+    # Security and compliance
+    compliance_level = Column(String(50), default='BASIC')
+    kyc_status = Column(String(50), default='PENDING')
+    kyc_completed_at = Column(DateTime(timezone=True), nullable=True)
+    kyc_expires_at = Column(DateTime(timezone=True), nullable=True)
+    
+    # Account status
+    is_active = Column(Boolean, default=True)
+    is_verified = Column(Boolean, default=False)
+    email_verified = Column(Boolean, default=False)
     phone_verified = Column(Boolean, default=False)
-    avatar_url = Column(String(500), nullable=True)
-    timezone = Column(String(50), default="UTC")
-    locale = Column(String(10), default="en")
     
-    # Security settings
-    password_hash = Column(String(255), nullable=True)  # Nullable for SSO-only users
-    password_changed_at = Column(DateTime(timezone=True), nullable=True)
-    require_password_change = Column(Boolean, default=False)
+    # Business context
+    role = Column(String(100), nullable=True)
+    department = Column(String(100), nullable=True)
+    employee_id = Column(String(50), nullable=True)
+    manager_user_id = Column(UUID(as_uuid=True), ForeignKey('users.user_id'), nullable=True)
     
-    # Multi-factor authentication
-    two_factor_enabled = Column(Boolean, default=False)
-    two_factor_secret = Column(String(32), nullable=True)
-    backup_codes = Column(JSON, nullable=True)  # Array of backup codes
+    # Preferences
+    preferred_language = Column(String(5), default='en-US')
+    timezone = Column(String(50), default='UTC')
+    date_format = Column(String(20), default='YYYY-MM-DD')
     
-    # Passkey/WebAuthn
-    passkey_enabled = Column(Boolean, default=False)
-    
-    # Account security
-    login_attempts = Column(Integer, default=0)
+    # Security tracking
+    last_login_at = Column(DateTime(timezone=True), nullable=True)
+    failed_login_attempts = Column(Integer, default=0)
     locked_until = Column(DateTime(timezone=True), nullable=True)
-    last_login = Column(DateTime(timezone=True), nullable=True)
-    last_login_ip = Column(String(45), nullable=True)  # IPv6 support
-    last_activity = Column(DateTime(timezone=True), nullable=True)
+    password_changed_at = Column(DateTime(timezone=True), nullable=True)
     
-    # Compliance and audit
+    # Terms and privacy
     terms_accepted_at = Column(DateTime(timezone=True), nullable=True)
     privacy_accepted_at = Column(DateTime(timezone=True), nullable=True)
-    compliance_level = Column(SQLEnum(ComplianceLevel), default=ComplianceLevel.BASIC)
+    marketing_consent = Column(Boolean, default=False)
     
-    # Metadata and customization
-    metadata_json = Column(JSON, nullable=True)  # Custom fields per vertical
-    preferences = Column(JSON, nullable=True)   # User preferences
-    
-    # Timestamps
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
-    deleted_at = Column(DateTime(timezone=True), nullable=True)  # Soft delete
+    # Audit fields
+    created_by = Column(UUID(as_uuid=True), ForeignKey('users.user_id'), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=func.current_timestamp())
+    updated_at = Column(DateTime(timezone=True), default=func.current_timestamp(), onupdate=func.current_timestamp())
+    deleted_at = Column(DateTime(timezone=True), nullable=True)
     
     # Relationships
-    sessions = relationship("AuthSession", back_populates="user", cascade="all, delete-orphan")
-    auth_methods = relationship("AuthMethod", back_populates="user", cascade="all, delete-orphan")
-    magic_links = relationship("MagicLink", back_populates="user", cascade="all, delete-orphan")
-    audit_logs = relationship("AuditLog", back_populates="user", cascade="all, delete-orphan")
+    sessions = relationship("AuthSession", back_populates="user", foreign_keys="AuthSession.user_id")
+    auth_methods = relationship("AuthMethod", backref="user")
+    magic_links = relationship("MagicLink", back_populates="user")
+    audit_logs = relationship("AuditLog", back_populates="user")
     
-    # Constraints and indexes
+    # Table constraints
     __table_args__ = (
-        UniqueConstraint("tenant_id", "email", name="uq_user_tenant_email"),
-        Index("idx_user_email", "email"),
-        Index("idx_user_tenant_status", "tenant_id", "status"),
-        Index("idx_user_last_login", "last_login"),
-        Index("idx_user_compliance", "compliance_level"),
+        UniqueConstraint('tenant_id', 'email', name='users_tenant_email_unique'),
+        Index('idx_users_tenant_id', 'tenant_id'),
+        Index('idx_users_email', 'email'),
+        Index('idx_users_username', 'username'),
     )
 
 # =============================================
@@ -146,52 +142,56 @@ class User(Base):
 # =============================================
 
 class AuthSession(Base):
-    """Enterprise session management with security tracking"""
+    """Enterprise session management matching actual database schema"""
     __tablename__ = "auth_sessions"
     
     session_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=False)
-    tenant_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+    tenant_id = Column(UUID(as_uuid=True), nullable=False)
     
-    # Session tokens
-    access_token = Column(String(500), nullable=False, unique=True, index=True)
-    refresh_token = Column(String(500), nullable=False, unique=True, index=True)
-    session_token = Column(String(500), nullable=True, unique=True)  # For SSO
+    # Session tokens (hashed in database)
+    session_token_hash = Column(String(255), nullable=False, unique=True)
+    refresh_token_hash = Column(String(255), nullable=True, unique=True)
     
-    # Session metadata
-    status = Column(SQLEnum(SessionStatus), default=SessionStatus.ACTIVE, nullable=False)
-    device_id = Column(String(100), nullable=True)
-    device_name = Column(String(200), nullable=True)
-    device_type = Column(String(50), nullable=True)  # "web", "mobile", "api"
-    
-    # Security tracking
-    ip_address = Column(String(45), nullable=True)
+    # Device and client information
+    device_type = Column(String(50), nullable=True)  # mobile, tablet, desktop, api, unknown
+    device_id = Column(String(255), nullable=True)
     user_agent = Column(Text, nullable=True)
-    location_country = Column(String(2), nullable=True)  # ISO country code
-    location_city = Column(String(100), nullable=True)
+    
+    # Network information
+    ip_address = Column(INET, nullable=True)  # INET type for IP addresses
+    country_code = Column(String(3), nullable=True)
+    city = Column(String(100), nullable=True)
+    
+    # Session security
+    risk_score = Column(DECIMAL(3, 2), default=0.00)
+    is_suspicious = Column(Boolean, default=False)
+    requires_verification = Column(Boolean, default=False)
     
     # Session lifecycle
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=func.current_timestamp())
+    last_activity_at = Column(DateTime(timezone=True), default=func.current_timestamp())
     expires_at = Column(DateTime(timezone=True), nullable=False)
-    last_activity = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    
+    # Session metadata
+    login_method = Column(String(50), nullable=True)  # password, magic_link, totp, webauthn, sso
+    mfa_verified = Column(Boolean, default=False)
+    device_registered = Column(Boolean, default=False)
+    
+    # Status
+    is_active = Column(Boolean, default=True)
     revoked_at = Column(DateTime(timezone=True), nullable=True)
+    revoked_by = Column(UUID(as_uuid=True), ForeignKey('users.user_id'), nullable=True)
     revoked_reason = Column(String(200), nullable=True)
     
-    # Security flags
-    is_suspicious = Column(Boolean, default=False)
-    risk_score = Column(DECIMAL(3, 2), default=0.0)  # 0.0 to 1.0
-    
     # Relationships
-    user = relationship("User", back_populates="sessions")
+    user = relationship("User", back_populates="sessions", foreign_keys=[user_id])
     
-    # Constraints and indexes
+    # Table constraints
     __table_args__ = (
-        Index("idx_session_user", "user_id"),
-        Index("idx_session_tenant", "tenant_id"),
-        Index("idx_session_status", "status"),
-        Index("idx_session_expires", "expires_at"),
-        Index("idx_session_activity", "last_activity"),
-        Index("idx_session_suspicious", "is_suspicious"),
+        Index("idx_auth_sessions_user", "user_id"),
+        Index("idx_auth_sessions_tenant", "tenant_id"),
+        Index("idx_auth_sessions_active", "is_active"),
     )
 
 # =============================================
@@ -199,45 +199,60 @@ class AuthSession(Base):
 # =============================================
 
 class AuthMethod(Base):
-    """Multiple authentication methods per user"""
+    """Authentication method matching actual database schema"""
     __tablename__ = "auth_methods"
     
     method_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=False)
+    tenant_id = Column(UUID(as_uuid=True), nullable=False)
     
-    # Method configuration
-    method_type = Column(SQLEnum(AuthMethodType), nullable=False)
+    # Method information
+    method_type = Column(String(50), nullable=False)  # PASSWORD, MAGIC_LINK, TOTP_2FA, WEBAUTHN, SSO
     is_primary = Column(Boolean, default=False)
     is_enabled = Column(Boolean, default=True)
     
-    # Method-specific data (JSON for flexibility)
-    credential_data = Column(JSON, nullable=True)  # Stores method-specific info
+    # Method-specific credentials (encrypted/hashed)
+    credentials_json = Column(JSON, nullable=True)
     
-    # Security settings
-    max_attempts = Column(Integer, default=5)
-    current_attempts = Column(Integer, default=0)
+    # Password method data
+    password_hash = Column(String(255), nullable=True)
+    password_salt = Column(String(255), nullable=True)
+    
+    # TOTP 2FA method data
+    totp_secret = Column(String(255), nullable=True)
+    totp_backup_codes_json = Column(JSON, nullable=True)
+    totp_last_used_code = Column(String(10), nullable=True)
+    
+    # WebAuthn method data
+    webauthn_credential_id = Column(String(500), nullable=True)
+    webauthn_public_key = Column(Text, nullable=True)
+    webauthn_counter = Column(Integer, default=0)
+    
+    # Magic Link method data
+    magic_link_last_sent_at = Column(DateTime(timezone=True), nullable=True)
+    magic_link_send_count = Column(Integer, default=0)
+    
+    # SSO method data
+    sso_provider = Column(String(100), nullable=True)
+    sso_external_id = Column(String(255), nullable=True)
+    sso_last_token_refresh = Column(DateTime(timezone=True), nullable=True)
+    
+    # Security metadata
+    setup_completed_at = Column(DateTime(timezone=True), nullable=True)
+    last_used_at = Column(DateTime(timezone=True), nullable=True)
+    last_success_at = Column(DateTime(timezone=True), nullable=True)
+    failed_attempts = Column(Integer, default=0)
     locked_until = Column(DateTime(timezone=True), nullable=True)
     
-    # Usage tracking
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    last_used = Column(DateTime(timezone=True), nullable=True)
-    last_success = Column(DateTime(timezone=True), nullable=True)
-    last_failure = Column(DateTime(timezone=True), nullable=True)
+    # Audit
+    created_at = Column(DateTime(timezone=True), default=func.current_timestamp())
+    updated_at = Column(DateTime(timezone=True), default=func.current_timestamp())
     
-    # Verification status
-    verified_at = Column(DateTime(timezone=True), nullable=True)
-    verification_attempts = Column(Integer, default=0)
-    
-    # Relationships
-    user = relationship("User", back_populates="auth_methods")
-    
-    # Constraints and indexes
+    # Table constraints
     __table_args__ = (
-        UniqueConstraint("user_id", "method_type", name="uq_auth_method_user_type"),
-        Index("idx_auth_method_user", "user_id"),
-        Index("idx_auth_method_type", "method_type"),
-        Index("idx_auth_method_primary", "is_primary"),
-        Index("idx_auth_method_enabled", "is_enabled"),
+        Index("idx_auth_methods_user", "user_id"),
+        Index("idx_auth_methods_tenant", "tenant_id"),
+        Index("idx_auth_methods_type", "method_type"),
     )
 
 # =============================================

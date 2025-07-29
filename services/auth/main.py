@@ -15,15 +15,11 @@ from fastapi.exceptions import RequestValidationError
 import uvicorn
 import os
 
-from app.core.config import get_auth_settings
-from app.core.database import create_tables, check_db_connection
-from app.core.logging import setup_logging, get_logger
+from app.core.config import get_settings
+from app.core.database import init_database, check_database_health
+from app.core.logging import configure_logging, get_logger
 from app.core.exceptions import (
-    AuthenticationException,
-    auth_exception_handler,
-    general_exception_handler,
-    validation_exception_handler,
-    http_exception_handler,
+    AuthenticationException
 )
 from app.core.middleware import (
     RequestLoggingMiddleware,
@@ -35,23 +31,15 @@ from app.core.middleware import (
 async def lifespan(app: FastAPI):
     """Application lifespan events."""
     # Setup logging first
-    setup_logging()
+    configure_logging()
     logger = get_logger("auth_startup")
     
     # Startup
     logger.info("Starting Authentication Service...")
     
-    # Check database connection
-    if not await check_db_connection():
-        logger.critical("Database connection failed!")
-        raise Exception("Database connection failed")
-    logger.info("Database connection successful")
-    
-    # Create tables
-    await create_tables()
-    logger.info("Database tables created/verified")
-    
-    logger.info("Authentication Service startup completed")
+    # Initialize database (engine, connection, tables)
+    await init_database()
+    logger.info("Database initialization complete")
     
     yield
     
@@ -61,14 +49,14 @@ async def lifespan(app: FastAPI):
 
 def create_app() -> FastAPI:
     """Create and configure FastAPI application."""
-    settings = get_auth_settings()
+    settings = get_settings()
     
     app = FastAPI(
         title="Authentication Service",
         version="1.0.0",
         description="JWT Authentication service with session management for metadata-driven platform",
-        debug=settings.debug,
-        lifespan=lifespan,
+        debug=settings.DEBUG,
+        lifespan=lifespan
     )
     
     # Add custom middleware (order matters - reverse of execution order)
@@ -78,21 +66,24 @@ def create_app() -> FastAPI:
     # Add CORS middleware
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.allowed_origins,
+        allow_origins=settings.CORS_ORIGINS,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
     
-    # Add auth routes
-    from app.api.auth import router as auth_router
-    app.include_router(auth_router, prefix="/auth")
+    # Add auth routes 
+    from app.api.auth_routes import router as auth_router
+    app.include_router(auth_router)
     
-    # Add exception handlers
-    app.add_exception_handler(AuthenticationException, auth_exception_handler)
-    app.add_exception_handler(RequestValidationError, validation_exception_handler)
-    app.add_exception_handler(HTTPException, http_exception_handler)
-    app.add_exception_handler(Exception, general_exception_handler)
+    # Register API routes (will be added later)
+    # app.include_router(auth_routes.router)
+    
+    # Register exception handlers (will be implemented later)
+    # app.add_exception_handler(AuthenticationException, auth_exception_handler)
+    # app.add_exception_handler(RequestValidationError, validation_exception_handler)
+    # app.add_exception_handler(HTTPException, http_exception_handler)
+    # app.add_exception_handler(Exception, general_exception_handler)
     
     # Health check endpoint
     @app.get("/health")
@@ -101,33 +92,40 @@ def create_app() -> FastAPI:
         logger = get_logger("health_check")
         
         try:
-            db_healthy = await check_db_connection()
+            health_result = await check_database_health()
             
-            status = "healthy" if db_healthy else "unhealthy"
+            status = "healthy" if health_result["status"] == "connected" else "unhealthy"
             
             health_data = {
                 "service": "Authentication Service",
                 "status": status,
                 "version": "1.0.0",
-                "environment": settings.env,
-                "database": "connected" if db_healthy else "disconnected",
+                "environment": settings.ENVIRONMENT,
+                "database": "connected" if health_result["status"] == "connected" else "disconnected",
                 "timestamp": "2024-01-01T00:00:00Z",  # Will be replaced with actual timestamp
             }
             
-            if db_healthy:
+            if health_result["status"] == "connected":
                 logger.debug("Health check passed")
             else:
                 logger.warning("Health check failed - database disconnected")
             
-            return health_data
+            return {
+                "service": "Authentication Service",
+                "status": "healthy" if health_data["status"] == "connected" else "degraded",
+                "version": "1.0.0",
+                "environment": settings.ENVIRONMENT,
+                "database": health_data,
+                "timestamp": "2024-01-01T00:00:00Z",
+            }
             
         except Exception as exc:
-            logger.exception("Health check failed with exception")
+            logger.error("Health check failed with exception", error=str(exc), exception_type=type(exc).__name__)
             return {
                 "service": "Authentication Service",
                 "status": "unhealthy",
                 "version": "1.0.0",
-                "environment": settings.env,
+                "environment": settings.ENVIRONMENT,
                 "database": "error",
                 "error": str(exc),
                 "timestamp": "2024-01-01T00:00:00Z",
@@ -158,11 +156,11 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    settings = get_auth_settings()
+    settings = get_settings()
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=8001,  # Auth service port
-        reload=settings.debug,
-        log_level=settings.log_level.lower(),
+        port=8001,
+        reload=True,
+        log_level="debug" if settings.DEBUG else "info"
     ) 
