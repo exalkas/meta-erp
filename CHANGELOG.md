@@ -6,6 +6,55 @@
 
 ---
 
+## **[1.8.0] - July 30, 2025**
+
+### 🎨 **NEW: ENTERPRISE THEME VARIANT SYSTEM**
+
+- **ARCHITECTURE:** Revolutionary theme system with Base Themes + Light/Dark Variants
+- **MARKETPLACE READY:** Creator attribution, ratings, pricing for theme marketplace
+- **TAILWIND COMPATIBLE:** Light/Dark variants only (no complexity)
+- **ENTERPRISE FEATURES:** Versioning, tenant customization, performance optimization
+
+### ✅ **Implementation Achievements**
+
+#### **🏗️ Database Schema Design**
+
+- **BaseTheme Model:** Marketplace themes (maritime, corporate, modern) with creator metadata
+- **ThemeVariant Model:** Light/Dark variants per base theme with CSS generation hints
+- **ThemeVariantProperty Model:** CSS custom properties per variant with categorization
+- **Tenant Relationships:** Complete isolation and customization support
+
+#### **🎯 Key Features**
+
+- **Simple UX:** Keep existing dark/light toggle (no UI complexity)
+- **CSS Generation:** Dynamic custom properties per variant
+- **Performance:** Redis caching for theme variants and properties
+- **Marketplace Integration:** Creator profiles, ratings, download counts, pricing
+- **Auto-switching:** System preference detection for light/dark modes
+
+#### **📊 Schema Benefits**
+
+- **Scalability:** Support thousands of themes with variants
+- **Marketplace:** Theme creators can sell complete theme families
+- **Tenant Customization:** Override specific properties per tenant
+- **Version Management:** Theme updates and platform compatibility
+- **Performance:** Efficient CSS custom property inheritance
+
+### 📁 **New Files Created**
+
+- `services/api/app/models/platform.py` - Updated with new theme variant models
+- `docs/theme-variant-schema-examples.md` - Comprehensive examples and API usage
+- Updated `PROJECT_RULES.md` with theme variant architecture guidelines
+
+### 🔄 **Migration Strategy**
+
+- **Phase 1:** ✅ New schema design complete
+- **Phase 2:** 🔲 Migration from current Theme model to BaseTheme + ThemeVariant
+- **Phase 3:** 🔲 Theme engine updates for variant lookup
+- **Phase 4:** 🔲 Frontend integration with theme variant context
+
+---
+
 ## **[1.7.0] - July 29, 2025**
 
 ### 🎉 **PHASE 2 COMPLETE: SAP-STYLE AUTHENTICATION SERVICE OPERATIONAL**

@@ -34,6 +34,9 @@ export {
   type AuthContextValue,
 } from "./contexts/AuthenticationContext";
 
+// Authentication Hooks
+export { useAuthGuard } from "./hooks/useAuthGuard";
+
 // Translation Hooks
 export { useTranslationWithFallback } from "./hooks/useTranslationWithFallback";
 export { useLanguageDetection } from "./hooks/useLanguageDetection";
@@ -253,6 +256,11 @@ export { EntityCard } from "./components/business/EntityCard";
 // Authentication Components
 export { default as LoginForm } from "./components/auth/LoginForm";
 export { default as MetadataLoginPage } from "./components/auth/MetadataLoginPage";
+export {
+  ProtectedRoute,
+  withAuth,
+  RoleGuard,
+} from "./components/auth/ProtectedRoute";
 
 // Dynamic components
 export { MetadataDataTable } from "./components/dynamic/MetadataDataTable";
@@ -331,4 +339,3 @@ export { default as ContactForm } from "./components/contacts/ContactForm";
 
 // Export all services
 export * from "./services";
-export { initializeMockApi } from "./services/mockApiService";

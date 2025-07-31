@@ -1,0 +1,144 @@
+[
+  {
+    "tenant_id": "89f84fea-b5b9-413c-945b-002c7fd9555d",
+    "tenant_name": "demo-eshop-crm",
+    "display_name": "Demo E-Shop CRM",
+    "description": "Demonstration tenant for maritime e-commerce and CRM platform",
+    "industry": "maritime",
+    "company_size": "medium",
+    "subscription_tier": "enterprise",
+    "is_active": true,
+    "is_demo": true,
+    "tenant_type": "demo",
+    "compliance_level": "enhanced",
+    "data_region": "eu-central",
+    "timezone": "Europe/Athens",
+    "locale": "el-GR",
+    "metadata_json": {
+      "company_info": {
+        "legal_name": "Axiologic Maritime Solutions Demo Ltd",
+        "tax_id": "GR123456789",
+        "registration_country": "GR",
+        "business_type": "maritime_services"
+      },
+      "platform_config": {
+        "enable_multi_language": true,
+        "enable_dark_mode": true,
+        "enable_mobile_app": true,
+        "enable_api_access": true
+      },
+      "features": {
+        "vessel_management": true,
+        "voyage_planning": true,
+        "port_operations": true,
+        "customer_management": true,
+        "financial_management": true,
+        "compliance_tracking": true,
+        "analytics_dashboard": true
+      },
+      "limits": {
+        "max_users": 100,
+        "max_vessels": 50,
+        "max_customers": 1000,
+        "storage_gb": 100,
+        "api_calls_per_month": 100000
+      }
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "tenant_id": "12345678-1234-1234-1234-123456789abc",
+    "tenant_name": "production-maritime-corp",
+    "display_name": "Maritime Corporation",
+    "description": "Production tenant for large maritime corporation",
+    "industry": "maritime",
+    "company_size": "large",
+    "subscription_tier": "enterprise_plus",
+    "is_active": true,
+    "is_demo": false,
+    "tenant_type": "production",
+    "compliance_level": "critical",
+    "data_region": "eu-west",
+    "timezone": "Europe/London",
+    "locale": "en-GB",
+    "metadata_json": {
+      "company_info": {
+        "legal_name": "Maritime Corporation Ltd",
+        "tax_id": "GB987654321",
+        "registration_country": "GB",
+        "business_type": "shipping_operator"
+      },
+      "platform_config": {
+        "enable_multi_language": true,
+        "enable_dark_mode": true,
+        "enable_mobile_app": true,
+        "enable_api_access": true,
+        "enable_sso": true,
+        "enable_audit_logs": true
+      },
+      "features": {
+        "vessel_management": true,
+        "voyage_planning": true,
+        "port_operations": true,
+        "customer_management": true,
+        "financial_management": true,
+        "compliance_tracking": true,
+        "analytics_dashboard": true,
+        "advanced_reporting": true,
+        "workflow_automation": true
+      },
+      "limits": {
+        "max_users": 500,
+        "max_vessels": 200,
+        "max_customers": 10000,
+        "storage_gb": 1000,
+        "api_calls_per_month": 1000000
+      }
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "tenant_id": "abcd1234-5678-9012-3456-789012345678",
+    "tenant_name": "development-sandbox",
+    "display_name": "Development Sandbox",
+    "description": "Development and testing environment",
+    "industry": "technology",
+    "company_size": "small",
+    "subscription_tier": "developer",
+    "is_active": true,
+    "is_demo": true,
+    "tenant_type": "development",
+    "compliance_level": "basic",
+    "data_region": "eu-central",
+    "timezone": "Europe/Berlin",
+    "locale": "en-US",
+    "metadata_json": {
+      "company_info": {
+        "legal_name": "Axiologic Development Sandbox",
+        "business_type": "software_development"
+      },
+      "platform_config": {
+        "enable_multi_language": true,
+        "enable_dark_mode": true,
+        "enable_mobile_app": false,
+        "enable_api_access": true,
+        "debug_mode": true,
+        "log_level": "debug"
+      },
+      "features": {
+        "all_features": true
+      },
+      "limits": {
+        "max_users": 10,
+        "max_vessels": 5,
+        "max_customers": 100,
+        "storage_gb": 10,
+        "api_calls_per_month": 10000
+      }
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  }
+]

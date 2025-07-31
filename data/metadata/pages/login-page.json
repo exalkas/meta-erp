@@ -1,0 +1,83 @@
+{
+  "page_id": "10000000-0000-0000-0000-000000000001",
+  "page_name": "login_page",
+  "route": "/login",
+  "title": "Axiologic - Maritime Business Platform",
+  "description": "Maritime Business Platform - Metadata-Driven Login",
+  "page_type": "authentication",
+  "layout_id": "c0000000-0000-0000-0000-000000000001",
+  "sections_data_json": {
+    "header": [
+      {
+        "type": "Logo",
+        "props": {
+          "size": "md",
+          "variant": "maritime"
+        }
+      }
+    ],
+    "main": [
+      {
+        "type": "LoginForm",
+        "props": {
+          "app": "client",
+          "enableTwoFactor": true,
+          "enableMagicLink": true
+        }
+      }
+    ],
+    "footer": [
+      {
+        "type": "LanguageSelector",
+        "props": {
+          "size": "sm",
+          "languages": ["en", "el"]
+        }
+      },
+      {
+        "type": "ThemeSelector",
+        "props": {
+          "size": "sm",
+          "themes": ["light", "dark", "maritime-theme"]
+        }
+      }
+    ]
+  },
+  "components": [],
+  "initial_state": {
+    "isLoading": false,
+    "errorMessage": null,
+    "showTwoFactor": false
+  },
+  "state_bindings": {
+    "user.isAuthenticated": "auth.isLoggedIn",
+    "form.isSubmitting": "ui.loading.login"
+  },
+  "api_endpoints": {
+    "login": "/auth/login/password",
+    "magicLink": "/auth/login/magic-link",
+    "twoFactor": "/auth/login/totp"
+  },
+  "callbacks": {
+    "onLoginSuccess": "redirect:/dashboard",
+    "onLoginError": "state.errorMessage",
+    "onTwoFactorRequired": "state.showTwoFactor=true"
+  },
+  "real_time_updates": false,
+  "cache_strategy": "no-cache",
+  "websocket_events": null,
+  "metadata_json": {
+    "background": "gradient",
+    "layout": "centered",
+    "theme": "maritime",
+    "seo": {
+      "title": "Login - Axiologic Maritime Platform",
+      "description": "Secure login to your maritime business platform"
+    }
+  },
+  "access_roles": [],
+  "is_public": true,
+  "tenant_id": null,
+  "created_at": "2025-01-29T00:00:00Z",
+  "updated_at": "2025-01-29T00:00:00Z"
+}

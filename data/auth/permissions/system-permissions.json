@@ -1,0 +1,156 @@
+[
+  {
+    "permission_id": "a1111111-1111-1111-1111-111111111111",
+    "permission_name": "S_TCODE_ALL",
+    "display_name": "All Transaction Codes",
+    "description": "Access to all transaction codes - equivalent to SAP S_TCODE with *",
+    "category": "system",
+    "object_class": "S_TCODE",
+    "authorization_object": "S_TCODE",
+    "field_name": "TCD",
+    "field_value": "*",
+    "activity": "*",
+    "is_system_permission": true,
+    "is_critical": true,
+    "requires_approval": true,
+    "metadata_json": {
+      "sap_equivalent": "S_TCODE *",
+      "access_level": "full",
+      "audit_required": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "permission_id": "a2222222-2222-2222-2222-222222222222",
+    "permission_name": "S_USER_ADMIN",
+    "display_name": "User Administration",
+    "description": "Create, modify, and manage user accounts",
+    "category": "admin",
+    "object_class": "S_USER",
+    "authorization_object": "S_USER_GRP",
+    "field_name": "CLASS",
+    "field_value": "*",
+    "activity": "01,02,03,06",
+    "is_system_permission": true,
+    "is_critical": true,
+    "requires_approval": true,
+    "metadata_json": {
+      "sap_equivalent": "S_USER_GRP *",
+      "activities": ["create", "change", "display", "delete"],
+      "audit_required": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "permission_id": "a3333333-3333-3333-3333-333333333333",
+    "permission_name": "S_ROLE_ADMIN",
+    "display_name": "Role Administration",
+    "description": "Create, modify, and assign roles and authorizations",
+    "category": "admin",
+    "object_class": "S_USER",
+    "authorization_object": "S_USER_AGR",
+    "field_name": "AGR_NAME",
+    "field_value": "*",
+    "activity": "01,02,03",
+    "is_system_permission": true,
+    "is_critical": true,
+    "requires_approval": true,
+    "metadata_json": {
+      "sap_equivalent": "S_USER_AGR *",
+      "activities": ["create", "change", "display"],
+      "audit_required": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "permission_id": "a4444444-4444-4444-4444-444444444444",
+    "permission_name": "S_DEVELOP",
+    "display_name": "Development Access",
+    "description": "Development environment access and code changes",
+    "category": "development",
+    "object_class": "S_DEVELOP",
+    "authorization_object": "S_DEVELOP",
+    "field_name": "DEVCLASS",
+    "field_value": "*",
+    "activity": "01,02,03",
+    "is_system_permission": true,
+    "is_critical": true,
+    "requires_approval": true,
+    "metadata_json": {
+      "sap_equivalent": "S_DEVELOP *",
+      "environment": "development",
+      "audit_required": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "permission_id": "a5555555-5555-5555-5555-555555555555",
+    "permission_name": "S_DATASET_READ",
+    "display_name": "File System Read",
+    "description": "Read access to application server file system",
+    "category": "system",
+    "object_class": "S_DATASET",
+    "authorization_object": "S_DATASET",
+    "field_name": "FILENAME",
+    "field_value": "*",
+    "activity": "03",
+    "is_system_permission": true,
+    "is_critical": false,
+    "requires_approval": false,
+    "metadata_json": {
+      "sap_equivalent": "S_DATASET read",
+      "access_type": "read_only",
+      "audit_required": false
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "permission_id": "a6666666-6666-6666-6666-666666666666",
+    "permission_name": "S_DATASET_WRITE",
+    "display_name": "File System Write",
+    "description": "Write access to application server file system",
+    "category": "system",
+    "object_class": "S_DATASET",
+    "authorization_object": "S_DATASET",
+    "field_name": "FILENAME",
+    "field_value": "*",
+    "activity": "01,02,06",
+    "is_system_permission": true,
+    "is_critical": true,
+    "requires_approval": true,
+    "metadata_json": {
+      "sap_equivalent": "S_DATASET write",
+      "access_type": "write",
+      "audit_required": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "permission_id": "a7777777-7777-7777-7777-777777777777",
+    "permission_name": "S_RFC_ADMIN",
+    "display_name": "RFC Administration",
+    "description": "Configure and manage remote function calls",
+    "category": "integration",
+    "object_class": "S_RFC",
+    "authorization_object": "S_RFC",
+    "field_name": "RFC_NAME",
+    "field_value": "*",
+    "activity": "01,02,03,16",
+    "is_system_permission": true,
+    "is_critical": true,
+    "requires_approval": true,
+    "metadata_json": {
+      "sap_equivalent": "S_RFC *",
+      "integration_access": true,
+      "audit_required": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  }
+]

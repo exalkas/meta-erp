@@ -1,11 +1,12 @@
 """Database models package."""
 
+from app.models.base import Base
+
 from app.models.metadata import (
-    Base,
     Tenant,
     FieldDefinition,
     EntityDefinition,
-    LayoutDefinition,
+    EntityLayoutDefinition,
     PicklistValue,
     Translation,
     Theme,
@@ -23,7 +24,11 @@ from app.models.auth import (
 )
 
 from app.models.platform import (
+    BaseTheme,
+    ThemeVariant,
+    ThemeVariantProperty,
     PageDefinition,
+    LayoutDefinition,
     ComponentDefinition,
     ComponentDependency,
     ModuleManifest,
@@ -43,11 +48,15 @@ __all__ = [
     "Tenant",
     "FieldDefinition", 
     "EntityDefinition",
-    "LayoutDefinition",
+    "EntityLayoutDefinition",
+    "LayoutDefinition",  # Platform layout definition
     "PicklistValue",
     "Translation",
     "Theme",
     "ThemeProperty",
+    "BaseTheme",  # New theme variant system
+    "ThemeVariant",
+    "ThemeVariantProperty",
     "User",
     "Role",
     "Permission", 

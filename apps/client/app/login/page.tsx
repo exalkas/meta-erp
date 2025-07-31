@@ -5,7 +5,6 @@ import {
   DynamicPage,
   TranslationProvider,
   ThemeProvider,
-  initializeMockApi,
 } from "@erp/shared-ui";
 
 /**
@@ -15,33 +14,25 @@ import {
  * - Fetches page definition from metadata API
  * - Uses DynamicPage for layout + sections rendering
  * - TranslationProvider and ThemeProvider fetch from metadata
- * - Mock data service for development without database
+ * - Real API services with authentication
  */
 
 export default function LoginPage() {
   const [pageDefinition, setPageDefinition] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const tenantId = "dev-tenant-001"; // In real app, this would come from auth/context
+  const tenantId = "89f84fea-b5b9-413c-945b-002c7fd9555d"; // Demo tenant UUID - in real app, this would come from auth/context
+  const userId = "01111111-1111-1111-1111-111111111111"; // Demo user UUID - in real app, this would come from auth context
 
-  // Initialize mock API and fetch page definition
+  // Fetch page definition from real metadata API
   useEffect(() => {
     const initializeAndFetch = async () => {
       try {
-        console.log("🎭 Initializing mock API for login page");
-
-        // Initialize mock API first
-        const { initializeMockApi } = await import("@erp/shared-ui");
-        initializeMockApi(true);
-
-        // Small delay to ensure mock API is ready
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
         console.log("📐 Fetching login page definition from metadata API");
 
-        // Fetch page definition
+        // Fetch page definition from API service
         const response = await fetch(
-          `/api/metadata/pages/login?tenant_id=${tenantId}`
+          `http://localhost:8000/metadata/pages/login?tenant_id=${tenantId}`
         );
 
         if (!response.ok) {
@@ -67,8 +58,18 @@ export default function LoginPage() {
 
   // Handle successful login
   const handleLoginSuccess = () => {
-    console.log("✅ Login successful, redirecting to dashboard");
-    window.location.href = "/dashboard";
+    console.log("✅ Login successful, handling redirect");
+
+    // Check for redirect URL from query params (set by middleware)
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectTo = urlParams.get("redirectTo");
+
+    // Redirect to original page or default to dashboard
+    const targetUrl =
+      redirectTo && redirectTo !== "/login" ? redirectTo : "/dashboard";
+
+    console.log(`🚀 Redirecting to: ${targetUrl}`);
+    window.location.href = targetUrl;
   };
 
   // Handle login form submission
@@ -149,7 +150,7 @@ export default function LoginPage() {
 
   return (
     <TranslationProvider tenantId={tenantId}>
-      <ThemeProvider tenantId={tenantId}>
+      <ThemeProvider tenantId={tenantId} userId={userId}>
         {/* Pure metadata-driven page rendering */}
         <DynamicPage
           pageDefinition={pageDefinition}

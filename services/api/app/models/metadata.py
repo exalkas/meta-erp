@@ -17,11 +17,10 @@ from sqlalchemy import (
     Index,
 )
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-Base = declarative_base()
+from .base import Base
 
 
 class Tenant(Base):
@@ -73,10 +72,12 @@ class Tenant(Base):
     # Relationships
     field_definitions = relationship("FieldDefinition", back_populates="tenant", cascade="all, delete-orphan")
     entity_definitions = relationship("EntityDefinition", back_populates="tenant", cascade="all, delete-orphan")
-    layout_definitions = relationship("LayoutDefinition", back_populates="tenant", cascade="all, delete-orphan")
+    layout_definitions = relationship("EntityLayoutDefinition", back_populates="tenant", cascade="all, delete-orphan")
     list_view_definitions = relationship("ListViewDefinition", back_populates="tenant", cascade="all, delete-orphan")
     translations = relationship("Translation", back_populates="tenant", cascade="all, delete-orphan")
-    themes = relationship("Theme", back_populates="tenant", cascade="all, delete-orphan")
+    themes = relationship("Theme", back_populates="tenant", cascade="all, delete-orphan", foreign_keys="Theme.tenant_id")
+    # NEW: Theme variant system
+    base_themes = relationship("BaseTheme", back_populates="tenant", cascade="all, delete-orphan", foreign_keys="BaseTheme.tenant_id")
     
     # Indexes
     __table_args__ = (
@@ -138,7 +139,7 @@ class EntityDefinition(Base):
     # Relationships
     tenant = relationship("Tenant", back_populates="entity_definitions")
     field_definitions = relationship("FieldDefinition", back_populates="entity", cascade="all, delete-orphan")
-    layout_definitions = relationship("LayoutDefinition", back_populates="entity", cascade="all, delete-orphan")
+    layout_definitions = relationship("EntityLayoutDefinition", back_populates="entity", cascade="all, delete-orphan")
     list_view_definitions = relationship("ListViewDefinition", back_populates="entity", cascade="all, delete-orphan")
     
     # Constraints
@@ -232,10 +233,10 @@ class FieldDefinition(Base):
         return f"<FieldDefinition(field_name='{self.field_name}', entity_id='{self.entity_id}')>"
 
 
-class LayoutDefinition(Base):
+class EntityLayoutDefinition(Base):
     """Layout metadata for entity forms and views."""
     
-    __tablename__ = "layout_definitions"
+    __tablename__ = "entity_layout_definitions"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.tenant_id"), nullable=True)  # NULL = global
@@ -285,10 +286,10 @@ class LayoutDefinition(Base):
     # Constraints
     __table_args__ = (
         UniqueConstraint("entity_id", "layout_name", name="uq_layout_entity_name"),
-        Index("idx_layout_tenant_id", "tenant_id"),
-        Index("idx_layout_entity_id", "entity_id"),
-        Index("idx_layout_type", "layout_type"),
-        Index("idx_layout_default", "is_default"),
+        Index("idx_entity_layout_tenant_id", "tenant_id"),
+        Index("idx_entity_layout_entity_id", "entity_id"),
+        Index("idx_entity_layout_type", "layout_type"),
+        Index("idx_entity_layout_default", "is_default"),
     )
     
     def __repr__(self):
@@ -487,7 +488,7 @@ class Theme(Base):
     created_by = Column(UUID(as_uuid=True), nullable=True)
     
     # Relationships
-    tenant = relationship("Tenant", back_populates="themes")
+    tenant = relationship("Tenant", back_populates="themes", foreign_keys=[tenant_id])
     parent_theme = relationship("Theme", remote_side=[theme_id])
     theme_properties = relationship("ThemeProperty", back_populates="theme", cascade="all, delete-orphan")
     

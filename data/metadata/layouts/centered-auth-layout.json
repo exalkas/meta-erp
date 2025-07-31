@@ -1,0 +1,64 @@
+{
+  "layout_id": "c0000000-0000-0000-0000-000000000001",
+  "name": "centered-auth-layout",
+  "display_name": "Centered Authentication Layout",
+  "description": "Centered layout for login and authentication pages with gradient background",
+  "category": "auth",
+  "sections_json": {
+    "header": {
+      "className": "text-center mb-8",
+      "maxComponents": 1,
+      "allowedComponents": ["Logo", "Branding"]
+    },
+    "main": {
+      "className": "w-full max-w-md mx-auto",
+      "maxComponents": 1,
+      "allowedComponents": [
+        "LoginForm",
+        "RegisterForm",
+        "ForgotPasswordForm",
+        "TwoFactorForm"
+      ]
+    },
+    "footer": {
+      "className": "flex justify-between items-center mt-6 pt-4 border-t border-gray-200 dark:border-gray-700",
+      "maxComponents": 10,
+      "allowedComponents": [
+        "LanguageSelector",
+        "ThemeSelector",
+        "Links",
+        "Text"
+      ]
+    }
+  },
+  "css_classes_json": {
+    "header": "text-center mb-8",
+    "main": "w-full max-w-md mx-auto",
+    "footer": "flex justify-between items-center mt-6 pt-4 border-t border-gray-200 dark:border-gray-700"
+  },
+  "container_classes": "min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 dark:from-blue-800 dark:via-blue-900 dark:to-slate-900 flex flex-col items-center justify-center p-4",
+  "responsive_classes": {
+    "mobile": "px-2 py-6",
+    "tablet": "px-4 py-8",
+    "desktop": "px-4 py-8"
+  },
+  "is_responsive": true,
+  "supports_theming": true,
+  "supports_dark_mode": true,
+  "is_system_layout": true,
+  "accessibility": {
+    "skipLinks": true,
+    "landmarks": true,
+    "screenReader": true
+  },
+  "metadata_json": {
+    "backgroundType": "gradient",
+    "animationEnabled": true,
+    "particleEffect": false,
+    "centered": true,
+    "maxWidth": "400px"
+  },
+  "tenant_id": null,
+  "created_at": "2025-01-29T00:00:00Z",
+  "updated_at": "2025-01-29T00:00:00Z"
+}

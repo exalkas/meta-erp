@@ -71,7 +71,8 @@ def create_app() -> FastAPI:
     app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(PerformanceMonitoringMiddleware, slow_request_threshold_ms=1000.0)
     app.add_middleware(TenantContextMiddleware)
-    app.add_middleware(RequestLoggingMiddleware)
+    # Temporarily disabled due to logging attribute error
+    # app.add_middleware(RequestLoggingMiddleware)
     
     # Add CORS middleware
     app.add_middleware(

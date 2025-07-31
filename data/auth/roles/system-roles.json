@@ -1,0 +1,118 @@
+[
+  {
+    "role_id": "11111111-1111-1111-1111-111111111111",
+    "role_name": "SAP_SYSTEM_ADMIN",
+    "display_name": "System Administrator",
+    "description": "Full system administration access - equivalent to SAP_ALL",
+    "category": "system",
+    "is_system_role": true,
+    "is_active": true,
+    "hierarchy_level": 1,
+    "parent_role_id": null,
+    "compliance_level": "critical",
+    "metadata_json": {
+      "sap_equivalent": "SAP_ALL",
+      "critical_role": true,
+      "requires_approval": true,
+      "max_users": 3
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "22222222-2222-2222-2222-222222222222",
+    "role_name": "SAP_TENANT_ADMIN",
+    "display_name": "Tenant Administrator",
+    "description": "Full tenant administration access within tenant boundaries",
+    "category": "admin",
+    "is_system_role": true,
+    "is_active": true,
+    "hierarchy_level": 2,
+    "parent_role_id": "11111111-1111-1111-1111-111111111111",
+    "compliance_level": "critical",
+    "metadata_json": {
+      "sap_equivalent": "SAP_NEW",
+      "tenant_scoped": true,
+      "requires_approval": true,
+      "max_users": 5
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "33333333-3333-3333-3333-333333333333",
+    "role_name": "SAP_BUSINESS_ADMIN",
+    "display_name": "Business Administrator",
+    "description": "Business configuration and user management within business units",
+    "category": "business",
+    "is_system_role": true,
+    "is_active": true,
+    "hierarchy_level": 3,
+    "parent_role_id": "22222222-2222-2222-2222-222222222222",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "sap_equivalent": "SAP_BC_*",
+      "business_scoped": true,
+      "delegate_user_mgmt": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "44444444-4444-4444-4444-444444444444",
+    "role_name": "SAP_POWER_USER",
+    "display_name": "Power User",
+    "description": "Advanced business user with configuration capabilities",
+    "category": "business",
+    "is_system_role": true,
+    "is_active": true,
+    "hierarchy_level": 4,
+    "parent_role_id": "33333333-3333-3333-3333-333333333333",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "sap_equivalent": "SAP_CONF_*",
+      "can_configure": true,
+      "can_customize": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "55555555-5555-5555-5555-555555555555",
+    "role_name": "SAP_END_USER",
+    "display_name": "End User",
+    "description": "Standard business user access to assigned modules and data",
+    "category": "business",
+    "is_system_role": true,
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "44444444-4444-4444-4444-444444444444",
+    "compliance_level": "basic",
+    "metadata_json": {
+      "sap_equivalent": "SAP_USER",
+      "default_role": true,
+      "auto_assign": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "66666666-6666-6666-6666-666666666666",
+    "role_name": "SAP_READ_ONLY",
+    "display_name": "Read Only User",
+    "description": "Read-only access to assigned business data and reports",
+    "category": "business",
+    "is_system_role": true,
+    "is_active": true,
+    "hierarchy_level": 6,
+    "parent_role_id": "55555555-5555-5555-5555-555555555555",
+    "compliance_level": "basic",
+    "metadata_json": {
+      "sap_equivalent": "SAP_DISPLAY_*",
+      "read_only": true,
+      "no_write_access": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  }
+]

@@ -1,0 +1,164 @@
+[
+  {
+    "role_id": "aaaa1111-1111-1111-1111-111111111111",
+    "role_name": "MARITIME_OPERATIONS_MANAGER",
+    "display_name": "Maritime Operations Manager",
+    "description": "Manages maritime operations, shipping, and logistics",
+    "category": "maritime",
+    "is_system_role": false,
+    "is_active": true,
+    "hierarchy_level": 4,
+    "parent_role_id": "44444444-4444-4444-4444-444444444444",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "industry": "maritime",
+      "department": "operations",
+      "can_approve_shipments": true,
+      "max_approval_amount": 100000
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "bbbb2222-2222-2222-2222-222222222222",
+    "role_name": "PORT_AGENT",
+    "display_name": "Port Agent",
+    "description": "Manages port operations, customs, and vessel clearance",
+    "category": "maritime",
+    "is_system_role": false,
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "aaaa1111-1111-1111-1111-111111111111",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "industry": "maritime",
+      "department": "port_operations",
+      "can_clear_vessels": true,
+      "customs_authority": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "cccc3333-3333-3333-3333-333333333333",
+    "role_name": "FLEET_MANAGER",
+    "display_name": "Fleet Manager",
+    "description": "Manages vessel fleet, maintenance, and crew assignments",
+    "category": "maritime",
+    "is_system_role": false,
+    "is_active": true,
+    "hierarchy_level": 4,
+    "parent_role_id": "44444444-4444-4444-4444-444444444444",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "industry": "maritime",
+      "department": "fleet",
+      "can_assign_crew": true,
+      "can_schedule_maintenance": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "dddd4444-4444-4444-4444-444444444444",
+    "role_name": "COMMERCIAL_MANAGER",
+    "display_name": "Commercial Manager",
+    "description": "Manages commercial operations, contracts, and customer relationships",
+    "category": "commercial",
+    "is_system_role": false,
+    "is_active": true,
+    "hierarchy_level": 4,
+    "parent_role_id": "44444444-4444-4444-4444-444444444444",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "industry": "maritime",
+      "department": "commercial",
+      "can_negotiate_contracts": true,
+      "max_contract_value": 500000
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "eeee5555-5555-5555-5555-555555555555",
+    "role_name": "FINANCE_CONTROLLER",
+    "display_name": "Finance Controller",
+    "description": "Financial oversight, budgeting, and cost control",
+    "category": "finance",
+    "is_system_role": false,
+    "is_active": true,
+    "hierarchy_level": 4,
+    "parent_role_id": "44444444-4444-4444-4444-444444444444",
+    "compliance_level": "critical",
+    "metadata_json": {
+      "industry": "maritime",
+      "department": "finance",
+      "can_approve_budgets": true,
+      "max_budget_amount": 1000000,
+      "requires_two_factor": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "ffff6666-6666-6666-6666-666666666666",
+    "role_name": "COMPLIANCE_OFFICER",
+    "display_name": "Compliance Officer",
+    "description": "Ensures regulatory compliance and manages certifications",
+    "category": "compliance",
+    "is_system_role": false,
+    "is_active": true,
+    "hierarchy_level": 4,
+    "parent_role_id": "44444444-4444-4444-4444-444444444444",
+    "compliance_level": "critical",
+    "metadata_json": {
+      "industry": "maritime",
+      "department": "compliance",
+      "can_manage_certificates": true,
+      "regulatory_authority": true,
+      "requires_two_factor": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "a7a77777-7777-7777-7777-777777777777",
+    "role_name": "VESSEL_OPERATOR",
+    "display_name": "Vessel Operator",
+    "description": "Operates vessel systems and manages voyage data",
+    "category": "operations",
+    "is_system_role": false,
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "55555555-5555-5555-5555-555555555555",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "industry": "maritime",
+      "department": "operations",
+      "can_update_voyage_data": true,
+      "vessel_access_required": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "b8b88888-8888-8888-8888-888888888888",
+    "role_name": "CUSTOMER_SERVICE_REP",
+    "display_name": "Customer Service Representative",
+    "description": "Handles customer inquiries and service requests",
+    "category": "customer_service",
+    "is_system_role": false,
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "55555555-5555-5555-5555-555555555555",
+    "compliance_level": "basic",
+    "metadata_json": {
+      "industry": "general",
+      "department": "customer_service",
+      "can_access_customer_data": true,
+      "can_create_tickets": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  }
+]

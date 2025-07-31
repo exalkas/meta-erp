@@ -1,5 +1,15 @@
 """Platform models for the metadata-driven no-code/low-code system."""
 
+# ===============================================
+# THEME VARIANT SYSTEM - NEW ARCHITECTURE
+# ===============================================
+# This new architecture supports:
+# - Base themes (maritime, corporate, etc.) - marketplace items
+# - Standard variants (light, dark) - Tailwind compatible
+# - Theme properties attached to variants
+# - Marketplace ready with creator attribution
+# ===============================================
+
 import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -21,7 +31,153 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-from .metadata import Base
+from .base import Base
+
+
+# ===============================================
+# THEME VARIANT SYSTEM MODELS - NEW ARCHITECTURE
+# ===============================================
+
+class BaseTheme(Base):
+    """Base themes that can have light/dark variants (maritime, corporate, etc.)."""
+    
+    __tablename__ = "base_themes"
+    
+    base_theme_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.tenant_id"), nullable=True)  # NULL = global/system theme
+    
+    # Theme identification
+    name = Column(String(100), nullable=False)  # maritime, corporate, modern
+    display_name = Column(String(200), nullable=False)  # "Maritime Professional Theme"
+    description = Column(Text, nullable=True)
+    
+    # Marketplace information
+    creator_id = Column(UUID(as_uuid=True), nullable=True)  # Theme creator
+    marketplace_url = Column(String(500), nullable=True)
+    price = Column(Numeric(10, 2), nullable=True)  # For paid themes
+    download_count = Column(Integer, default=0)
+    rating = Column(Numeric(3, 2), nullable=True)  # 0.00 to 5.00
+    
+    # Theme metadata
+    category = Column(String(100), nullable=True)  # business, creative, minimal
+    tags = Column(JSON, default=lambda: [])  # ["professional", "blue", "maritime"]
+    preview_image = Column(String(500), nullable=True)
+    demo_url = Column(String(500), nullable=True)
+    
+    # Theme configuration
+    is_system_theme = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
+    is_featured = Column(Boolean, default=False)
+    is_premium = Column(Boolean, default=False)
+    
+    # Versioning
+    version = Column(String(20), default="1.0.0")
+    min_platform_version = Column(String(20), nullable=True)
+    
+    # Metadata
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    published_at = Column(DateTime(timezone=True), nullable=True)
+    
+    # Relationships
+    variants = relationship("ThemeVariant", back_populates="base_theme", cascade="all, delete-orphan")
+    tenant = relationship("Tenant", back_populates="base_themes", foreign_keys=[tenant_id])
+    
+    # Constraints
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "name", name="uq_base_theme_tenant_name"),
+        Index("idx_base_theme_tenant_id", "tenant_id"),
+        Index("idx_base_theme_active", "is_active"),
+        Index("idx_base_theme_featured", "is_featured"),
+        Index("idx_base_theme_category", "category"),
+        Index("idx_base_theme_creator", "creator_id"),
+    )
+    
+    def __repr__(self):
+        return f"<BaseTheme(name='{self.name}', tenant_id='{self.tenant_id}')>"
+
+
+class ThemeVariant(Base):
+    """Light/Dark variants of base themes with actual styling properties."""
+    
+    __tablename__ = "theme_variants"
+    
+    variant_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    base_theme_id = Column(UUID(as_uuid=True), ForeignKey("base_themes.base_theme_id"), nullable=False)
+    
+    # Variant identification
+    variant_name = Column(String(50), nullable=False)  # "light", "dark"
+    display_name = Column(String(200), nullable=False)  # "Light Mode", "Dark Mode"
+    description = Column(Text, nullable=True)
+    
+    # Variant configuration
+    is_default = Column(Boolean, default=False)  # Default variant for this base theme
+    is_active = Column(Boolean, default=True)
+    supports_auto_switch = Column(Boolean, default=True)  # Can auto-switch based on system preference
+    
+    # CSS generation
+    css_class_prefix = Column(String(50), nullable=True)  # For Tailwind: "dark" or null
+    media_query = Column(String(200), nullable=True)  # "@media (prefers-color-scheme: dark)"
+    
+    # Metadata
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    base_theme = relationship("BaseTheme", back_populates="variants")
+    properties = relationship("ThemeVariantProperty", back_populates="variant", cascade="all, delete-orphan")
+    
+    # Constraints
+    __table_args__ = (
+        UniqueConstraint("base_theme_id", "variant_name", name="uq_theme_variant_name"),
+        Index("idx_theme_variant_base_theme", "base_theme_id"),
+        Index("idx_theme_variant_active", "is_active"),
+        Index("idx_theme_variant_default", "is_default"),
+    )
+    
+    def __repr__(self):
+        return f"<ThemeVariant(variant_name='{self.variant_name}', base_theme_id='{self.base_theme_id}')>"
+
+
+class ThemeVariantProperty(Base):
+    """CSS custom properties for specific theme variants."""
+    
+    __tablename__ = "theme_variant_properties"
+    
+    property_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    variant_id = Column(UUID(as_uuid=True), ForeignKey("theme_variants.variant_id"), nullable=False)
+    
+    # CSS Property definition
+    property_key = Column(String(100), nullable=False)  # "--primary-color", "--background-color"
+    property_value = Column(String(500), nullable=False)  # "#3182ce", "rgba(255, 255, 255, 0.9)"
+    
+    # Property metadata
+    property_type = Column(String(50), nullable=True)  # "color", "size", "font", "shadow"
+    category = Column(String(100), nullable=True)  # "colors", "typography", "spacing", "borders"
+    subcategory = Column(String(100), nullable=True)  # "primary", "secondary", "accent"
+    description = Column(Text, nullable=True)
+    
+    # CSS generation hints
+    css_selector = Column(String(200), nullable=True)  # For complex selectors beyond :root
+    important = Column(Boolean, default=False)  # Add !important to CSS
+    
+    # Metadata
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    variant = relationship("ThemeVariant", back_populates="properties")
+    
+    # Constraints
+    __table_args__ = (
+        UniqueConstraint("variant_id", "property_key", name="uq_theme_variant_property_key"),
+        Index("idx_theme_variant_property_variant", "variant_id"),
+        Index("idx_theme_variant_property_category", "category"),
+        Index("idx_theme_variant_property_type", "property_type"),
+    )
+    
+    def __repr__(self):
+        return f"<ThemeVariantProperty(property_key='{self.property_key}', variant_id='{self.variant_id}')>"
 
 
 # ================================
@@ -107,10 +263,11 @@ class PageDefinition(Base):
     access_roles = Column(JSON, default=lambda: [])
     is_public = Column(Boolean, default=False)
     
-    # State management (Enhanced page features)
+    # State management (Enhanced page features) - ADDED: New metadata-driven fields
     initial_state = Column(JSON, nullable=True)  # Page-level initial state
     state_bindings = Column(JSON, nullable=True)  # Component state bindings
-    api_endpoints = Column(JSON, nullable=True)  # API endpoint configuration
+    api_endpoints = Column(JSON, nullable=True)  # API endpoint configuration  
+    callbacks = Column(JSON, nullable=True)  # Page event callbacks (onLoginSuccess, onError, etc.)
     real_time_updates = Column(Boolean, default=False)  # WebSocket support
     cache_strategy = Column(String(50), nullable=True)  # Caching configuration
     websocket_events = Column(JSON, nullable=True)  # Real-time event types
@@ -185,7 +342,7 @@ class ComponentDefinition(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
     # Relationships
-    dependencies = relationship("ComponentDependency", back_populates="component", cascade="all, delete-orphan")
+    dependencies = relationship("ComponentDependency", foreign_keys="ComponentDependency.component_id", back_populates="component", cascade="all, delete-orphan")
     
     # Constraints
     __table_args__ = (

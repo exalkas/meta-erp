@@ -70,6 +70,7 @@ class MetadataLogger:
     """Metadata-aware logger with context."""
     
     def __init__(self, name: str):
+        self.name = name
         self.logger: FilteringBoundLogger = structlog.get_logger(name)
     
     def bind_request_context(
@@ -93,7 +94,7 @@ class MetadataLogger:
         # Remove None values
         context = {k: v for k, v in context.items() if v is not None}
         
-        new_logger = MetadataLogger(self.logger.name)
+        new_logger = MetadataLogger(self.name)
         new_logger.logger = self.logger.bind(**context)
         return new_logger
     
@@ -103,7 +104,7 @@ class MetadataLogger:
         if entity_name:
             context["entity_name"] = entity_name
             
-        new_logger = MetadataLogger(self.logger.name)
+        new_logger = MetadataLogger(self.name)
         new_logger.logger = self.logger.bind(**context)
         return new_logger
     
@@ -120,7 +121,7 @@ class MetadataLogger:
         if entity_id:
             context["entity_id"] = entity_id
             
-        new_logger = MetadataLogger(self.logger.name)
+        new_logger = MetadataLogger(self.name)
         new_logger.logger = self.logger.bind(**context)
         return new_logger
     
@@ -147,6 +148,37 @@ class MetadataLogger:
     def exception(self, message: str, **kwargs):
         """Log exception with traceback."""
         self.logger.exception(message, **kwargs)
+    
+    def log_metadata_operation(
+        self,
+        operation: str,
+        entity_type: Optional[str] = None,
+        entity_name: Optional[str] = None,
+        tenant_id: Optional[str] = None,
+        field_count: Optional[int] = None,
+        layout_sections: Optional[int] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+        **kwargs
+    ) -> None:
+        """Log metadata-specific operations."""
+        context = {
+            "operation": operation,
+            "entity_type": entity_type,
+            "entity_name": entity_name,
+            "tenant_id": tenant_id,
+            "field_count": field_count,
+            "layout_sections": layout_sections,
+        }
+        
+        if metadata:
+            context.update(metadata)
+        
+        context.update(kwargs)
+        
+        # Remove None values
+        context = {k: v for k, v in context.items() if v is not None}
+        
+        self.logger.info(f"Metadata {operation}", **context)
 
 
 def get_logger(name: str = "metadata_erp") -> MetadataLogger:

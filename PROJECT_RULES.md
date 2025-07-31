@@ -3,7 +3,7 @@
 ## Metadata-Driven No-Code/Low-Code Application Platform
 
 > **Version:** 1.8.0
-> **Last Updated:** July 29, 2025
+> **Last Updated:** January 30, 2025
 > **Target:** SAP-Style Vertical-First Industry Solutions Platform
 > **Status:** Phase 3 Complete ✅ - End-to-End Authentication Working | Production Ready Authentication System
 
@@ -311,7 +311,7 @@ status: "DEV_COMPLETE" → "QAS_APPLIED" → "PRD_READY"
 - **State:** React Context + Custom hooks
 - **Forms:** React Hook Form + Zod validation
 - **Internationalization:** i18next with dynamic loading
-- **Themes:** CSS custom properties with context switching
+- **Theme Variants:** Enterprise theme system with light/dark variants
 
 ### **Component Organization**
 
@@ -398,27 +398,68 @@ packages/shared/ui/src/components/
 
 ## 🎭 **THEMING SYSTEM**
 
-### **Theme Architecture**
+### **Theme Variant Architecture** 🎨
 
-- CSS Custom Properties for dynamic theming
-- Theme inheritance (tenant → global)
-- Dark/Light mode support
-- Component-level theme overrides
-- Runtime theme switching
+**NEW: Enterprise Theme + Variant System**
 
-### **Theme Definition**
+- **Base Themes**: Maritime, Corporate, Modern (marketplace items)
+- **Standard Variants**: Light & Dark only (Tailwind compatible)
+- **Marketplace Ready**: Creator attribution, ratings, versioning
+- **CSS Custom Properties**: Generated per variant
+- **Tenant Isolation**: Global + tenant-specific themes
+
+### **Theme Variant Structure**
 
 ```typescript
-interface Theme {
-  id: string;
-  name: string;
-  parentThemeId?: string;
-  properties: {
-    "--primary-color": string;
-    "--secondary-color": string;
-    "--background-color": string;
-    // ... theme properties
-  };
+// Base Theme (marketplace item)
+interface BaseTheme {
+  base_theme_id: string;
+  name: string; // "maritime", "corporate", "modern"
+  display_name: string; // "Maritime Professional Theme"
+  creator_id?: string; // Theme creator
+  category: string; // "business", "creative", "minimal"
+  is_featured: boolean;
+  price?: number; // For paid themes
+  rating?: number; // 0.00 to 5.00
+  variants: ThemeVariant[]; // Light + Dark variants
+}
+
+// Theme Variant (light/dark)
+interface ThemeVariant {
+  variant_id: string;
+  base_theme_id: string;
+  variant_name: string; // "light" | "dark"
+  display_name: string; // "Light Mode" | "Dark Mode"
+  is_default: boolean;
+  css_class_prefix?: string; // "dark" or null
+  media_query?: string; // CSS media query
+  properties: ThemeVariantProperty[];
+}
+
+// CSS Properties per variant
+interface ThemeVariantProperty {
+  property_key: string; // "--primary-color"
+  property_value: string; // "#3182ce"
+  property_type: string; // "color", "size", "font"
+  category: string; // "colors", "typography", "spacing"
+}
+```
+
+### **API Usage**
+
+```typescript
+// Frontend calls:
+GET /themes/maritime/dark    // Specific variant
+GET /themes/maritime         // Default variant
+
+// Returns CSS properties:
+{
+  "base_theme": { "name": "maritime", "display_name": "Maritime Theme" },
+  "variant": { "variant_name": "dark", "display_name": "Dark Mode" },
+  "css_properties": {
+    "--primary-color": "#4A9EFF",
+    "--background-color": "#1A1A1A"
+  }
 }
 ```
 
@@ -701,7 +742,7 @@ This platform provides complete vertical solutions through **SAP-style metadata-
 
 - Section-based layout definitions
 - Responsive design templates
-- Theme integration and CSS generation
+- Theme variant integration and CSS custom property generation
 - Layout inheritance and customization
 
 #### **🚀 Business Logic Engines**
@@ -750,12 +791,14 @@ This platform provides complete vertical solutions through **SAP-style metadata-
 - Dynamic translation loading and caching
 - Translation workflow for content creators
 
-**Theme Engine** (`services/api/`)
+**Theme Variant Engine** (`services/api/`)
 
-- Dynamic CSS custom property management
-- Theme inheritance and customization
-- Dark/light mode and accessibility support
-- Brand customization per tenant
+- **Base Theme Management**: Marketplace theme catalog
+- **Variant Processing**: Light/Dark variant generation
+- **CSS Property Generation**: Dynamic custom properties per variant
+- **Marketplace Integration**: Creator attribution, ratings, pricing
+- **Tenant Customization**: Override properties per tenant
+- **Performance**: Redis caching of theme variants
 
 **File Engine** (`services/files/`)
 
@@ -873,12 +916,14 @@ This platform provides complete vertical solutions through **SAP-style metadata-
 
 #### **🎨 Presentation Engines**
 
-**Theme Engine FE** (`packages/shared/ui/`)
+**Theme Variant Engine FE** (`packages/shared/ui/`)
 
-- CSS custom property injection
-- Real-time theme switching
-- Component-level theme overrides
-- Theme persistence and user preferences
+- **Theme Selection UI**: Base theme picker + light/dark toggle
+- **CSS Property Injection**: Dynamic variant-based custom properties
+- **Auto-switching**: System preference detection (light/dark)
+- **Performance**: Variant caching and lazy loading
+- **Component Integration**: Tailwind class generation from variants
+- **User Preferences**: Theme + variant persistence
 
 **Translation Engine FE** (`packages/shared/ui/`)
 

@@ -16,11 +16,22 @@ from app.core.database import get_db
 from app.core.logging import get_logger
 from app.core.exceptions import MetadataERPException, ValidationException, TenantNotFoundException
 from app.engines import PageEngine, DataEngine, ComponentEngine
-from app.services import auth_service
-from app.app import app
+from app.services import AuthService
 
 logger = get_logger("metadata_api")
 router = APIRouter(prefix="/metadata", tags=["metadata"])
+
+
+# Dependency to create AuthService with database session
+async def get_auth_service(db: AsyncSession = Depends(get_db)) -> AuthService:
+    """Create AuthService instance with database session."""
+    return AuthService(db)
+
+
+# Dependency to get current user (requires AuthService)
+async def get_current_user(auth_service: AuthService = Depends(get_auth_service)):
+    """Get current authenticated user."""
+    return await auth_service.get_current_user()
 
 
 # Response Models
@@ -31,7 +42,13 @@ class PageDefinitionResponse(BaseModel):
     title: str
     description: Optional[str] = None
     page_type: str
+    layout_id: Optional[str] = None  # FIXED: Added missing field for Layout + Sections
+    sections_data_json: Optional[Dict[str, Any]] = None  # FIXED: Added missing field for Layout + Sections
     components: List[Dict[str, Any]]
+    initial_state: Optional[Dict[str, Any]] = None  # FIXED: Added for metadata-driven state
+    state_bindings: Optional[Dict[str, str]] = None  # FIXED: Added for state binding
+    api_endpoints: Optional[Dict[str, str]] = None  # FIXED: Added for API configuration
+    callbacks: Optional[Dict[str, Any]] = None  # FIXED: Added for metadata-driven callbacks
     access_roles: List[str]
     is_public: bool
     metadata_json: Optional[Dict[str, Any]] = None
@@ -173,16 +190,33 @@ class TranslationResponse(BaseModel):
     context: Optional[str] = None
 
 
-class ThemeResponse(BaseModel):
-    theme_id: str
-    name: str
+# Theme Variant Response Models
+class ThemeVariantResponse(BaseModel):
+    variant_id: str
+    base_theme_id: str
+    variant_name: str  # light, dark
+    display_name: str
     description: Optional[str] = None
-    parent_theme_id: Optional[str] = None
+    is_default: bool = False
+    is_active: bool = True
+    supports_auto_switch: bool = True
+    css_class_prefix: Optional[str] = None
+    media_query: Optional[str] = None
+    properties: Dict[str, str]  # Flattened variant properties
+
+class BaseThemeResponse(BaseModel):
+    base_theme_id: str
+    name: str  # maritime, default
+    display_name: str
+    description: Optional[str] = None
+    category: Optional[str] = None
     is_system_theme: bool = False
     is_active: bool = True
-    is_default: bool = False
-    properties: Dict[str, str]  # Flattened theme properties
+    is_featured: bool = False
+    version: Optional[str] = None
+    variants: List[ThemeVariantResponse]
     tenant_id: Optional[str] = None
+
 
 
 class ThemePropertyResponse(BaseModel):
@@ -221,16 +255,53 @@ async def get_page_definition(
     Get page definition by route with tenant-specific overrides.
     """
     try:
+        logger.info(
+            "API: Starting get_page_definition endpoint",
+            route=route,
+            method=request.method,
+            url=str(request.url)
+        )
+        
         tenant_id = get_tenant_id(request)
+        logger.info(
+            "API: Extracted tenant ID",
+            tenant_id=str(tenant_id) if tenant_id else None,
+            route=route
+        )
         
         # Ensure route starts with /
         if not route.startswith('/'):
             route = f"/{route}"
+            logger.info("API: Route normalized", route=route)
+        
+        logger.info(
+            "API: Creating PageEngine",
+            route=route,
+            tenant_id=str(tenant_id) if tenant_id else None
+        )
         
         page_engine = PageEngine(db)
+        
+        logger.info(
+            "API: Calling page_engine.get_page_definition",
+            route=route,
+            tenant_id=str(tenant_id) if tenant_id else None
+        )
+        
         page_data = await page_engine.get_page_definition(route, tenant_id)
         
+        logger.info(
+            "API: PageEngine call completed",
+            route=route,
+            page_data_received=page_data is not None
+        )
+        
         if not page_data:
+            logger.warning(
+                "API: Page not found, returning 404",
+                route=route,
+                tenant_id=str(tenant_id) if tenant_id else None
+            )
             raise HTTPException(
                 status_code=404,
                 detail=f"Page definition not found for route: {route}"
@@ -246,13 +317,25 @@ async def get_page_definition(
         return PageDefinitionResponse(**page_data)
         
     except HTTPException:
+        logger.warning(
+            "API: HTTPException occurred",
+            route=route,
+            tenant_id=str(tenant_id) if tenant_id else None
+        )
         raise
     except Exception as e:
         logger.error(
-            "Failed to get page definition",
+            "API: Exception occurred in get_page_definition",
             route=route,
             tenant_id=str(tenant_id) if tenant_id else None,
-            error=str(e)
+            error=str(e),
+            error_type=type(e).__name__,
+            exc_info=True
+        )
+        logger.exception(
+            "API: Full exception traceback",
+            route=route,
+            tenant_id=str(tenant_id) if tenant_id else None
         )
         raise HTTPException(
             status_code=500,
@@ -649,14 +732,15 @@ async def list_modules(
 @router.get("/list-views/{entity_name}", response_model=List[ListViewDefinitionResponse])
 async def get_entity_list_views(
     entity_name: str,
+    db: AsyncSession = Depends(get_db),
     tenant_id: Optional[str] = None,
-    current_user=Depends(auth_service.get_current_user)
+    current_user=Depends(get_current_user)
 ):
     """Get all list view definitions for an entity."""
     
     try:
         # Get data engine
-        data_engine = app.engines["data"]
+        data_engine = DataEngine(db)
         
         # Get entity first to verify it exists
         entity_data = await data_engine.get_entity_definition(
@@ -692,14 +776,15 @@ async def get_entity_list_views(
 async def get_list_view_definition(
     entity_name: str,
     view_name: str,
+    db: AsyncSession = Depends(get_db),
     tenant_id: Optional[str] = None,
-    current_user=Depends(auth_service.get_current_user)
+    current_user=Depends(get_current_user)
 ):
     """Get a specific list view definition."""
     
     try:
         # Get data engine
-        data_engine = app.engines["data"]
+        data_engine = DataEngine(db)
         
         # Get list view definition
         list_view = await data_engine.get_list_view_definition(
@@ -729,6 +814,7 @@ async def get_list_view_definition(
 @router.get("/data/{entity_name}", response_model=Dict[str, Any])
 async def get_entity_data(
     entity_name: str,
+    db: AsyncSession = Depends(get_db),
     view_name: Optional[str] = None,
     page: int = Query(1, ge=1),
     page_size: int = Query(25, ge=1, le=1000),
@@ -738,7 +824,7 @@ async def get_entity_data(
     search_fields: Optional[str] = None,
     filters: Optional[str] = None,
     tenant_id: Optional[str] = None,
-    current_user=Depends(auth_service.get_current_user)
+    current_user=Depends(get_current_user)
 ):
     """Get paginated entity data with filtering and sorting."""
     
@@ -757,7 +843,7 @@ async def get_entity_data(
                 )
         
         # Get data engine
-        data_engine = app.engines["data"]
+        data_engine = DataEngine(db)
         
         # Get entity data with pagination and filtering
         result = await data_engine.get_entity_data(
@@ -948,124 +1034,250 @@ async def get_translations(
 
 
 # ================================
-# THEME ENDPOINTS  
+# USER THEME PREFERENCE ENDPOINTS  
 # ================================
 
-@router.get("/themes", response_model=List[ThemeResponse])
-async def get_themes(
-    tenant_id: Optional[str] = Query(None),
-    active_only: bool = Query(True),
-    db: AsyncSession = Depends(get_db)
-):
-    """Get theme definitions for a tenant."""
-    try:
-        logger.info(f"Getting themes for tenant: {tenant_id}, active_only: {active_only}")
-        
-        from app.models.metadata import Theme, ThemeProperty
-        from sqlalchemy import select
-        from sqlalchemy.orm import selectinload
-        
-        query = select(Theme).options(selectinload(Theme.theme_properties))
-        
-        if active_only:
-            query = query.where(Theme.is_active == True)
-            
-        if tenant_id:
-            query = query.where(
-                (Theme.tenant_id == tenant_id) |
-                (Theme.tenant_id.is_(None))  # Include global themes
-            )
-        else:
-            query = query.where(Theme.tenant_id.is_(None))
-            
-        result = await db.execute(query)
-        themes = result.scalars().all()
-        
-        return [
-            ThemeResponse(
-                theme_id=str(theme.theme_id),
-                name=theme.name,
-                description=theme.description,
-                parent_theme_id=str(theme.parent_theme_id) if theme.parent_theme_id else None,
-                is_system_theme=theme.is_system_theme,
-                is_active=theme.is_active,
-                is_default=theme.is_default,
-                properties={prop.property_key: prop.property_value for prop in theme.theme_properties},
-                tenant_id=str(theme.tenant_id) if theme.tenant_id else None
-            )
-            for theme in themes
-        ]
-    except Exception as e:
-        logger.error(f"Error getting themes: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error getting themes: {str(e)}")
-
-
-@router.get("/themes/{theme_id}", response_model=ThemeResponse)
-async def get_theme(
-    theme_id: str,
+@router.get("/themes/user-preferences", response_model=ThemeVariantResponse)
+async def get_user_theme_preferences(
+    user_id: Optional[str] = Query(None),
     tenant_id: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get a specific theme with its properties."""
+    """Get user's theme preferences with intelligent fallback."""
     try:
-        logger.info(f"Getting theme: {theme_id} for tenant: {tenant_id}")
+        logger.info(f"Getting theme preferences for user: {user_id}, tenant: {tenant_id}")
         
-        from app.models.metadata import Theme, ThemeProperty
+        from app.models.platform import BaseTheme, ThemeVariant, ThemeVariantProperty
         from sqlalchemy import select
         from sqlalchemy.orm import selectinload
         
-        query = select(Theme).options(selectinload(Theme.theme_properties)).where(
-            Theme.theme_id == theme_id,
-            Theme.is_active == True
+        # TODO: Implement user preferences table
+        # For now, use tenant default with light variant
+        
+        # 1. Try user preference (when user preferences table exists)
+        # 2. Fall back to tenant default theme
+        # 3. Fall back to system default
+        
+        # Get tenant's default base theme (for now, use maritime)
+        preferred_base_theme = "maritime"  # TODO: Get from tenant settings
+        preferred_variant = "light"       # TODO: Get from user preferences
+        
+        # Query for the theme variant
+        query = select(ThemeVariant).options(
+            selectinload(ThemeVariant.properties),
+            selectinload(ThemeVariant.base_theme)
+        ).join(BaseTheme).where(
+            BaseTheme.name == preferred_base_theme,
+            ThemeVariant.variant_name == preferred_variant,
+            BaseTheme.is_active == True,
+            ThemeVariant.is_active == True
         )
         
         if tenant_id:
             query = query.where(
-                (Theme.tenant_id == tenant_id) |
-                (Theme.tenant_id.is_(None))
+                (BaseTheme.tenant_id == tenant_id) |
+                (BaseTheme.tenant_id.is_(None))
             )
         else:
-            query = query.where(Theme.tenant_id.is_(None))
+            query = query.where(BaseTheme.tenant_id.is_(None))
             
         result = await db.execute(query)
-        theme = result.scalar_one_or_none()
+        variant = result.scalar_one_or_none()
         
-        if not theme:
-            raise HTTPException(status_code=404, detail=f"Theme not found: {theme_id}")
+        if not variant:
+            # Fallback to default/light
+            query = select(ThemeVariant).options(
+                selectinload(ThemeVariant.properties),
+                selectinload(ThemeVariant.base_theme)
+            ).join(BaseTheme).where(
+                BaseTheme.name == "default",
+                ThemeVariant.variant_name == "light",
+                BaseTheme.is_active == True,
+                ThemeVariant.is_active == True,
+                BaseTheme.tenant_id.is_(None)
+            )
             
-        return ThemeResponse(
-            theme_id=str(theme.theme_id),
-            name=theme.name,
-            description=theme.description,
-            parent_theme_id=str(theme.parent_theme_id) if theme.parent_theme_id else None,
-            is_system_theme=theme.is_system_theme,
-            is_active=theme.is_active,
-            is_default=theme.is_default,
-            properties={prop.property_key: prop.property_value for prop in theme.theme_properties},
-            tenant_id=str(theme.tenant_id) if theme.tenant_id else None
+            result = await db.execute(query)
+            variant = result.scalar_one_or_none()
+            
+        if not variant:
+            raise HTTPException(
+                status_code=404, 
+                detail="No theme preferences available"
+            )
+            
+        return ThemeVariantResponse(
+            variant_id=str(variant.variant_id),
+            base_theme_id=str(variant.base_theme_id),
+            variant_name=variant.variant_name,
+            display_name=variant.display_name,
+            description=variant.description,
+            is_default=variant.is_default,
+            is_active=variant.is_active,
+            supports_auto_switch=variant.supports_auto_switch,
+            css_class_prefix=variant.css_class_prefix,
+            media_query=variant.media_query,
+            properties={prop.property_key: prop.property_value for prop in variant.properties}
         )
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error getting theme {theme_id}: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error getting theme: {str(e)}")
+        logger.error(f"Error getting theme preferences: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting theme preferences: {str(e)}")
 
 
-@router.get("/themes/{theme_id}/css", response_model=str)
-async def get_theme_css(
-    theme_id: str,
+# ================================
+# THEME CATALOG ENDPOINTS  
+# ================================
+
+@router.get("/themes", response_model=List[BaseThemeResponse])
+async def get_base_themes(
+    tenant_id: Optional[str] = Query(None),
+    active_only: bool = Query(True),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get all base themes with their variants."""
+    try:
+        logger.info(f"Getting base themes for tenant: {tenant_id}, active_only: {active_only}")
+        
+        from app.models.platform import BaseTheme, ThemeVariant, ThemeVariantProperty
+        from sqlalchemy import select
+        from sqlalchemy.orm import selectinload
+        
+        query = select(BaseTheme).options(
+            selectinload(BaseTheme.variants).selectinload(ThemeVariant.properties)
+        )
+        
+        if active_only:
+            query = query.where(BaseTheme.is_active == True)
+            
+        if tenant_id:
+            query = query.where(
+                (BaseTheme.tenant_id == tenant_id) |
+                (BaseTheme.tenant_id.is_(None))  # Include global themes
+            )
+        else:
+            query = query.where(BaseTheme.tenant_id.is_(None))
+            
+        result = await db.execute(query)
+        base_themes = result.scalars().all()
+        
+        return [
+            BaseThemeResponse(
+                base_theme_id=str(base_theme.base_theme_id),
+                name=base_theme.name,
+                display_name=base_theme.display_name,
+                description=base_theme.description,
+                category=base_theme.category,
+                is_system_theme=base_theme.is_system_theme,
+                is_active=base_theme.is_active,
+                is_featured=base_theme.is_featured,
+                version=base_theme.version,
+                tenant_id=str(base_theme.tenant_id) if base_theme.tenant_id else None,
+                variants=[
+                    ThemeVariantResponse(
+                        variant_id=str(variant.variant_id),
+                        base_theme_id=str(variant.base_theme_id),
+                        variant_name=variant.variant_name,
+                        display_name=variant.display_name,
+                        description=variant.description,
+                        is_default=variant.is_default,
+                        is_active=variant.is_active,
+                        supports_auto_switch=variant.supports_auto_switch,
+                        css_class_prefix=variant.css_class_prefix,
+                        media_query=variant.media_query,
+                        properties={prop.property_key: prop.property_value for prop in variant.properties}
+                    )
+                    for variant in base_theme.variants
+                    if not active_only or variant.is_active
+                ]
+            )
+            for base_theme in base_themes
+        ]
+    except Exception as e:
+        logger.error(f"Error getting base themes: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting base themes: {str(e)}")
+
+
+@router.get("/themes/{theme_name}/{variant_name}", response_model=ThemeVariantResponse)
+async def get_theme_variant(
+    theme_name: str,
+    variant_name: str,
     tenant_id: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get theme as CSS custom properties."""
+    """Get a specific theme variant by base theme name and variant name."""
     try:
-        theme_response = await get_theme(theme_id, tenant_id, db)
+        logger.info(f"Getting theme variant: {theme_name}/{variant_name} for tenant: {tenant_id}")
+        
+        from app.models.platform import BaseTheme, ThemeVariant, ThemeVariantProperty
+        from sqlalchemy import select
+        from sqlalchemy.orm import selectinload
+        
+        # Query for the theme variant
+        query = select(ThemeVariant).options(
+            selectinload(ThemeVariant.properties),
+            selectinload(ThemeVariant.base_theme)
+        ).join(BaseTheme).where(
+            BaseTheme.name == theme_name,
+            ThemeVariant.variant_name == variant_name,
+            BaseTheme.is_active == True,
+            ThemeVariant.is_active == True
+        )
+        
+        if tenant_id:
+            query = query.where(
+                (BaseTheme.tenant_id == tenant_id) |
+                (BaseTheme.tenant_id.is_(None))
+            )
+        else:
+            query = query.where(BaseTheme.tenant_id.is_(None))
+            
+        result = await db.execute(query)
+        variant = result.scalar_one_or_none()
+        
+        if not variant:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Theme variant not found: {theme_name}/{variant_name}"
+            )
+            
+        return ThemeVariantResponse(
+            variant_id=str(variant.variant_id),
+            base_theme_id=str(variant.base_theme_id),
+            variant_name=variant.variant_name,
+            display_name=variant.display_name,
+            description=variant.description,
+            is_default=variant.is_default,
+            is_active=variant.is_active,
+            supports_auto_switch=variant.supports_auto_switch,
+            css_class_prefix=variant.css_class_prefix,
+            media_query=variant.media_query,
+            properties={prop.property_key: prop.property_value for prop in variant.properties}
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting theme variant {theme_name}/{variant_name}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting theme variant: {str(e)}")
+
+
+@router.get("/themes/{theme_name}/{variant_name}/css", response_model=str)
+async def get_theme_variant_css(
+    theme_name: str,
+    variant_name: str,
+    tenant_id: Optional[str] = Query(None),
+    db: AsyncSession = Depends(get_db)
+):
+    """Generate CSS for a specific theme variant."""
+    try:
+        variant_response = await get_theme_variant(theme_name, variant_name, tenant_id, db)
         
         # Generate CSS custom properties
         css_properties = []
         css_properties.append(":root {")
         
-        for key, value in theme_response.properties.items():
+        for key, value in variant_response.properties.items():
             css_properties.append(f"  {key}: {value};")
             
         css_properties.append("}")
@@ -1073,5 +1285,8 @@ async def get_theme_css(
         return "\n".join(css_properties)
         
     except Exception as e:
-        logger.error(f"Error generating CSS for theme {theme_id}: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error generating theme CSS: {str(e)}") 
+        logger.error(f"Error generating CSS for theme variant {theme_name}/{variant_name}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error generating CSS: {str(e)}")
+
+
+ 

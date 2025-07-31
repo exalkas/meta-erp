@@ -802,7 +802,7 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({
         console.log(`🌐 Fetching translations for locale: ${locale}`);
 
         const response = await fetch(
-          `/api/metadata/translations/${locale}?tenant_id=${tenantId || ""}`
+          `http://localhost:8000/metadata/translations/${locale}?tenant_id=${tenantId || ""}`
         );
 
         if (!response.ok) {

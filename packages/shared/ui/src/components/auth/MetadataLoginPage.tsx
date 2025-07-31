@@ -19,6 +19,7 @@ import {
   Logo,
   AppName,
 } from "../..";
+import { useAuthGuard } from "../../hooks/useAuthGuard";
 
 interface MetadataLoginPageProps {
   onLoginSuccess?: (redirectTo?: string) => void;
@@ -65,6 +66,9 @@ export default function MetadataLoginPage({
   const { t } = useTranslation();
   const { theme } = useTheme();
 
+  // ✅ FIXED: Use auth guard for proper token management
+  const { login } = useAuthGuard();
+
   // Fetch page definition from metadata API
   useEffect(() => {
     const fetchPageDefinition = async () => {
@@ -77,7 +81,9 @@ export default function MetadataLoginPage({
         // Add a small delay to show loading state
         await new Promise((resolve) => setTimeout(resolve, 300));
 
-        const response = await fetch("/api/metadata/pages/login");
+        const response = await fetch(
+          "http://localhost:8000/metadata/pages/login"
+        );
 
         if (!response.ok) {
           throw new Error(
@@ -128,21 +134,20 @@ export default function MetadataLoginPage({
 
       console.log("✅ Authentication successful through auth service");
 
-      // Store authentication data
-      if (typeof window !== "undefined") {
-        localStorage.setItem(
-          "auth_tokens",
-          JSON.stringify({
-            accessToken: authResponse.access_token,
-            refreshToken: authResponse.refresh_token,
-            expiresIn: authResponse.expires_in,
-            expiresAt: new Date(
-              Date.now() + authResponse.expires_in * 1000
-            ).toISOString(),
-          })
-        );
-        localStorage.setItem("auth_user", JSON.stringify(authResponse.user));
-      }
+      // ✅ FIXED: Use auth guard's login function (sets both localStorage AND cookie)
+      const tokens = {
+        accessToken: authResponse.access_token,
+        refreshToken: authResponse.refresh_token,
+        expiresIn: authResponse.expires_in,
+        expiresAt: new Date(
+          Date.now() + authResponse.expires_in * 1000
+        ).toISOString(),
+      };
+
+      login(tokens, authResponse.user);
+      console.log(
+        "✅ Authentication tokens stored (including HTTP cookie for middleware)"
+      );
 
       console.log("✅ Login successful, calling success handler");
       onLoginSuccess?.(redirectTo);
@@ -221,10 +226,10 @@ export default function MetadataLoginPage({
                 <div>
                   • Check:{" "}
                   <code className="bg-blue-100 px-1 rounded">
-                    /api/metadata/pages/login
+                    http://localhost:8000/metadata/pages/login
                   </code>
                 </div>
-                <div>• Ensure: Mock API service is running</div>
+                <div>• Ensure: Real API services are running</div>
                 <div>• Console: Check browser DevTools for details</div>
               </div>
             </div>

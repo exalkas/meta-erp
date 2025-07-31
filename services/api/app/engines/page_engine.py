@@ -9,7 +9,7 @@ from typing import Dict, List, Optional, Any
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_
-from app.core.logging import get_logger, MetadataLogger
+from app.core.logging import get_logger
 from app.core.exceptions import ValidationException, TenantNotFoundException
 from app.models.platform import PageDefinition
 from app.models.metadata import Tenant
@@ -31,7 +31,7 @@ class PageEngine:
 
     def __init__(self, db_session: AsyncSession):
         self.db = db_session
-        self.metadata_logger = MetadataLogger(logger)
+        self.metadata_logger = get_logger("page_engine")
 
     async def get_page_definition(
         self, 
@@ -47,6 +47,13 @@ class PageEngine:
         """
         
         try:
+            logger.info(
+                "Starting get_page_definition",
+                route=route,
+                tenant_id=str(tenant_id) if tenant_id else None,
+                operation="get_page_definition"
+            )
+            
             # Log metadata operation
             self.metadata_logger.log_metadata_operation(
                 operation="get_page_definition",
@@ -56,6 +63,12 @@ class PageEngine:
             )
 
             # Query with tenant priority
+            logger.info(
+                "Building database query",
+                route=route,
+                tenant_id=str(tenant_id) if tenant_id else None
+            )
+            
             query = select(PageDefinition).where(
                 and_(
                     PageDefinition.route == route,
@@ -69,8 +82,22 @@ class PageEngine:
                 PageDefinition.tenant_id.desc().nulls_last()
             )
             
+            logger.info(
+                "Executing database query",
+                route=route,
+                tenant_id=str(tenant_id) if tenant_id else None
+            )
+            
             result = await self.db.execute(query)
             page_def = result.scalars().first()
+            
+            logger.info(
+                "Database query completed",
+                route=route,
+                tenant_id=str(tenant_id) if tenant_id else None,
+                page_found=page_def is not None,
+                page_id=str(page_def.page_id) if page_def else None
+            )
             
             if not page_def:
                 logger.warning(
@@ -81,21 +108,50 @@ class PageEngine:
                 return None
 
             # Convert to response format
-            page_data = {
-                "page_id": str(page_def.page_id),
-                "page_name": page_def.page_name,
-                "route": page_def.route,
-                "title": page_def.title,  # Changed from title_key
-                "description": page_def.description,  # Changed from meta_description
-                "page_type": page_def.page_type,  # Added this field
-                "components": page_def.components,
-                "access_roles": page_def.access_roles,
-                "is_public": page_def.is_public,
-                "metadata_json": page_def.metadata_json,  # Changed from layout_config
-                "tenant_id": str(page_def.tenant_id) if page_def.tenant_id else None,
-                "created_at": page_def.created_at.isoformat() if page_def.created_at else None,
-                "updated_at": page_def.updated_at.isoformat() if page_def.updated_at else None
-            }
+            logger.info(
+                "Converting page definition to response format",
+                page_id=str(page_def.page_id),
+                route=route
+            )
+            
+            try:
+                page_data = {
+                    "page_id": str(page_def.page_id),
+                    "page_name": page_def.page_name,
+                    "route": page_def.route,
+                    "title": page_def.title,
+                    "description": page_def.description,
+                    "page_type": page_def.page_type,
+                    "layout_id": str(page_def.layout_id) if page_def.layout_id else None,  # ✅ FIXED: Added missing field
+                    "sections_data_json": page_def.sections_data_json,  # ✅ FIXED: Added missing field
+                    "components": page_def.components,
+                    "access_roles": page_def.access_roles,
+                    "is_public": page_def.is_public,
+                    "metadata_json": page_def.metadata_json,
+                    "tenant_id": str(page_def.tenant_id) if page_def.tenant_id else None,
+                    "created_at": page_def.created_at.isoformat() if page_def.created_at else None,
+                    "updated_at": page_def.updated_at.isoformat() if page_def.updated_at else None,
+                    # ✅ ADDED: New metadata-driven fields (database columns now exist)
+                    "initial_state": page_def.initial_state,
+                    "state_bindings": page_def.state_bindings,
+                    "api_endpoints": page_def.api_endpoints,
+                    "callbacks": page_def.callbacks,
+                }
+                
+                logger.info(
+                    "Page data conversion successful",
+                    page_id=str(page_def.page_id),
+                    data_keys=list(page_data.keys())
+                )
+                
+            except Exception as conversion_error:
+                logger.error(
+                    "Error converting page definition to response format",
+                    page_id=str(page_def.page_id),
+                    error=str(conversion_error),
+                    error_type=type(conversion_error).__name__
+                )
+                raise
 
             logger.info(
                 "Page definition retrieved successfully",

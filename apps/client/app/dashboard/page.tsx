@@ -5,7 +5,7 @@ import {
   DynamicPage,
   TranslationProvider,
   ThemeProvider,
-  initializeMockApi,
+  ProtectedRoute,
 } from "@erp/shared-ui";
 
 /**
@@ -23,26 +23,17 @@ export default function DashboardPage() {
   const [pageDefinition, setPageDefinition] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const tenantId = "dev-tenant-001"; // In real app, this would come from auth/context
+  const tenantId = "89f84fea-b5b9-413c-945b-002c7fd9555d"; // Demo tenant UUID - in real app, this would come from auth/context
 
-  // Initialize mock API and fetch page definition
+  // Fetch page definition from real metadata API
   useEffect(() => {
     const initializeAndFetch = async () => {
       try {
-        console.log("🎭 Initializing mock API for dashboard page");
-
-        // Initialize mock API first
-        const { initializeMockApi } = await import("@erp/shared-ui");
-        initializeMockApi(true);
-
-        // Small delay to ensure mock API is ready
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
         console.log("📐 Fetching dashboard page definition from metadata API");
 
-        // Fetch page definition
+        // Fetch page definition from API service
         const response = await fetch(
-          `/api/metadata/pages/dashboard?tenant_id=${tenantId}`
+          `http://localhost:8000/metadata/pages/dashboard?tenant_id=${tenantId}`
         );
 
         if (!response.ok) {
@@ -103,8 +94,8 @@ export default function DashboardPage() {
           </h2>
           <p className="text-red-600 mb-4">{error}</p>
           <div className="text-sm text-red-500 mb-4">
-            This is expected in development without a real database. The mock
-            API should handle this automatically.
+            This may occur if the real API services are not running or if there
+            are connectivity issues.
           </div>
           <div className="flex space-x-2">
             <button
@@ -126,33 +117,38 @@ export default function DashboardPage() {
   }
 
   return (
-    <TranslationProvider tenantId={tenantId}>
-      <ThemeProvider tenantId={tenantId}>
-        {/* Pure metadata-driven dashboard rendering */}
-        <DynamicPage
-          pageDefinition={pageDefinition}
-          tenantId={tenantId}
-          onComponentError={handleComponentError}
-        />
+    <ProtectedRoute
+      requiredRoles={["basic", "enhanced", "strict", "critical"]} // Allow all authenticated users
+      redirectToLogin={true}
+    >
+      <TranslationProvider tenantId={tenantId}>
+        <ThemeProvider tenantId={tenantId}>
+          {/* Pure metadata-driven dashboard rendering */}
+          <DynamicPage
+            pageDefinition={pageDefinition}
+            tenantId={tenantId}
+            onComponentError={handleComponentError}
+          />
 
-        {/* Development debug info */}
-        {process.env.NODE_ENV === "development" && (
-          <div className="fixed top-4 right-4 bg-black bg-opacity-75 text-white text-xs p-3 rounded z-50 max-w-sm">
-            <div className="font-bold mb-1">🚀 Metadata Dashboard</div>
-            <div>Page: {pageDefinition?.page_name || "unknown"}</div>
-            <div>Layout: {pageDefinition?.layout_id || "legacy"}</div>
-            <div>
-              Sections:{" "}
-              {pageDefinition?.sections_data_json
-                ? Object.keys(pageDefinition.sections_data_json).length
-                : 0}
+          {/* Development debug info */}
+          {process.env.NODE_ENV === "development" && (
+            <div className="fixed top-4 right-4 bg-black bg-opacity-75 text-white text-xs p-3 rounded z-50 max-w-sm">
+              <div className="font-bold mb-1">🚀 Metadata Dashboard</div>
+              <div>Page: {pageDefinition?.page_name || "unknown"}</div>
+              <div>Layout: {pageDefinition?.layout_id || "legacy"}</div>
+              <div>
+                Sections:{" "}
+                {pageDefinition?.sections_data_json
+                  ? Object.keys(pageDefinition.sections_data_json).length
+                  : 0}
+              </div>
+              <div>
+                Real-time: {pageDefinition?.real_time_updates ? "✅" : "❌"}
+              </div>
             </div>
-            <div>
-              Real-time: {pageDefinition?.real_time_updates ? "✅" : "❌"}
-            </div>
-          </div>
-        )}
-      </ThemeProvider>
-    </TranslationProvider>
+          )}
+        </ThemeProvider>
+      </TranslationProvider>
+    </ProtectedRoute>
   );
 }

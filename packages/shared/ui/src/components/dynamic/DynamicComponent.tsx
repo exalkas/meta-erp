@@ -268,27 +268,45 @@ export const DynamicComponent: React.FC<DynamicComponentProps> = ({
       );
     }
 
-    // LEGACY: Fallback to hardcoded logic for components not yet in metadata
-    if (!contextProps.metadataCallbacks?.[type]) {
-      // LoginForm requires onLogin function
-      if (type === "LoginForm") {
+    // ✅ METADATA-FIRST: LoginForm must get callback from metadata (no fallbacks)
+    if (type === "LoginForm") {
+      console.log("🔧 Setting up LoginForm with callbacks:", {
+        hasMetadataCallback: !!contextProps.metadataCallbacks?.onLogin,
+        callbackType: contextProps.metadataCallbacks?.onLogin
+          ? "metadata"
+          : "MISSING",
+        metadataCallbackKeys: contextProps.metadataCallbacks
+          ? Object.keys(contextProps.metadataCallbacks)
+          : [],
+      });
+
+      if (!contextProps.metadataCallbacks?.onLogin) {
+        console.error(
+          "❌ METADATA ERROR: LoginForm requires onLogin callback from metadata! No fallback provided."
+        );
+        // Return a non-functional component instead of throwing during render
         enhancedProps = {
           ...enhancedProps,
-          onLogin:
-            contextProps.onLogin ||
-            (async (data: {
-              email: string;
-              password: string;
-              rememberMe?: boolean;
-            }) => {
-              console.log("🔐 Login attempt:", data);
-              alert("Login successful! (Mock implementation)");
-            }),
+          onLogin: async () => {
+            throw new Error(
+              "LoginForm: onLogin callback missing from metadata. Check page definition callbacks."
+            );
+          },
+          language: "el",
+          app: props.app || "client",
+        };
+      } else {
+        enhancedProps = {
+          ...enhancedProps,
+          onLogin: contextProps.metadataCallbacks.onLogin, // ✅ METADATA-ONLY
           language: "el",
           app: props.app || "client",
         };
       }
+    }
 
+    // LEGACY: Fallback to hardcoded logic for other components not yet in metadata
+    if (!contextProps.metadataCallbacks?.[type] && type !== "LoginForm") {
       // Navigation requires logout function
       if (type === "Navigation") {
         enhancedProps = {

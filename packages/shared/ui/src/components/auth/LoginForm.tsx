@@ -33,6 +33,15 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   error,
   language = "el",
 }) => {
+  console.log("🏗️ LoginForm: Component rendered with props:", {
+    hasOnLogin: !!onLogin,
+    onLoginType: typeof onLogin,
+    app,
+    language,
+    isLoading,
+    hasError: !!error,
+  });
+
   const [isClient, setIsClient] = useState(false);
   const config = APP_CONFIGS[app];
 
@@ -100,10 +109,19 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     password: string;
     rememberMe?: boolean;
   }> = async (data) => {
+    console.log("🚀 LoginForm: Form submitted with data:", {
+      email: data.email,
+      rememberMe: data.rememberMe,
+      hasOnLogin: !!onLogin,
+      onLoginType: typeof onLogin,
+    });
+
     try {
+      console.log("🔐 LoginForm: Calling onLogin callback...");
       await onLogin(data);
+      console.log("✅ LoginForm: onLogin callback completed successfully");
     } catch (error) {
-      console.error("Login failed:", error);
+      console.error("❌ LoginForm: Login failed:", error);
     }
   };
 

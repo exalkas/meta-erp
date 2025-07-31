@@ -1,0 +1,219 @@
+{
+  "page_id": "20000000-0000-0000-0000-000000000001",
+  "page_name": "dashboard",
+  "route": "/dashboard",
+  "title": "Maritime Business Dashboard",
+  "description": "Main application dashboard with business widgets and analytics",
+  "page_type": "dashboard",
+  "layout_id": "d0000000-0000-0000-0000-000000000001",
+  "sections_data_json": {
+    "header": [
+      {
+        "type": "Navigation",
+        "props": {
+          "variant": "horizontal",
+          "showUserMenu": true,
+          "showNotifications": true,
+          "items": [
+            {
+              "label": "Dashboard",
+              "route": "/dashboard",
+              "icon": "LayoutDashboard",
+              "active": true
+            },
+            {
+              "label": "Customers",
+              "route": "/customers",
+              "icon": "Users"
+            },
+            {
+              "label": "Suppliers",
+              "route": "/suppliers",
+              "icon": "Building"
+            },
+            {
+              "label": "Analytics",
+              "route": "/analytics",
+              "icon": "BarChart3"
+            }
+          ]
+        }
+      }
+    ],
+    "sidebar": [
+      {
+        "type": "SidebarMenu",
+        "props": {
+          "variant": "vertical",
+          "collapsible": true,
+          "sections": [
+            {
+              "title": "Business",
+              "items": [
+                { "label": "Overview", "route": "/dashboard", "icon": "Home" },
+                {
+                  "label": "Customers",
+                  "route": "/customers",
+                  "icon": "Users"
+                },
+                {
+                  "label": "Suppliers",
+                  "route": "/suppliers",
+                  "icon": "Building"
+                }
+              ]
+            },
+            {
+              "title": "Operations",
+              "items": [
+                { "label": "Orders", "route": "/orders", "icon": "Package" },
+                {
+                  "label": "Inventory",
+                  "route": "/inventory",
+                  "icon": "Warehouse"
+                },
+                { "label": "Shipping", "route": "/shipping", "icon": "Ship" }
+              ]
+            },
+            {
+              "title": "Finance",
+              "items": [
+                {
+                  "label": "Invoices",
+                  "route": "/invoices",
+                  "icon": "FileText"
+                },
+                {
+                  "label": "Payments",
+                  "route": "/payments",
+                  "icon": "CreditCard"
+                },
+                { "label": "Reports", "route": "/reports", "icon": "BarChart3" }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "main": [
+      {
+        "type": "DashboardGrid",
+        "props": {
+          "columns": 3,
+          "gap": 6,
+          "widgets": [
+            {
+              "type": "KPICard",
+              "props": {
+                "title": "Total Revenue",
+                "value": "€2,847,392",
+                "change": "+12.5%",
+                "changeType": "positive",
+                "icon": "Euro",
+                "period": "This month"
+              }
+            },
+            {
+              "type": "KPICard",
+              "props": {
+                "title": "Active Customers",
+                "value": "1,247",
+                "change": "+8.2%",
+                "changeType": "positive",
+                "icon": "Users",
+                "period": "This month"
+              }
+            },
+            {
+              "type": "KPICard",
+              "props": {
+                "title": "Pending Orders",
+                "value": "89",
+                "change": "-3.1%",
+                "changeType": "negative",
+                "icon": "Package",
+                "period": "This week"
+              }
+            },
+            {
+              "type": "RecentActivity",
+              "props": {
+                "title": "Recent Activities",
+                "colspan": 2,
+                "maxItems": 8
+              }
+            },
+            {
+              "type": "ChartWidget",
+              "props": {
+                "title": "Revenue Trend",
+                "chartType": "line",
+                "timeRange": "7d",
+                "colspan": 1
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "footer": [
+      {
+        "type": "StatusBar",
+        "props": {
+          "showConnectionStatus": true,
+          "showLastUpdate": true,
+          "showVersion": true
+        }
+      }
+    ]
+  },
+  "components": [],
+  "initial_state": {
+    "isLoading": true,
+    "selectedTimeRange": "7d",
+    "refreshInterval": 30000,
+    "widgets": {
+      "revenue": { "loading": false, "error": null },
+      "customers": { "loading": false, "error": null },
+      "orders": { "loading": false, "error": null }
+    }
+  },
+  "state_bindings": {
+    "user.profile": "auth.currentUser",
+    "dashboard.timeRange": "ui.timeRange",
+    "dashboard.autoRefresh": "ui.autoRefresh"
+  },
+  "api_endpoints": {
+    "dashboardData": "/api/dashboard/overview",
+    "kpiData": "/api/dashboard/kpis",
+    "activityFeed": "/api/dashboard/activities",
+    "chartData": "/api/dashboard/charts"
+  },
+  "callbacks": {
+    "onDataRefresh": "action.refreshDashboard",
+    "onTimeRangeChange": "action.updateTimeRange",
+    "onWidgetClick": "action.navigateToDetail"
+  },
+  "real_time_updates": true,
+  "cache_strategy": "stale-while-revalidate",
+  "websocket_events": {
+    "dashboard.update": "action.refreshKPIs",
+    "orders.new": "action.updateOrderCount",
+    "payments.received": "action.updateRevenue"
+  },
+  "metadata_json": {
+    "layout": "dashboard",
+    "theme": "maritime",
+    "autoRefresh": true,
+    "refreshInterval": 30000,
+    "seo": {
+      "title": "Dashboard - Axiologic Maritime Platform",
+      "description": "Business dashboard with KPIs and analytics"
+    }
+  },
+  "access_roles": ["authenticated"],
+  "is_public": false,
+  "tenant_id": null,
+  "created_at": "2025-01-29T00:00:00Z",
+  "updated_at": "2025-01-29T00:00:00Z"
+}

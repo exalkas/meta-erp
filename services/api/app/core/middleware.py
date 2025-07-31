@@ -5,7 +5,7 @@ import uuid
 from typing import Callable
 
 from fastapi import Request, Response
-from fastapi.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
 from .logging import get_logger, log_request_start, log_request_end, RequestLogger

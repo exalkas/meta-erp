@@ -1,0 +1,226 @@
+[
+  {
+    "locale": "el",
+    "key": "login.title",
+    "text": "Σύνδεση",
+    "namespace": "auth",
+    "description": "Login page title"
+  },
+  {
+    "locale": "el",
+    "key": "login.email",
+    "text": "Email",
+    "namespace": "auth",
+    "description": "Email field label"
+  },
+  {
+    "locale": "el",
+    "key": "login.password",
+    "text": "Κωδικός",
+    "namespace": "auth",
+    "description": "Password field label"
+  },
+  {
+    "locale": "el",
+    "key": "login.submit",
+    "text": "Σύνδεση",
+    "namespace": "auth",
+    "description": "Login submit button"
+  },
+  {
+    "locale": "el",
+    "key": "login.forgot_password",
+    "text": "Ξεχάσατε τον κωδικό σας;",
+    "namespace": "auth",
+    "description": "Forgot password link"
+  },
+  {
+    "locale": "el",
+    "key": "login.magic_link",
+    "text": "Αποστολή Magic Link",
+    "namespace": "auth",
+    "description": "Magic link login button"
+  },
+  {
+    "locale": "el",
+    "key": "login.two_factor",
+    "text": "Κωδικός Δύο Παραγόντων",
+    "namespace": "auth",
+    "description": "2FA code field label"
+  },
+  {
+    "locale": "el",
+    "key": "dashboard.title",
+    "text": "Πίνακας Ελέγχου",
+    "namespace": "app",
+    "description": "Dashboard page title"
+  },
+  {
+    "locale": "el",
+    "key": "dashboard.welcome",
+    "text": "Καλώς ήρθατε",
+    "namespace": "app",
+    "description": "Dashboard welcome message"
+  },
+  {
+    "locale": "el",
+    "key": "dashboard.overview",
+    "text": "Επισκόπηση",
+    "namespace": "app",
+    "description": "Dashboard overview section"
+  },
+  {
+    "locale": "el",
+    "key": "navigation.customers",
+    "text": "Πελάτες",
+    "namespace": "nav",
+    "description": "Customers navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "navigation.suppliers",
+    "text": "Προμηθευτές",
+    "namespace": "nav",
+    "description": "Suppliers navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "navigation.orders",
+    "text": "Παραγγελίες",
+    "namespace": "nav",
+    "description": "Orders navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "navigation.inventory",
+    "text": "Απόθεμα",
+    "namespace": "nav",
+    "description": "Inventory navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "navigation.shipping",
+    "text": "Αποστολές",
+    "namespace": "nav",
+    "description": "Shipping navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "navigation.invoices",
+    "text": "Τιμολόγια",
+    "namespace": "nav",
+    "description": "Invoices navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "navigation.payments",
+    "text": "Πληρωμές",
+    "namespace": "nav",
+    "description": "Payments navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "navigation.reports",
+    "text": "Αναφορές",
+    "namespace": "nav",
+    "description": "Reports navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "kpi.total_revenue",
+    "text": "Συνολικά Έσοδα",
+    "namespace": "kpi",
+    "description": "Revenue KPI title"
+  },
+  {
+    "locale": "el",
+    "key": "kpi.active_customers",
+    "text": "Ενεργοί Πελάτες",
+    "namespace": "kpi",
+    "description": "Active customers KPI title"
+  },
+  {
+    "locale": "el",
+    "key": "kpi.pending_orders",
+    "text": "Εκκρεμείς Παραγγελίες",
+    "namespace": "kpi",
+    "description": "Pending orders KPI title"
+  },
+  {
+    "locale": "el",
+    "key": "common.loading",
+    "text": "Φόρτωση...",
+    "namespace": "common",
+    "description": "Loading state message"
+  },
+  {
+    "locale": "el",
+    "key": "common.error",
+    "text": "Σφάλμα",
+    "namespace": "common",
+    "description": "Generic error message"
+  },
+  {
+    "locale": "el",
+    "key": "common.save",
+    "text": "Αποθήκευση",
+    "namespace": "common",
+    "description": "Save button text"
+  },
+  {
+    "locale": "el",
+    "key": "common.cancel",
+    "text": "Άκυρο",
+    "namespace": "common",
+    "description": "Cancel button text"
+  },
+  {
+    "locale": "el",
+    "key": "common.submit",
+    "text": "Υποβολή",
+    "namespace": "common",
+    "description": "Submit button text"
+  },
+  {
+    "locale": "el",
+    "key": "error.page_load_failed",
+    "text": "Αποτυχία φόρτωσης σελίδας",
+    "namespace": "error",
+    "description": "Page load error message"
+  },
+  {
+    "locale": "el",
+    "key": "error.authentication_failed",
+    "text": "Αποτυχία ταυτοποίησης",
+    "namespace": "error",
+    "description": "Auth error message"
+  },
+  {
+    "locale": "el",
+    "key": "error.access_denied",
+    "text": "Άρνηση πρόσβασης",
+    "namespace": "error",
+    "description": "Access denied error message"
+  },
+  {
+    "locale": "el",
+    "key": "theme.light",
+    "text": "Φωτεινό",
+    "namespace": "theme",
+    "description": "Light theme option"
+  },
+  {
+    "locale": "el",
+    "key": "theme.dark",
+    "text": "Σκοτεινό",
+    "namespace": "theme",
+    "description": "Dark theme option"
+  },
+  {
+    "locale": "el",
+    "key": "theme.maritime",
+    "text": "Ναυτιλιακό",
+    "namespace": "theme",
+    "description": "Maritime theme option"
+  }
+]

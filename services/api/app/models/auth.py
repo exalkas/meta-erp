@@ -60,63 +60,54 @@ class User(Base):
     last_name = Column(String(100), nullable=False)
     display_name = Column(String(200), nullable=True)
     
-    # Authentication
-    password_hash = Column(String(255), nullable=True)  # Nullable for social login users
-    password_salt = Column(String(100), nullable=True)
-    password_reset_token = Column(String(255), nullable=True)
-    password_reset_expires = Column(DateTime(timezone=True), nullable=True)
+    # Authentication methods (stored as JSONB for flexibility) 
+    auth_methods_json = Column(JSON, default={})
+    
+    # Security and compliance
+    compliance_level = Column(String(50), default='BASIC')
+    kyc_status = Column(String(50), default='PENDING') 
+    kyc_completed_at = Column(DateTime(timezone=True), nullable=True)
+    kyc_expires_at = Column(DateTime(timezone=True), nullable=True)
     
     # Account status
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)
-    is_superuser = Column(Boolean, default=False)
-    is_tenant_admin = Column(Boolean, default=False)
+    email_verified = Column(Boolean, default=False)
+    phone_verified = Column(Boolean, default=False)
     
-    # Email verification
-    email_verification_token = Column(String(255), nullable=True)
-    email_verified_at = Column(DateTime(timezone=True), nullable=True)
-    
-    # Two-Factor Authentication
-    is_2fa_enabled = Column(Boolean, default=False)
-    totp_secret = Column(String(255), nullable=True)  # Encrypted TOTP secret
-    backup_codes = Column(JSON, nullable=True)  # Encrypted backup codes
-    
-    # Profile information
-    profile_picture_url = Column(String(500), nullable=True)
-    phone = Column(String(20), nullable=True)
-    timezone = Column(String(50), default="Europe/Athens")
-    locale = Column(String(10), default="el_GR")
-    
-    # Login tracking
-    last_login_at = Column(DateTime(timezone=True), nullable=True)
-    last_login_ip = Column(String(45), nullable=True)  # IPv6 compatible
-    login_count = Column(Integer, default=0)
-    failed_login_attempts = Column(Integer, default=0)
-    locked_until = Column(DateTime(timezone=True), nullable=True)
+    # Business context
+    role = Column(String(100), nullable=True)
+    department = Column(String(100), nullable=True)
+    employee_id = Column(String(50), nullable=True)
+    manager_user_id = Column(UUID(as_uuid=True), ForeignKey('users.user_id'), nullable=True)
     
     # Preferences
-    preferences = Column(JSON, default=lambda: {
-        "theme": "light",
-        "language": "el_GR",
-        "notifications": {
-            "email": True,
-            "browser": True,
-            "mobile": False,
-        },
-        "dashboard_layout": "default",
-    })
+    preferred_language = Column(String(5), default='en-US')
+    timezone = Column(String(50), default='UTC')
+    date_format = Column(String(20), default='YYYY-MM-DD')
     
-    # Metadata
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-    created_by = Column(UUID(as_uuid=True), nullable=True)
+    # Security tracking
+    last_login_at = Column(DateTime(timezone=True), nullable=True)
+    failed_login_attempts = Column(Integer, default=0)
+    locked_until = Column(DateTime(timezone=True), nullable=True)
+    password_changed_at = Column(DateTime(timezone=True), nullable=True)
+    
+    # Terms and privacy
+    terms_accepted_at = Column(DateTime(timezone=True), nullable=True)
+    privacy_accepted_at = Column(DateTime(timezone=True), nullable=True)
+    marketing_consent = Column(Boolean, default=False)
+    
+    # Audit fields
+    created_by = Column(UUID(as_uuid=True), ForeignKey('users.user_id'), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=func.current_timestamp())
+    updated_at = Column(DateTime(timezone=True), default=func.current_timestamp(), onupdate=func.current_timestamp())
+    deleted_at = Column(DateTime(timezone=True), nullable=True)
     
     # Relationships
     tenant = relationship("Tenant")
     roles = relationship("Role", secondary=user_roles, back_populates="users")
-    auth_sessions = relationship("AuthSession", back_populates="user", cascade="all, delete-orphan")
-    magic_links = relationship("MagicLink", back_populates="user", cascade="all, delete-orphan")
-    audit_logs = relationship("AuditLog", back_populates="user", cascade="all, delete-orphan")
+    # Note: auth_methods are stored as JSON in auth_methods_json field, not as separate records
+    # sessions, magic_links, audit_logs are managed by the auth service, not the API service
     
     # Indexes
     __table_args__ = (
@@ -266,7 +257,7 @@ class AuthSession(Base):
     revoked_at = Column(DateTime(timezone=True), nullable=True)
     
     # Relationships
-    user = relationship("User", back_populates="auth_sessions")
+    user = relationship("User")
     
     # Indexes
     __table_args__ = (
@@ -309,7 +300,7 @@ class MagicLink(Base):
     expires_at = Column(DateTime(timezone=True), nullable=False)
     
     # Relationships
-    user = relationship("User", back_populates="magic_links")
+    user = relationship("User")
     
     # Indexes
     __table_args__ = (
@@ -365,7 +356,7 @@ class AuditLog(Base):
     
     # Relationships
     tenant = relationship("Tenant")
-    user = relationship("User", back_populates="audit_logs")
+    user = relationship("User")
     
     # Indexes
     __table_args__ = (

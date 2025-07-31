@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, text
 from app.core.logging import get_logger, MetadataLogger
 from app.core.exceptions import ValidationException, TenantNotFoundException
-from app.models.metadata import EntityDefinition, FieldDefinition, PicklistValue, LayoutDefinition, ListViewDefinition
+from app.models.metadata import EntityDefinition, FieldDefinition, PicklistValue, EntityLayoutDefinition, ListViewDefinition
 from app.models.metadata import Tenant
 
 logger = get_logger("data_engine")

@@ -112,6 +112,19 @@ export const DynamicPage: React.FC<DynamicPageProps> = ({
   onComponentError,
   contextProps = {},
 }) => {
+  console.log("🎭 DynamicPage rendering with pageDefinition:", {
+    page_name: pageDefinition?.page_name,
+    layout_id: pageDefinition?.layout_id,
+    has_sections: !!pageDefinition?.sections_data_json,
+    components_count: pageDefinition?.components?.length,
+    has_callbacks: !!pageDefinition?.callbacks,
+    callbacks_keys: pageDefinition?.callbacks
+      ? Object.keys(pageDefinition.callbacks)
+      : [],
+    has_api_endpoints: !!pageDefinition?.api_endpoints,
+    full_keys: Object.keys(pageDefinition || {}),
+  });
+
   const { t } = useTranslation();
   const { theme } = useTheme();
   const { language } = useLanguage();
@@ -129,64 +142,141 @@ export const DynamicPage: React.FC<DynamicPageProps> = ({
   const generateCallbacks = useCallback(() => {
     const callbacks: Record<string, any> = {};
 
+    console.log("🔧 DynamicPage: Generating callbacks from metadata:", {
+      hasCallbacks: !!pageDefinition.callbacks,
+      callbackKeys: pageDefinition.callbacks
+        ? Object.keys(pageDefinition.callbacks)
+        : [],
+      pageDefinitionKeys: Object.keys(pageDefinition),
+    });
+
     if (pageDefinition.callbacks) {
+      // ✅ FIXED: Handle flat callback structure from metadata
       Object.entries(pageDefinition.callbacks).forEach(
-        ([componentType, eventCallbacks]) => {
-          callbacks[componentType] = {};
+        ([eventName, callbackDef]) => {
+          callbacks[eventName] = async (...args: any[]) => {
+            console.log(`🔄 Callback triggered: ${eventName}`, callbackDef);
 
-          Object.entries(eventCallbacks).forEach(([eventName, callbackDef]) => {
-            callbacks[componentType][eventName] = async (...args: any[]) => {
-              console.log(
-                `🔄 Callback triggered: ${componentType}.${eventName}`,
-                callbackDef
-              );
+            // Parse callback definition (format: "action:target" or just "action")
+            const callbackStr =
+              typeof callbackDef === "string"
+                ? callbackDef
+                : callbackDef.toString();
+            const [action, target] = callbackStr.includes(":")
+              ? callbackStr.split(":", 2)
+              : [callbackStr, null];
 
-              switch (callbackDef.action) {
-                case "set_state":
-                  if (callbackDef.target) {
-                    setPageState((prev) => ({
-                      ...prev,
-                      [callbackDef.target!]: args[0],
-                    }));
-                  }
-                  break;
+            switch (action) {
+              case "redirect":
+                if (target) {
+                  console.log(`🔄 Redirecting to: ${target}`);
+                  window.location.href = target;
+                }
+                break;
 
-                case "api_call":
-                  if (
-                    callbackDef.target &&
-                    pageDefinition.api_endpoints?.[callbackDef.target]
-                  ) {
-                    const endpoint =
-                      pageDefinition.api_endpoints[callbackDef.target];
-                    console.log(`📡 API call to: ${endpoint}`, args);
-                    // TODO: Make actual API call
-                  }
-                  break;
+              case "state":
+                if (target) {
+                  const [statePath, value] = target.split("=", 2);
+                  setPageState((prev) => ({
+                    ...prev,
+                    [statePath]: value || args[0],
+                  }));
+                }
+                break;
 
-                case "navigate":
-                  if (callbackDef.target) {
-                    window.location.href = callbackDef.target;
-                  }
-                  break;
+              case "api_call":
+                if (target && pageDefinition.api_endpoints?.[target]) {
+                  const endpoint = pageDefinition.api_endpoints[target];
+                  console.log(`📡 API call to: ${endpoint}`, args);
+                  // TODO: Make actual API call
+                }
+                break;
 
-                case "custom":
-                  // Execute custom JavaScript from metadata (careful!)
-                  console.log(`🔧 Custom action: ${callbackDef.target}`, args);
-                  break;
+              case "custom":
+                console.log(`🔧 Custom action: ${target}`, args);
+                break;
 
-                default:
-                  console.warn(
-                    `Unknown callback action: ${callbackDef.action}`
-                  );
-              }
-            };
-          });
+              default:
+                console.warn(`Unknown callback action: ${action}`);
+            }
+          };
         }
       );
+
+      // ✅ ADDED: Special authentication callback for LoginForm
+      if (pageDefinition.callbacks.onLoginSuccess) {
+        callbacks.onLogin = async (loginData: {
+          email: string;
+          password: string;
+          rememberMe?: boolean;
+        }) => {
+          try {
+            console.log("🔐 Attempting login through metadata-driven auth");
+
+            // Import authApiClient dynamically to avoid SSR issues
+            const { authApiClient } = await import(
+              "../../services/authApiClient"
+            );
+
+            console.log("🚀 Using real auth service for authentication");
+            const authResponse = await authApiClient.loginWithPassword(
+              loginData.email,
+              loginData.password,
+              tenantId, // Use tenant from props
+              "Web Browser" // Device name
+            );
+
+            console.log("✅ Authentication successful through auth service");
+
+            // ✅ FIXED: Store tokens properly (localStorage + cookie) without React hook
+            const tokens = {
+              accessToken: authResponse.access_token,
+              refreshToken: authResponse.refresh_token,
+              expiresIn: authResponse.expires_in,
+              expiresAt: new Date(
+                Date.now() + authResponse.expires_in * 1000
+              ).toISOString(),
+            };
+
+            // Set tokens in localStorage and cookies
+            if (typeof window !== "undefined") {
+              localStorage.setItem("auth_tokens", JSON.stringify(tokens));
+              localStorage.setItem(
+                "auth_user",
+                JSON.stringify(authResponse.user)
+              );
+
+              // Set HTTP cookie for middleware (same logic as useAuthGuard)
+              const isSecure = window.location.protocol === "https:";
+              const cookieValue = `auth_token=${tokens.accessToken}; path=/; SameSite=lax${isSecure ? "; Secure" : ""}`;
+              console.log("🍪 Setting auth cookie:", cookieValue);
+              document.cookie = cookieValue;
+            }
+
+            console.log(
+              "✅ Authentication tokens stored (including HTTP cookie for middleware)"
+            );
+
+            // Execute the success callback from metadata
+            if (callbacks.onLoginSuccess) {
+              await callbacks.onLoginSuccess();
+            }
+          } catch (err) {
+            console.error("❌ Login error:", err);
+
+            // Execute error callback if defined
+            if (callbacks.onLoginError) {
+              await callbacks.onLoginError(err);
+            }
+
+            throw err;
+          }
+        };
+      }
     }
 
     return callbacks;
-  }, [pageDefinition]);
+  }, [pageDefinition, tenantId]);
 
   // NEW: Apply state bindings to components
   const applyStateBindings = useCallback(
@@ -227,7 +317,7 @@ export const DynamicPage: React.FC<DynamicPageProps> = ({
         );
 
         const response = await fetch(
-          `/api/metadata/layouts/${pageDefinition.layout_id}?tenant_id=${tenantId}`
+          `http://localhost:8000/metadata/layouts/${pageDefinition.layout_id}?tenant_id=${tenantId}`
         );
 
         if (!response.ok) {
@@ -310,6 +400,13 @@ export const DynamicPage: React.FC<DynamicPageProps> = ({
       `📋 Sections data keys:`,
       Object.keys(pageDefinition.sections_data_json || {})
     );
+
+    console.log("🔧 DynamicPage: Passing callbacks to DynamicLayout:", {
+      callbackCount: Object.keys(metadataCallbacks).length,
+      callbackNames: Object.keys(metadataCallbacks),
+      hasMetadataCallbacks: !!metadataCallbacks,
+      metadataCallbacks,
+    });
 
     return (
       <DynamicLayout

@@ -3,14 +3,12 @@
 from typing import AsyncGenerator, Optional
 import uuid
 
-from sqlalchemy import MetaData, text
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import Column, DateTime, func
 
 from app.core.config import get_settings
+from app.models.base import Base
 
 settings = get_settings()
 
@@ -29,33 +27,6 @@ engine = create_async_engine(
 AsyncSessionLocal = sessionmaker(
     engine, class_=AsyncSession, expire_on_commit=False
 )
-
-# Naming convention for constraints
-convention = {
-    "ix": "ix_%(column_0_label)s",
-    "uq": "uq_%(table_name)s_%(column_0_name)s",
-    "ck": "ck_%(table_name)s_%(constraint_name)s",
-    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
-    "pk": "pk_%(table_name)s",
-}
-
-metadata = MetaData(naming_convention=convention)
-Base = declarative_base(metadata=metadata)
-
-
-class BaseModel(Base):
-    """Base model with common fields."""
-    
-    __abstract__ = True
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at = Column(
-        DateTime(timezone=True), 
-        server_default=func.now(), 
-        onupdate=func.now(), 
-        nullable=False
-    )
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
@@ -86,4 +57,24 @@ async def check_db_connection() -> bool:
             await conn.execute(text("SELECT 1"))
         return True
     except Exception:
-        return False 
+        return False
+
+
+async def init_database():
+    """Initialize database - create tables if needed."""
+    try:
+        # Check connection first
+        if not await check_db_connection():
+            raise Exception("Database connection failed")
+        
+        # Create tables
+        await create_tables()
+        return True
+    except Exception as e:
+        print(f"Database initialization failed: {e}")
+        raise
+
+
+def get_async_session() -> AsyncSession:
+    """Get a new async session instance."""
+    return AsyncSessionLocal() 

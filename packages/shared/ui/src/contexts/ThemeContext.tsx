@@ -13,11 +13,43 @@ import React, {
 
 export type Theme = "light" | "dark" | string; // Allow custom theme names
 
-export interface ThemeData {
-  theme_id: string;
-  name: string;
+// New interfaces to match the API
+export interface ThemeVariantData {
+  variant_id: string;
+  base_theme_id: string;
+  variant_name: string; // light, dark
+  display_name: string;
   description?: string;
   is_default: boolean;
+  is_active: boolean;
+  supports_auto_switch: boolean;
+  css_class_prefix?: string;
+  media_query?: string;
+  properties: Record<string, string>; // CSS custom properties
+}
+
+export interface BaseThemeData {
+  base_theme_id: string;
+  name: string; // maritime, default
+  display_name: string;
+  description?: string;
+  category?: string;
+  is_system_theme: boolean;
+  is_active: boolean;
+  is_featured: boolean;
+  version?: string;
+  variants: ThemeVariantData[];
+  tenant_id?: string;
+}
+
+// Flattened theme structure for easier use in components
+export interface ThemeData {
+  id: string; // base_theme_name/variant_name (e.g., "maritime/dark")
+  name: string; // display name
+  description?: string;
+  is_default: boolean;
+  base_theme_name: string; // maritime, default
+  variant_name: string; // light, dark
   properties: Record<string, string>; // CSS custom properties
 }
 
@@ -38,7 +70,8 @@ const THEME_STORAGE_KEY = "ui_theme";
 interface ThemeProviderProps {
   children: React.ReactNode;
   defaultTheme?: string;
-  tenantId?: string; // NEW: For metadata API
+  tenantId?: string;
+  userId?: string; // NEW: For user preferences
 }
 
 // Theme detection utilities
@@ -94,8 +127,9 @@ const applyCSSProperties = (
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   children,
-  defaultTheme = "maritime-theme",
+  defaultTheme = "maritime/light", // Updated to new format
   tenantId,
+  userId,
 }) => {
   const [theme, setThemeState] = useState<string>(defaultTheme);
   const [themeData, setThemeData] = useState<ThemeData | null>(null);
@@ -115,19 +149,39 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
       );
 
       const response = await fetch(
-        `/api/metadata/themes?tenant_id=${tenantId || ""}&active_only=true`
+        `http://localhost:8000/metadata/themes?tenant_id=${tenantId || ""}&active_only=true`
       );
 
       if (!response.ok) {
         throw new Error(`Failed to fetch themes: ${response.status}`);
       }
 
-      const themes = await response.json();
-      setAvailableThemes(themes);
+      const baseThemes: BaseThemeData[] = await response.json();
 
-      console.log(`✅ Loaded ${themes.length} available themes`);
+      // Flatten base themes and variants into individual theme options
+      const flattenedThemes: ThemeData[] = [];
 
-      return themes;
+      baseThemes.forEach((baseTheme) => {
+        baseTheme.variants.forEach((variant) => {
+          flattenedThemes.push({
+            id: `${baseTheme.name}/${variant.variant_name}`,
+            name: `${baseTheme.display_name} - ${variant.display_name}`,
+            description: variant.description || baseTheme.description,
+            is_default: variant.is_default,
+            base_theme_name: baseTheme.name,
+            variant_name: variant.variant_name,
+            properties: variant.properties,
+          });
+        });
+      });
+
+      setAvailableThemes(flattenedThemes);
+
+      console.log(
+        `✅ Loaded ${flattenedThemes.length} theme variants from ${baseThemes.length} base themes`
+      );
+
+      return flattenedThemes;
     } catch (err) {
       console.error(`❌ Failed to load themes:`, err);
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -139,39 +193,107 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
 
   // NEW: Fetch specific theme data from metadata API
   const fetchThemeData = useCallback(
-    async (themeName: string) => {
+    async (themeId: string) => {
       setIsLoading(true);
       setError(undefined);
 
       try {
-        console.log(`🎨 Fetching theme data: ${themeName}`);
+        console.log(`🎨 Fetching theme data: ${themeId}`);
+
+        // Handle both old format (themeName) and new format (baseTheme/variant)
+        let baseThemeName: string;
+        let variantName: string;
+
+        if (themeId.includes("/")) {
+          // New format: "maritime/dark"
+          [baseThemeName, variantName] = themeId.split("/");
+        } else {
+          // Try to map old format or find from available themes
+          const foundTheme = availableThemes.find(
+            (t) =>
+              t.id === themeId ||
+              t.base_theme_name === themeId ||
+              t.variant_name === themeId
+          );
+
+          if (foundTheme) {
+            baseThemeName = foundTheme.base_theme_name;
+            variantName = foundTheme.variant_name;
+          } else {
+            // Fallback mapping for common names (works even without availableThemes)
+            switch (themeId) {
+              case "light":
+                baseThemeName = "default";
+                variantName = "light";
+                break;
+              case "dark":
+                baseThemeName = "default";
+                variantName = "dark";
+                break;
+              case "maritime":
+              case "maritime-theme":
+                baseThemeName = "maritime";
+                variantName = "light";
+                break;
+              case "maritime-light":
+                baseThemeName = "maritime";
+                variantName = "light";
+                break;
+              case "maritime-dark":
+                baseThemeName = "maritime";
+                variantName = "dark";
+                break;
+              default:
+                // Default fallback
+                baseThemeName = "maritime"; // Use maritime as default since that's what the user prefers
+                variantName = "light";
+                break;
+            }
+          }
+        }
+
+        console.log(
+          `🎨 Mapped theme '${themeId}' to '${baseThemeName}/${variantName}'`
+        );
 
         const response = await fetch(
-          `/api/metadata/themes/${themeName}?tenant_id=${tenantId || ""}`
+          `http://localhost:8000/metadata/themes/${baseThemeName}/${variantName}?tenant_id=${tenantId || ""}`
         );
 
         if (!response.ok) {
           throw new Error(`Failed to fetch theme: ${response.status}`);
         }
 
-        const themeData = await response.json();
+        const variantData: ThemeVariantData = await response.json();
+
+        // Convert to our ThemeData format
+        const themeData: ThemeData = {
+          id: `${baseThemeName}/${variantName}`,
+          name: variantData.display_name,
+          description: variantData.description,
+          is_default: variantData.is_default,
+          base_theme_name: baseThemeName,
+          variant_name: variantName,
+          properties: variantData.properties,
+        };
+
         setThemeData(themeData);
 
         // Apply CSS custom properties with null safety
         if (themeData && themeData.properties) {
           applyCSSProperties(themeData.properties);
-          console.log(`✅ Applied theme: ${themeData.name}`);
+          console.log(`✅ Applied theme: ${themeData.name} (${themeData.id})`);
         } else {
-          console.warn(`⚠️ Theme ${themeName} has no properties to apply`);
+          console.warn(`⚠️ Theme ${themeId} has no properties to apply`);
         }
 
         return themeData;
       } catch (err) {
-        console.error(`❌ Failed to load theme ${themeName}:`, err);
+        console.error(`❌ Failed to load theme ${themeId}:`, err);
         setError(err instanceof Error ? err.message : "Unknown error");
 
         // Fallback to default light/dark mode
-        const fallbackTheme = themeName.includes("dark") ? "dark" : "light";
+        const fallbackTheme = themeId.includes("dark") ? "dark" : "light";
         applyFallbackTheme(fallbackTheme);
 
         return null;
@@ -179,8 +301,59 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
         setIsLoading(false);
       }
     },
-    [tenantId]
+    [tenantId] // Removed availableThemes dependency to avoid circular deps - we have fallback mapping
   );
+
+  // NEW: Fetch user's theme preferences with intelligent fallback
+  const fetchUserThemePreferences = useCallback(async () => {
+    setIsLoading(true);
+    setError(undefined);
+
+    try {
+      console.log(
+        `🎨 Fetching user theme preferences for user: ${userId}, tenant: ${tenantId}`
+      );
+
+      const response = await fetch(
+        `http://localhost:8000/metadata/themes/user-preferences?user_id=${userId || ""}&tenant_id=${tenantId || ""}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch user preferences: ${response.status}`);
+      }
+
+      const variantData: ThemeVariantData = await response.json();
+
+      // Convert to our ThemeData format
+      const themeData: ThemeData = {
+        id: `${variantData.base_theme_id}/${variantData.variant_name}`,
+        name: variantData.display_name,
+        description: variantData.description,
+        is_default: variantData.is_default,
+        base_theme_name: "maritime", // TODO: Extract from API response
+        variant_name: variantData.variant_name,
+        properties: variantData.properties,
+      };
+
+      setThemeData(themeData);
+      setThemeState(`${themeData.base_theme_name}/${themeData.variant_name}`);
+
+      // Apply CSS custom properties
+      if (themeData && themeData.properties) {
+        applyCSSProperties(themeData.properties);
+        console.log(`✅ Applied user theme preference: ${themeData.name}`);
+      }
+
+      return themeData;
+    } catch (err) {
+      console.error(`❌ Failed to load user theme preferences:`, err);
+
+      // Fallback to default theme loading
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [tenantId, userId]);
 
   // NEW: Apply fallback theme for light/dark mode
   const applyFallbackTheme = (mode: "light" | "dark") => {
@@ -214,27 +387,57 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     setIsClient(true);
 
     if (typeof window !== "undefined") {
-      // Load available themes first
-      fetchAvailableThemes().then((themes) => {
-        let selectedTheme = defaultTheme;
-
-        // Try to get from localStorage first
-        const stored = getStoredTheme();
-        if (stored) {
-          selectedTheme = stored;
-        } else {
-          // Try to get default theme from available themes
-          const defaultFromAPI = themes.find((t: ThemeData) => t.is_default);
-          if (defaultFromAPI) {
-            selectedTheme = defaultFromAPI.name;
+      // NEW: Try user preferences first
+      if (userId) {
+        console.log("🎨 Using user preferences approach");
+        fetchUserThemePreferences().then((userTheme) => {
+          if (!userTheme) {
+            // Fallback to available themes approach
+            console.log("🎨 Falling back to available themes approach");
+            fetchAvailableThemes().then((themes) => {
+              let selectedTheme = defaultTheme;
+              const stored = getStoredTheme();
+              if (stored) {
+                selectedTheme = stored;
+              } else {
+                const defaultFromAPI = themes.find(
+                  (t: ThemeData) => t.is_default
+                );
+                if (defaultFromAPI) {
+                  selectedTheme = defaultFromAPI.id;
+                }
+              }
+              setThemeState(selectedTheme);
+              fetchThemeData(selectedTheme);
+            });
           }
-        }
-
-        setThemeState(selectedTheme);
-        fetchThemeData(selectedTheme);
-      });
+        });
+      } else {
+        // LEGACY: Use available themes approach when no user
+        console.log("🎨 Using legacy available themes approach (no user)");
+        fetchAvailableThemes().then((themes) => {
+          let selectedTheme = defaultTheme;
+          const stored = getStoredTheme();
+          if (stored) {
+            selectedTheme = stored;
+          } else {
+            const defaultFromAPI = themes.find((t: ThemeData) => t.is_default);
+            if (defaultFromAPI) {
+              selectedTheme = defaultFromAPI.id;
+            }
+          }
+          setThemeState(selectedTheme);
+          fetchThemeData(selectedTheme);
+        });
+      }
     }
-  }, [defaultTheme, fetchAvailableThemes, fetchThemeData]);
+  }, [
+    defaultTheme,
+    userId,
+    fetchAvailableThemes,
+    fetchThemeData,
+    fetchUserThemePreferences,
+  ]);
 
   // NEW: Set theme with metadata loading
   const setTheme = useCallback(
@@ -246,20 +449,35 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     [fetchThemeData]
   );
 
-  // NEW: Toggle between available themes (if only 2) or light/dark fallback
+  // NEW: Toggle between light/dark variants of current base theme
   const toggleTheme = useCallback(() => {
-    if (availableThemes.length === 2) {
-      // Toggle between the two available themes
-      const currentIndex = availableThemes.findIndex((t) => t.name === theme);
-      const nextIndex = (currentIndex + 1) % availableThemes.length;
-      const nextTheme = availableThemes[nextIndex].name;
-      setTheme(nextTheme);
-    } else {
-      // Fallback to light/dark toggle
+    if (!themeData) {
+      // Fallback if no theme data
       const newMode = theme.includes("dark") ? "light" : "dark";
       setTheme(newMode);
+      return;
     }
-  }, [theme, availableThemes, setTheme]);
+
+    // Find the opposite variant of the current base theme
+    const currentBaseTheme = themeData.base_theme_name;
+    const currentVariant = themeData.variant_name;
+    const targetVariant = currentVariant === "light" ? "dark" : "light";
+
+    // Look for the target variant in available themes
+    const targetTheme = availableThemes.find(
+      (t) =>
+        t.base_theme_name === currentBaseTheme &&
+        t.variant_name === targetVariant
+    );
+
+    if (targetTheme) {
+      setTheme(targetTheme.id);
+    } else {
+      // Fallback to system light/dark toggle
+      const newMode = currentVariant === "light" ? "dark" : "light";
+      setTheme(`default/${newMode}`);
+    }
+  }, [theme, themeData, availableThemes, setTheme]);
 
   return (
     <ThemeContext.Provider
