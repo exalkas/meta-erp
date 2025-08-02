@@ -4,7 +4,7 @@
 
 The new theme variant system supports:
 
-- **Base Themes**: Maritime, Corporate, Modern (marketplace items)
+- **Base Themes**: Professional, Corporate, Modern (marketplace items)
 - **Standard Variants**: Light & Dark (Tailwind compatible)
 - **Enterprise Features**: Marketplace, versioning, tenant customization
 
@@ -14,13 +14,13 @@ The new theme variant system supports:
 
 ```json
 {
-  "base_theme_id": "maritime-001",
-  "name": "maritime",
-  "display_name": "Maritime Professional Theme",
-  "description": "Professional theme inspired by maritime industry",
+  "base_theme_id": "professional-001",
+  "name": "professional",
+  "display_name": "Professional Business Theme",
+  "description": "Professional theme inspired by business industry",
   "creator_id": "creator-001",
   "category": "business",
-  "tags": ["professional", "blue", "maritime", "corporate"],
+  "tags": ["professional", "blue", "business", "corporate"],
   "is_system_theme": true,
   "is_featured": true,
   "version": "2.1.0",
@@ -31,10 +31,10 @@ The new theme variant system supports:
 ### 2. Theme Variants
 
 ```json
-// Maritime Light Variant
+// Professional Light Variant
 {
-  "variant_id": "maritime-light-001",
-  "base_theme_id": "maritime-001",
+  "variant_id": "professional-light-001",
+  "base_theme_id": "professional-001",
   "variant_name": "light",
   "display_name": "Light Mode",
   "is_default": true,
@@ -42,10 +42,10 @@ The new theme variant system supports:
   "media_query": "@media (prefers-color-scheme: light)"
 }
 
-// Maritime Dark Variant
+// Professional Dark Variant
 {
-  "variant_id": "maritime-dark-001",
-  "base_theme_id": "maritime-001",
+  "variant_id": "professional-dark-001",
+  "base_theme_id": "professional-001",
   "variant_name": "dark",
   "display_name": "Dark Mode",
   "is_default": false,

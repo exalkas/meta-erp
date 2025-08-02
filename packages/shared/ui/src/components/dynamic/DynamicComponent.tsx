@@ -16,6 +16,8 @@ import { ThemeSelector } from "../multilingual/ThemeSelector";
 import { SimplePasswordInput } from "../ui/SimplePasswordInput";
 import { LoginForm } from "../auth/LoginForm";
 import { Navigation } from "../layout/Navigation";
+import { DashboardGrid } from "../layout/Grid";
+import { Sidebar } from "../ui/Sidebar";
 import { MetadataDataTable } from "./MetadataDataTable";
 import { DynamicForm } from "./DynamicForm";
 
@@ -179,6 +181,110 @@ const StatusBar: React.FC<{
   return <div className="text-center text-sm text-gray-500 py-2">{text}</div>;
 };
 
+// SidebarMenu component to handle sections structure
+const SidebarMenu: React.FC<{
+  variant?: string;
+  collapsible?: boolean;
+  sections?: Array<{
+    title: string;
+    items: Array<{
+      label: string;
+      route?: string;
+      icon?: string;
+      id?: string;
+    }>;
+  }>;
+  [key: string]: any;
+}> = ({
+  sections = [],
+  collapsible = true,
+  variant = "vertical",
+  ...props
+}) => {
+  // Transform sections into flat items array for Sidebar component
+  const items = sections.flatMap((section, sectionIndex) => {
+    const sectionItems = section.items.map((item, itemIndex) => ({
+      id: item.id || `${sectionIndex}-${itemIndex}`,
+      label: item.label,
+      href: item.route,
+      icon: item.icon
+        ? React.createElement("span", { children: item.icon })
+        : undefined,
+      active: false,
+      disabled: false,
+    }));
+
+    // Add section header as non-clickable item
+    return [
+      {
+        id: `section-${sectionIndex}`,
+        label: section.title,
+        disabled: true,
+        className:
+          "text-xs font-semibold text-gray-500 uppercase tracking-wide px-3 py-2",
+      },
+      ...sectionItems,
+    ];
+  });
+
+  return (
+    <Sidebar
+      items={items}
+      collapsible={collapsible}
+      variant="default"
+      className="h-full"
+      {...props}
+    />
+  );
+};
+
+// Placeholder components for dashboard widgets
+const RecentActivity: React.FC<{
+  title?: string;
+  maxItems?: number;
+  colspan?: number;
+}> = ({ title = "Recent Activity", maxItems = 5 }) => (
+  <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+      {title}
+    </h3>
+    <div className="space-y-3">
+      {Array.from({ length: maxItems }, (_, i) => (
+        <div
+          key={i}
+          className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+        >
+          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+          <div className="flex-1">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              Sample activity item {i + 1}
+            </p>
+            <p className="text-xs text-gray-400">Just now</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const ChartWidget: React.FC<{
+  title?: string;
+  chartType?: string;
+  timeRange?: string;
+  colspan?: number;
+}> = ({ title = "Chart", chartType = "line", timeRange = "7d" }) => (
+  <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+      {title}
+    </h3>
+    <div className="h-32 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center">
+      <p className="text-gray-500 dark:text-gray-400">
+        {chartType.toUpperCase()} Chart ({timeRange})
+      </p>
+    </div>
+  </div>
+);
+
 // Component registry mapping component types to React components
 const COMPONENT_REGISTRY: Record<string, React.ComponentType<any>> = {
   // Form Controls
@@ -207,7 +313,13 @@ const COMPONENT_REGISTRY: Record<string, React.ComponentType<any>> = {
   PageHeader: PageHeader,
   RecentItems: RecentItems,
   KPICards: KPICards,
+  KPICard: KPICards, // Alias for KPICards
   StatusBar: StatusBar,
+  DashboardGrid: DashboardGrid,
+  Sidebar: Sidebar,
+  SidebarMenu: SidebarMenu, // Custom component for sections structure
+  RecentActivity: RecentActivity,
+  ChartWidget: ChartWidget,
 
   // Complex Components
   Form: DynamicForm,

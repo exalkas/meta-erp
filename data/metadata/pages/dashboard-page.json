@@ -16,22 +16,26 @@
           "showNotifications": true,
           "items": [
             {
+              "id": "nav-dashboard",
               "label": "Dashboard",
               "route": "/dashboard",
               "icon": "LayoutDashboard",
               "active": true
             },
             {
+              "id": "nav-customers",
               "label": "Customers",
               "route": "/customers",
               "icon": "Users"
             },
             {
+              "id": "nav-suppliers",
               "label": "Suppliers",
               "route": "/suppliers",
               "icon": "Building"
             },
             {
+              "id": "nav-analytics",
               "label": "Analytics",
               "route": "/analytics",
               "icon": "BarChart3"

@@ -1,0 +1,123 @@
+[
+  {
+    "role_id": "f1e11111-1111-1111-1111-111111111111",
+    "role_name": "RISK_MANAGER",
+    "display_name": "Risk Manager",
+    "description": "Manages financial risk assessment and compliance monitoring",
+    "category": "fintech",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "fintech",
+    "is_active": true,
+    "hierarchy_level": 4,
+    "parent_role_id": "b0511111-1111-1111-1111-111111111111",
+    "compliance_level": "critical",
+    "metadata_json": {
+      "industry": "fintech",
+      "department": "risk_management",
+      "can_set_risk_limits": true,
+      "can_halt_transactions": true,
+      "can_access_risk_reports": true,
+      "requires_financial_license": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "f1e22222-2222-2222-2222-222222222222",
+    "role_name": "COMPLIANCE_ANALYST",
+    "display_name": "Compliance Analyst",
+    "description": "Ensures regulatory compliance and manages AML/KYC processes",
+    "category": "fintech",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "fintech",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "f1e11111-1111-1111-1111-111111111111",
+    "compliance_level": "critical",
+    "metadata_json": {
+      "industry": "fintech",
+      "department": "compliance",
+      "can_review_kyc": true,
+      "can_flag_transactions": true,
+      "can_file_sar_reports": true,
+      "requires_aml_certification": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "f1e33333-3333-3333-3333-333333333333",
+    "role_name": "PAYMENT_PROCESSOR",
+    "display_name": "Payment Processor",
+    "description": "Processes payments, manages transactions, and handles disputes",
+    "category": "fintech",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "fintech",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "f1e11111-1111-1111-1111-111111111111",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "industry": "fintech",
+      "department": "payments",
+      "can_process_payments": true,
+      "can_handle_disputes": true,
+      "can_access_transaction_data": true,
+      "max_transaction_amount": 50000
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "f1e44444-4444-4444-4444-444444444444",
+    "role_name": "LOAN_OFFICER",
+    "display_name": "Loan Officer",
+    "description": "Evaluates loan applications and manages lending operations",
+    "category": "fintech",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "fintech",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "f1e11111-1111-1111-1111-111111111111",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "industry": "fintech",
+      "department": "lending",
+      "can_approve_loans": true,
+      "can_access_credit_data": true,
+      "can_set_interest_rates": true,
+      "max_loan_amount": 100000,
+      "requires_lending_license": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "f1e55555-5555-5555-5555-555555555555",
+    "role_name": "FRAUD_ANALYST",
+    "display_name": "Fraud Analyst",
+    "description": "Monitors and investigates fraudulent activities and suspicious transactions",
+    "category": "fintech",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "fintech",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "f1e22222-2222-2222-2222-222222222222",
+    "compliance_level": "critical",
+    "metadata_json": {
+      "industry": "fintech",
+      "department": "fraud_prevention",
+      "can_freeze_accounts": true,
+      "can_investigate_fraud": true,
+      "can_access_all_transaction_data": true,
+      "emergency_response_authority": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  }
+]

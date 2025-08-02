@@ -86,8 +86,10 @@ def create_app() -> FastAPI:
     # Add API routes
     from app.api.auth import router as auth_router
     from app.api.metadata import router as metadata_router
+    from app.api.roles import router as roles_router
     app.include_router(auth_router)
     app.include_router(metadata_router)
+    app.include_router(roles_router)
     
     # Add exception handlers
     app.add_exception_handler(MetadataERPException, metadata_exception_handler)

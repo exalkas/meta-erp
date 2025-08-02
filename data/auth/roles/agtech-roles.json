@@ -1,0 +1,122 @@
+[
+  {
+    "role_id": "a9111111-1111-1111-1111-111111111111",
+    "role_name": "FARM_MANAGER",
+    "display_name": "Farm Manager",
+    "description": "Manages farm operations, crop planning, and agricultural resources",
+    "category": "agtech",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "agtech",
+    "is_active": true,
+    "hierarchy_level": 4,
+    "parent_role_id": "b0511111-1111-1111-1111-111111111111",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "industry": "agtech",
+      "department": "farm_operations",
+      "can_plan_crops": true,
+      "can_manage_equipment": true,
+      "can_approve_pesticide_use": true,
+      "can_access_weather_data": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "a9222222-2222-2222-2222-222222222222",
+    "role_name": "CROP_SPECIALIST",
+    "display_name": "Crop Specialist",
+    "description": "Monitors crop health, manages pest control, and optimizes yields",
+    "category": "agtech",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "agtech",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "a9111111-1111-1111-1111-111111111111",
+    "compliance_level": "basic",
+    "metadata_json": {
+      "industry": "agtech",
+      "department": "crop_management",
+      "can_apply_treatments": true,
+      "can_monitor_fields": true,
+      "can_update_crop_records": true,
+      "requires_pesticide_license": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "a9333333-3333-3333-3333-333333333333",
+    "role_name": "EQUIPMENT_OPERATOR",
+    "display_name": "Equipment Operator",
+    "description": "Operates farm machinery and maintains agricultural equipment",
+    "category": "agtech",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "agtech",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "a9111111-1111-1111-1111-111111111111",
+    "compliance_level": "basic",
+    "metadata_json": {
+      "industry": "agtech",
+      "department": "equipment",
+      "can_operate_machinery": true,
+      "can_log_equipment_usage": true,
+      "can_report_maintenance_needs": true,
+      "requires_equipment_certification": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "a9444444-4444-4444-4444-444444444444",
+    "role_name": "LIVESTOCK_MANAGER",
+    "display_name": "Livestock Manager",
+    "description": "Manages animal health, breeding programs, and livestock records",
+    "category": "agtech",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "agtech",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "a9111111-1111-1111-1111-111111111111",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "industry": "agtech",
+      "department": "livestock",
+      "can_manage_animal_health": true,
+      "can_track_breeding": true,
+      "can_manage_feed_schedules": true,
+      "can_access_veterinary_records": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "a9555555-5555-5555-5555-555555555555",
+    "role_name": "HARVEST_COORDINATOR",
+    "display_name": "Harvest Coordinator",
+    "description": "Coordinates harvest activities, logistics, and storage",
+    "category": "agtech",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "agtech",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "a9111111-1111-1111-1111-111111111111",
+    "compliance_level": "basic",
+    "metadata_json": {
+      "industry": "agtech",
+      "department": "harvest",
+      "can_schedule_harvest": true,
+      "can_coordinate_transportation": true,
+      "can_manage_storage": true,
+      "can_track_yields": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  }
+]

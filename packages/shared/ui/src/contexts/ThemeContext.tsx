@@ -30,7 +30,7 @@ export interface ThemeVariantData {
 
 export interface BaseThemeData {
   base_theme_id: string;
-  name: string; // maritime, default
+  name: string; // professional, default
   display_name: string;
   description?: string;
   category?: string;
@@ -44,11 +44,11 @@ export interface BaseThemeData {
 
 // Flattened theme structure for easier use in components
 export interface ThemeData {
-  id: string; // base_theme_name/variant_name (e.g., "maritime/dark")
+  id: string; // base_theme_name/variant_name (e.g., "professional/dark")
   name: string; // display name
   description?: string;
   is_default: boolean;
-  base_theme_name: string; // maritime, default
+  base_theme_name: string; // professional, default
   variant_name: string; // light, dark
   properties: Record<string, string>; // CSS custom properties
 }
@@ -127,7 +127,7 @@ const applyCSSProperties = (
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   children,
-  defaultTheme = "maritime/light", // Updated to new format
+  defaultTheme = "professional/light", // Updated to new format
   tenantId,
   userId,
 }) => {
@@ -205,7 +205,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
         let variantName: string;
 
         if (themeId.includes("/")) {
-          // New format: "maritime/dark"
+          // New format: "professional/dark"
           [baseThemeName, variantName] = themeId.split("/");
         } else {
           // Try to map old format or find from available themes
@@ -230,22 +230,22 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
                 baseThemeName = "default";
                 variantName = "dark";
                 break;
-              case "maritime":
-              case "maritime-theme":
-                baseThemeName = "maritime";
+              case "professional":
+              case "professional-theme":
+                baseThemeName = "professional";
                 variantName = "light";
                 break;
-              case "maritime-light":
-                baseThemeName = "maritime";
+              case "professional-light":
+                baseThemeName = "professional";
                 variantName = "light";
                 break;
-              case "maritime-dark":
-                baseThemeName = "maritime";
+              case "professional-dark":
+                baseThemeName = "professional";
                 variantName = "dark";
                 break;
               default:
                 // Default fallback
-                baseThemeName = "maritime"; // Use maritime as default since that's what the user prefers
+                baseThemeName = "professional"; // Use professional as default business theme
                 variantName = "light";
                 break;
             }
@@ -330,7 +330,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
         name: variantData.display_name,
         description: variantData.description,
         is_default: variantData.is_default,
-        base_theme_name: "maritime", // TODO: Extract from API response
+        base_theme_name: "professional", // TODO: Extract from API response
         variant_name: variantData.variant_name,
         properties: variantData.properties,
       };

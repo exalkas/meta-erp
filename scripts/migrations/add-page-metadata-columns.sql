@@ -9,7 +9,9 @@ ADD COLUMN IF NOT EXISTS api_endpoints JSONB,
 ADD COLUMN IF NOT EXISTS callbacks JSONB,
 ADD COLUMN IF NOT EXISTS real_time_updates BOOLEAN DEFAULT FALSE,
 ADD COLUMN IF NOT EXISTS cache_strategy VARCHAR(50),
-ADD COLUMN IF NOT EXISTS websocket_events JSONB;
+ADD COLUMN IF NOT EXISTS websocket_events JSONB,
+ADD COLUMN IF NOT EXISTS meta_description TEXT,
+ADD COLUMN IF NOT EXISTS meta_keywords JSONB;
 
 -- Add indexes for performance
 CREATE INDEX IF NOT EXISTS idx_page_callbacks ON page_definitions USING gin(callbacks);

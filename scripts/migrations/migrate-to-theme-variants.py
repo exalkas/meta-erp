@@ -8,7 +8,7 @@ MIGRATION STRATEGY:
 2. Migrate existing themes to new structure:
    - 'light' → 'default-light' variant of 'default' base theme
    - 'dark' → 'default-dark' variant of 'default' base theme
-   - 'maritime' → 'maritime-light' + 'maritime-dark' variants
+   - 'professional' → 'professional-light' + 'professional-dark' variants
 
 IMPORTANT: This migration preserves all existing theme data while transitioning to the new variant system.
 """
@@ -195,8 +195,8 @@ class ThemeVariantMigration:
             base_theme_name = 'default'
             variant_name = name.lower()
             display_name = f"{name.title()} Mode"
-        elif name.lower() == 'maritime':
-            base_theme_name = 'maritime'
+        elif name.lower() == 'professional':
+            base_theme_name = 'professional'
             variant_name = 'light'  # Default to light variant
             display_name = 'Light Mode'
         else:
@@ -214,8 +214,8 @@ class ThemeVariantMigration:
         # 3. Migrate theme properties
         await self._migrate_theme_properties(session, theme_id, variant_id)
         
-        # 4. For maritime theme, also create dark variant with default dark colors
-        if base_theme_name == 'maritime' and variant_name == 'light':
+        # 4. For professional theme, also create dark variant with default dark colors
+        if base_theme_name == 'professional' and variant_name == 'light':
             dark_variant_id = await self._create_theme_variant(
                 session, base_theme_id, 'dark', 'Dark Mode', False, is_active, created_at, updated_at, 'dark'
             )
@@ -239,7 +239,7 @@ class ThemeVariantMigration:
         
         display_name_map = {
             'default': 'Default Theme',
-            'maritime': 'Maritime Professional Theme'
+            'professional': 'Professional Business Theme'
         }
         display_name = display_name_map.get(base_theme_name, f"{original_name.title()} Theme")
         
@@ -264,8 +264,8 @@ class ThemeVariantMigration:
             "version": version,
             "created_at": created_at,
             "updated_at": updated_at,
-            "category": "business" if base_theme_name == "maritime" else "basic",
-            "is_featured": base_theme_name == "maritime"
+            "category": "business" if base_theme_name == "professional" else "basic",
+            "is_featured": base_theme_name == "professional"
         })
         
         logger.info(f"Created base theme: {display_name}")
@@ -349,7 +349,7 @@ class ThemeVariantMigration:
         logger.info(f"Migrated {len(properties)} properties")
     
     async def _add_default_dark_properties(self, session: AsyncSession, dark_variant_id: str):
-        """Add default dark mode properties for maritime theme."""
+        """Add default dark mode properties for professional theme."""
         
         default_dark_properties = [
             ("--primary-color", "#4A9EFF", "color", "colors", "Primary brand color for dark mode"),

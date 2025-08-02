@@ -1,0 +1,123 @@
+[
+  {
+    "role_id": "a0401111-1111-1111-1111-111111111111",
+    "role_name": "SALES_MANAGER",
+    "display_name": "Sales Manager",
+    "description": "Manages vehicle sales, customer relationships, and sales team",
+    "category": "automotive",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "automotive",
+    "is_active": true,
+    "hierarchy_level": 4,
+    "parent_role_id": "b0511111-1111-1111-1111-111111111111",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "industry": "automotive",
+      "department": "sales",
+      "can_approve_deals": true,
+      "can_access_inventory": true,
+      "can_manage_leads": true,
+      "max_discount_percentage": 15
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "a0402222-2222-2222-2222-222222222222",
+    "role_name": "SERVICE_ADVISOR",
+    "display_name": "Service Advisor",
+    "description": "Coordinates vehicle service appointments and customer communication",
+    "category": "automotive",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "automotive",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "a0401111-1111-1111-1111-111111111111",
+    "compliance_level": "basic",
+    "metadata_json": {
+      "industry": "automotive",
+      "department": "service",
+      "can_schedule_appointments": true,
+      "can_create_work_orders": true,
+      "can_access_customer_history": true,
+      "can_approve_estimates": true,
+      "max_estimate_amount": 5000
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "a0403333-3333-3333-3333-333333333333",
+    "role_name": "TECHNICIAN",
+    "display_name": "Automotive Technician",
+    "description": "Performs vehicle repairs, maintenance, and diagnostics",
+    "category": "automotive",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "automotive",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "a0402222-2222-2222-2222-222222222222",
+    "compliance_level": "basic",
+    "metadata_json": {
+      "industry": "automotive",
+      "department": "service",
+      "can_update_work_orders": true,
+      "can_access_repair_manuals": true,
+      "can_order_parts": true,
+      "can_perform_diagnostics": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "a0404444-4444-4444-4444-444444444444",
+    "role_name": "PARTS_MANAGER",
+    "display_name": "Parts Manager",
+    "description": "Manages automotive parts inventory and supplier relationships",
+    "category": "automotive",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "automotive",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "a0401111-1111-1111-1111-111111111111",
+    "compliance_level": "basic",
+    "metadata_json": {
+      "industry": "automotive",
+      "department": "parts",
+      "can_manage_parts_inventory": true,
+      "can_place_orders": true,
+      "can_set_parts_pricing": true,
+      "can_manage_vendors": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "a0405555-5555-5555-5555-555555555555",
+    "role_name": "FINANCE_SPECIALIST",
+    "display_name": "Finance & Insurance Specialist",
+    "description": "Handles vehicle financing, insurance, and extended warranties",
+    "category": "automotive",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "automotive",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "a0401111-1111-1111-1111-111111111111",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "industry": "automotive",
+      "department": "finance",
+      "can_process_financing": true,
+      "can_sell_insurance": true,
+      "can_access_credit_reports": true,
+      "requires_licensing": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  }
+]

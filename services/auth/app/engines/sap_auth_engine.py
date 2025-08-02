@@ -149,14 +149,15 @@ class SAPStyleAuthEngine:
         logger.info("Session configuration retrieved (using defaults)", 
                    tenant_id=str(tenant_id), profile=profile)
         
-        # Return default session configuration
+        # Return default session configuration with SINGLE SESSION ENFORCEMENT
         default_config = {
             "max_session_duration_hours": 8,  # 8 hours default
-            "max_concurrent_sessions": 5,
+            "max_sessions": 1,  # ✅ SINGLE SESSION ENFORCEMENT 
+            "max_concurrent_sessions": 1,  # Legacy field
             "idle_timeout_minutes": 120,
-            "single_session_mode": False,
-            "auto_logout_on_new": False,
-            "allow_concurrent_ip": True,
+            "single_session_mode": True,  # ✅ Enable single session mode
+            "auto_logout_on_new": True,   # ✅ Auto logout existing sessions
+            "allow_concurrent_ip": False,  # ✅ No concurrent logins
             "track_device_fingerprint": True,
             "risk_threshold": 0.7,
             "risk_action": "challenge"
@@ -791,29 +792,37 @@ class SAPStyleAuthEngine:
         logger.info("Session creation started", user_id=str(user.user_id), tenant_id=str(user.tenant_id))
         
         from uuid import uuid4
-        import secrets
-        import hashlib
+        from app.core.jwt_utils import create_access_token, create_refresh_token, get_token_hash
         
-        # Generate secure tokens
-        logger.info("Session Step 1: Generating tokens")
-        session_token = secrets.token_urlsafe(32)
-        refresh_token = secrets.token_urlsafe(32)
+        # Create session ID first (needed for JWT tokens)
+        session_id = uuid4()
+        
+        # Generate JWT tokens
+        logger.info("Session Step 1: Generating JWT tokens")
+        session_token = create_access_token(user.user_id, user.tenant_id, session_id)
+        refresh_token = create_refresh_token(user.user_id, user.tenant_id, session_id)
         
         # Hash the tokens for database storage
-        logger.info("Session Step 2: Hashing tokens")
-        session_token_hash = hashlib.sha256(session_token.encode()).hexdigest()
-        refresh_token_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
+        logger.info("Session Step 2: Hashing JWT tokens")
+        session_token_hash = get_token_hash(session_token)
+        refresh_token_hash = get_token_hash(refresh_token)
         
         # Get session configuration from SAP customizing
         logger.info("Session Step 3: Getting session configuration")
         session_config = await self.get_session_config(user.tenant_id, "password")
         max_duration_hours = session_config.get("max_session_duration_hours", 24)
-        logger.info("Session configuration retrieved", max_duration_hours=max_duration_hours)
+        max_sessions = session_config.get("max_sessions", 1)  # Default to single session
+        logger.info("Session configuration retrieved", max_duration_hours=max_duration_hours, max_sessions=max_sessions)
+        
+        # SINGLE SESSION ENFORCEMENT: Revoke existing active sessions
+        if max_sessions == 1:
+            logger.info("Session Step 3.1: Enforcing single session - revoking existing sessions")
+            await self._revoke_user_sessions(user.user_id, "new_login_single_session")
         
         # Create session object
         logger.info("Session Step 4: Creating session object")
         session = AuthSession(
-            session_id=uuid4(),
+            session_id=session_id,  # Use the pre-generated session_id
             user_id=user.user_id,
             tenant_id=user.tenant_id,
             session_token_hash=session_token_hash,
@@ -835,6 +844,56 @@ class SAPStyleAuthEngine:
         
         logger.info("Session created successfully", session_id=str(session.session_id), user_id=str(user.user_id))
         return session, session_token, refresh_token
+    
+    async def _revoke_user_sessions(
+        self,
+        user_id: UUID,
+        reason: str = "single_session_enforcement"
+    ) -> int:
+        """
+        Revoke all active sessions for a user (for single session enforcement)
+        Returns: Number of sessions revoked
+        """
+        try:
+            # Find all active sessions for the user
+            sessions_query = select(AuthSession).where(
+                and_(
+                    AuthSession.user_id == user_id,
+                    AuthSession.is_active == True
+                )
+            )
+            result = await self.db.execute(sessions_query)
+            active_sessions = result.scalars().all()
+            
+            if not active_sessions:
+                logger.info("No active sessions found to revoke", user_id=str(user_id))
+                return 0
+            
+            # Revoke all active sessions
+            revoked_count = 0
+            for session in active_sessions:
+                session.is_active = False
+                session.revoked_at = datetime.utcnow()
+                session.revoked_reason = reason
+                revoked_count += 1
+                logger.info("Revoked session", 
+                           session_id=str(session.session_id), 
+                           device=session.device_id,
+                           reason=reason)
+            
+            await self.db.commit()
+            logger.info("Single session enforcement complete", 
+                       user_id=str(user_id), 
+                       revoked_sessions=revoked_count)
+            
+            return revoked_count
+            
+        except Exception as e:
+            await self.db.rollback()
+            logger.error("Error revoking user sessions", 
+                        user_id=str(user_id), 
+                        error=str(e))
+            return 0
     
     async def revoke_session(
         self,

@@ -1,0 +1,123 @@
+[
+  {
+    "role_id": "1e511111-1111-1111-1111-111111111111",
+    "role_name": "UNDERWRITER",
+    "display_name": "Insurance Underwriter",
+    "description": "Evaluates insurance applications and sets policy terms",
+    "category": "insurance",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "insurance",
+    "is_active": true,
+    "hierarchy_level": 4,
+    "parent_role_id": "b0511111-1111-1111-1111-111111111111",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "industry": "insurance",
+      "department": "underwriting",
+      "can_approve_policies": true,
+      "can_set_premiums": true,
+      "can_access_risk_data": true,
+      "max_policy_value": 1000000,
+      "requires_underwriting_license": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "1e522222-2222-2222-2222-222222222222",
+    "role_name": "CLAIMS_ADJUSTER",
+    "display_name": "Claims Adjuster",
+    "description": "Investigates and processes insurance claims",
+    "category": "insurance",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "insurance",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "1e511111-1111-1111-1111-111111111111",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "industry": "insurance",
+      "department": "claims",
+      "can_investigate_claims": true,
+      "can_approve_settlements": true,
+      "can_access_claim_files": true,
+      "max_settlement_amount": 500000
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "1e533333-3333-3333-3333-333333333333",
+    "role_name": "POLICY_ADMINISTRATOR",
+    "display_name": "Policy Administrator",
+    "description": "Manages policy documentation and customer accounts",
+    "category": "insurance",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "insurance",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "1e511111-1111-1111-1111-111111111111",
+    "compliance_level": "basic",
+    "metadata_json": {
+      "industry": "insurance",
+      "department": "policy_administration",
+      "can_update_policies": true,
+      "can_process_renewals": true,
+      "can_handle_cancellations": true,
+      "can_access_customer_data": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "1e544444-4444-4444-4444-444444444444",
+    "role_name": "ACTUARY",
+    "display_name": "Insurance Actuary",
+    "description": "Analyzes risk and develops pricing models",
+    "category": "insurance",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "insurance",
+    "is_active": true,
+    "hierarchy_level": 4,
+    "parent_role_id": "b0511111-1111-1111-1111-111111111111",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "industry": "insurance",
+      "department": "actuarial",
+      "can_develop_pricing_models": true,
+      "can_analyze_risk_data": true,
+      "can_set_reserves": true,
+      "requires_actuarial_license": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "1e555555-5555-5555-5555-555555555555",
+    "role_name": "SALES_AGENT",
+    "display_name": "Insurance Sales Agent",
+    "description": "Sells insurance policies and manages client relationships",
+    "category": "insurance",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "insurance",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "b0544444-4444-4444-4444-444444444444",
+    "compliance_level": "basic",
+    "metadata_json": {
+      "industry": "insurance",
+      "department": "sales",
+      "can_sell_policies": true,
+      "can_quote_premiums": true,
+      "can_access_products": true,
+      "requires_sales_license": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  }
+]

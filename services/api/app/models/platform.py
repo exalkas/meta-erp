@@ -4,7 +4,7 @@
 # THEME VARIANT SYSTEM - NEW ARCHITECTURE
 # ===============================================
 # This new architecture supports:
-# - Base themes (maritime, corporate, etc.) - marketplace items
+# - Base themes (professional, corporate, etc.) - marketplace items
 # - Standard variants (light, dark) - Tailwind compatible
 # - Theme properties attached to variants
 # - Marketplace ready with creator attribution
@@ -39,7 +39,7 @@ from .base import Base
 # ===============================================
 
 class BaseTheme(Base):
-    """Base themes that can have light/dark variants (maritime, corporate, etc.)."""
+    """Base themes that can have light/dark variants (professional, corporate, etc.)."""
     
     __tablename__ = "base_themes"
     
@@ -47,8 +47,8 @@ class BaseTheme(Base):
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.tenant_id"), nullable=True)  # NULL = global/system theme
     
     # Theme identification
-    name = Column(String(100), nullable=False)  # maritime, corporate, modern
-    display_name = Column(String(200), nullable=False)  # "Maritime Professional Theme"
+    name = Column(String(100), nullable=False)  # professional, corporate, modern
+    display_name = Column(String(200), nullable=False)  # "Professional Business Theme"
     description = Column(Text, nullable=True)
     
     # Marketplace information
@@ -60,7 +60,7 @@ class BaseTheme(Base):
     
     # Theme metadata
     category = Column(String(100), nullable=True)  # business, creative, minimal
-    tags = Column(JSON, default=lambda: [])  # ["professional", "blue", "maritime"]
+    tags = Column(JSON, default=lambda: [])  # ["professional", "blue", "business"]
     preview_image = Column(String(500), nullable=True)
     demo_url = Column(String(500), nullable=True)
     

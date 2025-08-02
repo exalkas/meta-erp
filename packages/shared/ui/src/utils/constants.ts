@@ -1,6 +1,6 @@
 // UI and Business Constants for Greek ERP/CRM System
 
-// Maritime Theme Colors
+// Professional Theme Colors
 export const COLORS = {
   primary: "#0066CC",
   accent: "#FFF700",

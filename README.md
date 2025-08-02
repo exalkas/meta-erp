@@ -1,4 +1,4 @@
-# 🚢 **Axiologic Platform - SAP-Style Metadata-Driven System**
+# 🏢 **Axiologic Platform - SAP-Style Metadata-Driven System**
 
 A **production-ready**, **metadata-driven** business platform with **SAP-style architecture**, **multi-tenant support**, and **complete authentication system**.
 
@@ -7,7 +7,6 @@ A **production-ready**, **metadata-driven** business platform with **SAP-style a
 - 🔐 **SAP-Style Authentication** - Complete JWT-based auth with roles, permissions, and 2FA
 - 📊 **Metadata-Driven UI** - Pages, layouts, themes, and components from database
 - 🏢 **Multi-Tenant Architecture** - Complete tenant isolation with per-tenant databases
-- 🚢 **Maritime Business Logic** - Vessel management, voyage planning, port operations
 - 🌐 **Internationalization** - English/Greek support with database translations
 - 🎨 **Dynamic Theming** - Real-time theme switching with CSS custom properties
 - 🛡️ **Enterprise Security** - Role-based access control with SAP authorization patterns
@@ -111,11 +110,12 @@ metadata-erp/
 │              └─ SAP_READ_ONLY (Level 6)
 ```
 
-### **Maritime Business Roles**
+### **Vertical Business Roles**
 
-- 🚢 **Maritime Operations Manager** - Fleet and voyage management
-- 🏝️ **Port Agent** - Port operations and customs clearance
-- 💼 **Commercial Manager** - Customer relationships and contracts
+- 🛒 **E-commerce Operations Manager** - Inventory and order management
+- 🚗 **Automotive Sales Manager** - Vehicle sales and customer relations
+- ⛽ **Oil & Gas Operations Manager** - Asset tracking and compliance
+- 🌾 **AgTech Farm Manager** - Crop planning and field operations
 - 💰 **Finance Controller** - Financial oversight and approvals
 - 📋 **Compliance Officer** - Regulatory compliance and certifications
 
@@ -124,7 +124,7 @@ metadata-erp/
 SAP-style authorization objects with activity codes:
 
 - `S_TCODE_*` - Transaction code access
-- `Z_MARITIME_VESSEL_*` - Vessel management permissions
+- `Z_INVENTORY_*` - Inventory management permissions
 - `Z_CUSTOMER_*` - Customer data permissions
 - `Z_FINANCE_APPROVE` - Financial approval permissions
 
@@ -160,13 +160,13 @@ Pages are defined in the database with:
 ## 🌐 **Multi-Language Support**
 
 - **Primary**: English (en)
-- **Business**: Greek (el) - for Greek maritime compliance
+- **Business**: Greek (el) - for Greek business compliance
 - **Translation Keys**: Stored in database with namespace organization
 - **Dynamic Loading**: Translations fetched based on user locale
 
 ## 🎨 **Theming System**
 
-- **Maritime Theme** - Professional blue ocean colors
+- **Professional Theme** - Professional blue corporate colors
 - **Light Theme** - Clean modern interface
 - **Dark Theme** - Reduced eye strain for night operations
 - **CSS Custom Properties** - Real-time theme switching
@@ -337,4 +337,4 @@ This project is proprietary software. All rights reserved.
 
 ---
 
-**Built with ❤️ for the maritime industry by Axiologic Solutions**
+**Built with ❤️ for enterprise businesses by Axiologic Solutions**

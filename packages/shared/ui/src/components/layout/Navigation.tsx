@@ -40,7 +40,7 @@ export interface NavigationProps {
   /** Variant */
   variant?: "horizontal" | "sidebar";
   /** Background color */
-  background?: "white" | "gray" | "blue" | "maritime";
+  background?: "white" | "gray" | "blue" | "professional";
   /** Sticky navigation */
   sticky?: boolean;
   /** Additional actions */
@@ -56,7 +56,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   user,
   mobileBreakpoint = "md",
   variant = "horizontal",
-  background = "maritime",
+  background = "professional",
   sticky = true,
   actions,
   className = "",
@@ -83,21 +83,21 @@ export const Navigation: React.FC<NavigationProps> = ({
     white: "bg-white border-b border-gray-200",
     gray: "bg-gray-50 border-b border-gray-200",
     blue: "bg-blue-600 text-white",
-    maritime: "bg-[#0066CC] text-white",
+    professional: "bg-[#0066CC] text-white",
   };
 
   const linkClasses = {
     white: "text-gray-700 hover:text-gray-900 hover:bg-gray-100",
     gray: "text-gray-700 hover:text-gray-900 hover:bg-white",
     blue: "text-blue-100 hover:text-white hover:bg-blue-700",
-    maritime: "text-blue-100 hover:text-white hover:bg-blue-700",
+    professional: "text-blue-100 hover:text-white hover:bg-blue-700",
   };
 
   const activeClasses = {
     white: "text-blue-600 bg-blue-50",
     gray: "text-blue-600 bg-white",
     blue: "text-white bg-blue-700",
-    maritime: "text-white bg-blue-700",
+    professional: "text-white bg-blue-700",
   };
 
   const renderNavigationItem = (item: NavigationItem, level = 0) => {
@@ -116,10 +116,10 @@ export const Navigation: React.FC<NavigationProps> = ({
               item.badge.variant === "error"
                 ? "bg-red-100 text-red-800"
                 : item.badge.variant === "warning"
-                ? "bg-yellow-100 text-yellow-800"
-                : item.badge.variant === "success"
-                ? "bg-green-100 text-green-800"
-                : "bg-gray-100 text-gray-800"
+                  ? "bg-yellow-100 text-yellow-800"
+                  : item.badge.variant === "success"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-gray-100 text-gray-800"
             }
           `}
           >
@@ -178,9 +178,11 @@ export const Navigation: React.FC<NavigationProps> = ({
                   : "ml-4 mt-1"
               }`}
             >
-              {item.children?.map((child) =>
-                renderNavigationItem(child, level + 1)
-              )}
+              {item.children?.map((child) => (
+                <React.Fragment key={child.id}>
+                  {renderNavigationItem(child, level + 1)}
+                </React.Fragment>
+              ))}
             </div>
           )}
         </div>
@@ -259,7 +261,11 @@ export const Navigation: React.FC<NavigationProps> = ({
             <div
               className={`hidden ${mobileBreakpoint}:flex items-center space-x-1`}
             >
-              {items.map((item) => renderNavigationItem(item))}
+              {items.map((item) => (
+                <React.Fragment key={item.id}>
+                  {renderNavigationItem(item)}
+                </React.Fragment>
+              ))}
             </div>
 
             {/* Right Side Actions */}
@@ -307,7 +313,11 @@ export const Navigation: React.FC<NavigationProps> = ({
           {isMobileMenuOpen && (
             <div className={`${mobileBreakpoint}:hidden pb-4`}>
               <div className="space-y-1">
-                {items.map((item) => renderNavigationItem(item))}
+                {items.map((item) => (
+                  <React.Fragment key={item.id}>
+                    {renderNavigationItem(item)}
+                  </React.Fragment>
+                ))}
               </div>
 
               {showLanguageSelector && (

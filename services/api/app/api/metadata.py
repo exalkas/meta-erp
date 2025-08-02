@@ -206,7 +206,7 @@ class ThemeVariantResponse(BaseModel):
 
 class BaseThemeResponse(BaseModel):
     base_theme_id: str
-    name: str  # maritime, default
+    name: str  # professional, default
     display_name: str
     description: Optional[str] = None
     category: Optional[str] = None
@@ -1058,8 +1058,8 @@ async def get_user_theme_preferences(
         # 2. Fall back to tenant default theme
         # 3. Fall back to system default
         
-        # Get tenant's default base theme (for now, use maritime)
-        preferred_base_theme = "maritime"  # TODO: Get from tenant settings
+        # Get tenant's default base theme (for now, use professional)
+        preferred_base_theme = "professional"  # TODO: Get from tenant settings
         preferred_variant = "light"       # TODO: Get from user preferences
         
         # Query for the theme variant

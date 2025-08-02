@@ -402,7 +402,7 @@ packages/shared/ui/src/components/
 
 **NEW: Enterprise Theme + Variant System**
 
-- **Base Themes**: Maritime, Corporate, Modern (marketplace items)
+- **Base Themes**: Professional, Corporate, Modern (marketplace items)
 - **Standard Variants**: Light & Dark only (Tailwind compatible)
 - **Marketplace Ready**: Creator attribution, ratings, versioning
 - **CSS Custom Properties**: Generated per variant
@@ -414,8 +414,8 @@ packages/shared/ui/src/components/
 // Base Theme (marketplace item)
 interface BaseTheme {
   base_theme_id: string;
-  name: string; // "maritime", "corporate", "modern"
-  display_name: string; // "Maritime Professional Theme"
+  name: string; // "professional", "corporate", "modern"
+  display_name: string; // "Professional Business Theme"
   creator_id?: string; // Theme creator
   category: string; // "business", "creative", "minimal"
   is_featured: boolean;
@@ -449,12 +449,12 @@ interface ThemeVariantProperty {
 
 ```typescript
 // Frontend calls:
-GET /themes/maritime/dark    // Specific variant
-GET /themes/maritime         // Default variant
+GET /themes/professional/dark    // Specific variant
+GET /themes/professional         // Default variant
 
 // Returns CSS properties:
 {
-  "base_theme": { "name": "maritime", "display_name": "Maritime Theme" },
+  "base_theme": { "name": "professional", "display_name": "Professional Theme" },
   "variant": { "variant_name": "dark", "display_name": "Dark Mode" },
   "css_properties": {
     "--primary-color": "#4A9EFF",

@@ -152,6 +152,8 @@ class Role(Base):
     is_system_role = Column(Boolean, default=False)  # System roles cannot be deleted
     is_active = Column(Boolean, default=True)
     is_default = Column(Boolean, default=False)  # Default role for new users
+    is_template = Column(Boolean, default=False)  # Template roles for vertical onboarding
+    vertical = Column(String(50), nullable=True)  # Industry vertical (ecommerce, automotive, etc.)
     
     # Role hierarchy
     parent_role_id = Column(UUID(as_uuid=True), ForeignKey("roles.role_id"), nullable=True)
@@ -177,6 +179,8 @@ class Role(Base):
         Index("idx_role_tenant_id", "tenant_id"),
         Index("idx_role_active", "is_active"),
         Index("idx_role_system", "is_system_role"),
+        Index("idx_role_template", "is_template"),
+        Index("idx_role_vertical", "vertical"),
     )
     
     def __repr__(self):

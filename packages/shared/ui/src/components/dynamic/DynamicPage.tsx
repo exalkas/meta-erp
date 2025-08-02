@@ -446,7 +446,7 @@ export const DynamicPage: React.FC<DynamicPageProps> = ({
     containerClasses.push(
       pageTheme === "dark"
         ? "bg-gradient-to-br from-gray-900 to-gray-800"
-        : "bg-gradient-to-br from-maritime-blue to-blue-900"
+        : "bg-gradient-to-br from-blue-600 to-blue-900"
     );
   } else {
     containerClasses.push(pageTheme === "dark" ? "bg-gray-900" : "bg-gray-50");

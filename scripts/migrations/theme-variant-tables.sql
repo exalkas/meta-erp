@@ -125,7 +125,7 @@ CREATE INDEX IF NOT EXISTS idx_theme_variant_property_type ON theme_variant_prop
 -- ========================================
 -- Comments for Documentation
 -- ========================================
-COMMENT ON TABLE base_themes IS 'Base themes that can have light/dark variants (maritime, corporate, etc.)';
+COMMENT ON TABLE base_themes IS 'Base themes that can have light/dark variants (professional, corporate, etc.)';
 COMMENT ON TABLE theme_variants IS 'Light/Dark variants of base themes with actual styling properties';
 COMMENT ON TABLE theme_variant_properties IS 'CSS custom properties for specific theme variants';
 

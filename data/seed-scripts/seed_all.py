@@ -141,13 +141,30 @@ class DataSeeder:
             logger.info(f"✅ Added tenant: {tenant.name}")
     
     async def seed_roles(self):
-        """Seed role data.""" 
+        """Seed role data."""
         logger.info("👥 Seeding roles...")
         
-        # Load system roles and business roles
-        system_roles = self.load_json_data("auth/roles/system-roles.json")
-        business_roles = self.load_json_data("auth/roles/business-roles.json")
-        all_roles = system_roles + business_roles
+        # Load all role files (system, business, and vertical-specific)
+        role_files = [
+            "auth/roles/system-roles.json",        # System roles
+            "auth/roles/business-roles.json",      # Generic business templates
+            "auth/roles/ecommerce-roles.json",     # E-commerce vertical
+            "auth/roles/automotive-roles.json",    # Automotive vertical
+            "auth/roles/oilgas-roles.json",        # Oil & Gas vertical
+            "auth/roles/agtech-roles.json",        # AgTech vertical
+            "auth/roles/fintech-roles.json",       # FinTech vertical
+            "auth/roles/insurance-roles.json",     # Insurance vertical
+            "auth/roles/maritime-roles.json"       # Maritime vertical
+        ]
+        
+        all_roles = []
+        for file_path in role_files:
+            try:
+                roles_data = self.load_json_data(file_path)
+                all_roles.extend(roles_data)
+            except Exception as e:
+                logger.warning(f"⚠️ Role file not found: {file_path} (skipping)")
+                continue
         
         for role_data in all_roles:
             # Check if role already exists
@@ -159,13 +176,15 @@ class DataSeeder:
             # Map JSON fields to model fields
             role = Role(
                 role_id=role_data["role_id"],
-                tenant_id=None,  # System roles have NULL tenant_id
+                tenant_id=None,  # System roles and templates have NULL tenant_id
                 name=role_data["role_name"],  # role_name -> name
                 display_name=role_data["display_name"],
                 description=role_data.get("description"),
                 is_system_role=role_data.get("is_system_role", False),
                 is_active=role_data.get("is_active", True),
                 is_default=False,  # Default to False
+                is_template=role_data.get("is_template", False),  # NEW: Template flag
+                vertical=role_data.get("vertical"),  # NEW: Industry vertical
                 parent_role_id=role_data.get("parent_role_id"),
                 level=role_data.get("hierarchy_level", 5),  # hierarchy_level -> level
                 max_users=role_data.get("metadata_json", {}).get("max_users"),  # From metadata
@@ -173,7 +192,9 @@ class DataSeeder:
                 updated_at=datetime.fromisoformat(role_data["updated_at"].replace('Z', '+00:00'))
             )
             self.session.add(role)
-            logger.info(f"✅ Added role: {role.display_name}")
+            vertical_text = f" ({role.vertical})" if role.vertical else ""
+            template_text = " [TEMPLATE]" if role.is_template else ""
+            logger.info(f"✅ Added role: {role.display_name}{vertical_text}{template_text}")
     
     async def seed_permissions(self):
         """Seed permission data."""
@@ -307,7 +328,7 @@ class DataSeeder:
         
         theme_files = [
             "metadata/themes/default-base-theme.json",
-            "metadata/themes/maritime-base-theme.json"
+            "metadata/themes/professional-base-theme.json"
         ]
         
         for file_path in theme_files:
@@ -423,12 +444,17 @@ class DataSeeder:
                     logger.info(f"⏭️ Page {page_data['page_name']} already exists")
                     continue
                     
+                # Extract SEO metadata for dedicated columns
+                seo_data = page_data.get("metadata_json", {}).get("seo", {})
+                
                 page = PageDefinition(
                     page_id=page_data["page_id"],
                     page_name=page_data["page_name"],
                     route=page_data["route"],
                     title=page_data["title"],
                     description=page_data.get("description"),
+                    meta_description=seo_data.get("description"),  # SEO meta description
+                    meta_keywords=seo_data.get("keywords"),  # SEO meta keywords (JSONB)
                     page_type=page_data["page_type"],
                     layout_id=page_data.get("layout_id"),
                     sections_data_json=page_data.get("sections_data_json", {}),

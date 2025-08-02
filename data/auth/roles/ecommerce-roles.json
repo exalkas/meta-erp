@@ -1,0 +1,123 @@
+[
+  {
+    "role_id": "ec011111-1111-1111-1111-111111111111",
+    "role_name": "STORE_MANAGER",
+    "display_name": "Store Manager",
+    "description": "Manages online store operations, inventory, and team",
+    "category": "ecommerce",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "ecommerce",
+    "is_active": true,
+    "hierarchy_level": 4,
+    "parent_role_id": "b0511111-1111-1111-1111-111111111111",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "industry": "ecommerce",
+      "department": "store_operations",
+      "can_manage_inventory": true,
+      "can_approve_refunds": true,
+      "can_manage_promotions": true,
+      "max_refund_amount": 10000
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "ec022222-2222-2222-2222-222222222222",
+    "role_name": "INVENTORY_MANAGER",
+    "display_name": "Inventory Manager",
+    "description": "Manages product catalog, stock levels, and supplier relationships",
+    "category": "ecommerce",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "ecommerce",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "ec011111-1111-1111-1111-111111111111",
+    "compliance_level": "basic",
+    "metadata_json": {
+      "industry": "ecommerce",
+      "department": "inventory",
+      "can_add_products": true,
+      "can_update_stock": true,
+      "can_manage_suppliers": true,
+      "can_set_pricing": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "ec033333-3333-3333-3333-333333333333",
+    "role_name": "FULFILLMENT_CLERK",
+    "display_name": "Fulfillment Clerk",
+    "description": "Processes orders, manages shipping, and handles fulfillment",
+    "category": "ecommerce",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "ecommerce",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "ec011111-1111-1111-1111-111111111111",
+    "compliance_level": "basic",
+    "metadata_json": {
+      "industry": "ecommerce",
+      "department": "fulfillment",
+      "can_process_orders": true,
+      "can_create_shipments": true,
+      "can_update_order_status": true,
+      "can_print_labels": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "ec044444-4444-4444-4444-444444444444",
+    "role_name": "CUSTOMER_SERVICE_SPECIALIST",
+    "display_name": "Customer Service Specialist",
+    "description": "Handles customer inquiries, returns, and e-commerce support",
+    "category": "ecommerce",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "ecommerce",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "ec011111-1111-1111-1111-111111111111",
+    "compliance_level": "basic",
+    "metadata_json": {
+      "industry": "ecommerce",
+      "department": "customer_service",
+      "can_access_customer_orders": true,
+      "can_process_returns": true,
+      "can_issue_refunds": true,
+      "max_refund_amount": 1000,
+      "can_access_chat_system": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "ec055555-5555-5555-5555-555555555555",
+    "role_name": "MARKETING_COORDINATOR",
+    "display_name": "Marketing Coordinator",
+    "description": "Manages digital marketing campaigns, promotions, and analytics",
+    "category": "ecommerce",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "ecommerce",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "b0544444-4444-4444-4444-444444444444",
+    "compliance_level": "basic",
+    "metadata_json": {
+      "industry": "ecommerce",
+      "department": "marketing",
+      "can_create_campaigns": true,
+      "can_manage_promotions": true,
+      "can_access_analytics": true,
+      "can_manage_social_media": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  }
+]

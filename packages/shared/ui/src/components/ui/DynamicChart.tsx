@@ -46,13 +46,13 @@ export interface DynamicChartProps {
 }
 
 const defaultColors = [
-  "#0066CC", // Maritime primary
-  "#FFF700", // Maritime accent
+  "#0066CC", // Professional primary
+  "#FFF700", // Professional accent
   "#005AA3", // Darker blue
   "#E6F3FF", // Light blue
   "#FFE066", // Light yellow
   "#004080", // Navy
-  "#66B2FF", // Light maritime blue
+  "#66B2FF", // Light professional blue
   "#B3D9FF", // Very light blue
 ];
 

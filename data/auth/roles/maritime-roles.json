@@ -1,0 +1,122 @@
+[
+  {
+    "role_id": "ea411111-1111-1111-1111-111111111111",
+    "role_name": "MARITIME_OPERATIONS_MANAGER",
+    "display_name": "Maritime Operations Manager",
+    "description": "Manages maritime operations, shipping, and logistics",
+    "category": "maritime",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "maritime",
+    "is_active": true,
+    "hierarchy_level": 4,
+    "parent_role_id": "b0511111-1111-1111-1111-111111111111",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "industry": "maritime",
+      "department": "operations",
+      "can_approve_shipments": true,
+      "can_manage_fleet": true,
+      "max_approval_amount": 100000,
+      "requires_maritime_license": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "ea422222-2222-2222-2222-222222222222",
+    "role_name": "PORT_AGENT",
+    "display_name": "Port Agent",
+    "description": "Manages port operations, customs, and vessel clearance",
+    "category": "maritime",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "maritime",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "ea411111-1111-1111-1111-111111111111",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "industry": "maritime",
+      "department": "port_operations",
+      "can_clear_vessels": true,
+      "can_handle_customs": true,
+      "customs_authority": true,
+      "requires_port_license": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "ea433333-3333-3333-3333-333333333333",
+    "role_name": "FLEET_MANAGER",
+    "display_name": "Fleet Manager",
+    "description": "Manages vessel fleet, maintenance, and crew assignments",
+    "category": "maritime",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "maritime",
+    "is_active": true,
+    "hierarchy_level": 4,
+    "parent_role_id": "b0511111-1111-1111-1111-111111111111",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "industry": "maritime",
+      "department": "fleet",
+      "can_assign_crew": true,
+      "can_schedule_maintenance": true,
+      "can_track_vessels": true,
+      "requires_maritime_certification": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "ea444444-4444-4444-4444-444444444444",
+    "role_name": "VESSEL_OPERATOR",
+    "display_name": "Vessel Operator",
+    "description": "Operates vessel systems and manages voyage data",
+    "category": "maritime",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "maritime",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "ea433333-3333-3333-3333-333333333333",
+    "compliance_level": "enhanced",
+    "metadata_json": {
+      "industry": "maritime",
+      "department": "operations",
+      "can_update_voyage_data": true,
+      "can_operate_vessel_systems": true,
+      "vessel_access_required": true,
+      "requires_vessel_license": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  },
+  {
+    "role_id": "ea455555-5555-5555-5555-555555555555",
+    "role_name": "CARGO_COORDINATOR",
+    "display_name": "Cargo Coordinator",
+    "description": "Manages cargo loading, documentation, and logistics",
+    "category": "maritime",
+    "is_system_role": false,
+    "is_template": true,
+    "vertical": "maritime",
+    "is_active": true,
+    "hierarchy_level": 5,
+    "parent_role_id": "ea411111-1111-1111-1111-111111111111",
+    "compliance_level": "basic",
+    "metadata_json": {
+      "industry": "maritime",
+      "department": "cargo",
+      "can_manage_cargo_manifest": true,
+      "can_coordinate_loading": true,
+      "can_track_shipments": true,
+      "can_handle_documentation": true
+    },
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z"
+  }
+]
