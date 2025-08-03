@@ -641,8 +641,9 @@ class SAPStyleAuthEngine:
         password: str, 
         tenant_id: UUID,
         device_name: Optional[str] = None,
-        ip_address: Optional[str] = None
-    ) -> Tuple[User, AuthSession]:
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None
+    ) -> Tuple[User, AuthSession, str, str]:
         """
         Authenticate user with email and password using SAP-style configuration
         """
@@ -697,7 +698,7 @@ class SAPStyleAuthEngine:
 
             # Create new session
             logger.info("Step 4: Creating authentication session")
-            session, session_token, refresh_token = await self.create_session(user, device_name, ip_address)
+            session, session_token, refresh_token = await self.create_session(user, device_name, ip_address, user_agent)
             
             logger.info("Step 4 SUCCESS: Session created", session_id=str(session.session_id))
             logger.info("Authentication successful", user_id=str(user.user_id), session_id=str(session.session_id))
@@ -783,7 +784,8 @@ class SAPStyleAuthEngine:
         self,
         user: User,
         device_name: Optional[str] = None,
-        ip_address: Optional[str] = None
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None
     ) -> Tuple[AuthSession, str, str]:
         """
         Create new authentication session
@@ -819,6 +821,46 @@ class SAPStyleAuthEngine:
             logger.info("Session Step 3.1: Enforcing single session - revoking existing sessions")
             await self._revoke_user_sessions(user.user_id, "new_login_single_session")
         
+        # Device detection and risk assessment
+        logger.info("Session Step 3.2: Performing device detection and risk assessment")
+        from ..utils.device_detection import device_detector
+        from ..utils.risk_scoring import risk_scorer
+        
+        # Detect device information
+        device_info = device_detector.detect_device_info(
+            user_agent=user_agent or "",
+            ip_address=ip_address or ""
+        )
+        logger.info("Device detection completed", 
+                   device_type=device_info.get("device_type"),
+                   device_name=device_info.get("device_name"),
+                   fingerprint=device_info.get("fingerprint"))
+        
+        # Assess login risk
+        risk_assessment = await risk_scorer.assess_login_risk(
+            db=self.db,
+            user=user,
+            device_info=device_info,
+            ip_address=ip_address or "",
+            login_time=datetime.utcnow()
+        )
+        logger.info("Risk assessment completed",
+                   risk_score=risk_assessment.total_score,
+                   risk_level=risk_assessment.risk_level.value,
+                   requires_2fa=risk_assessment.requires_2fa,
+                   requires_approval=risk_assessment.requires_approval)
+        
+        # Store risk assessment in session metadata
+        session_metadata = {
+            "device_info": device_info,
+            "risk_assessment": {
+                "score": risk_assessment.total_score,
+                "level": risk_assessment.risk_level.value,
+                "factors": [{"name": f.name, "score": f.score, "reason": f.reason} for f in risk_assessment.factors],
+                "recommendations": risk_assessment.recommendations
+            }
+        }
+        
         # Create session object
         logger.info("Session Step 4: Creating session object")
         session = AuthSession(
@@ -827,13 +869,14 @@ class SAPStyleAuthEngine:
             tenant_id=user.tenant_id,
             session_token_hash=session_token_hash,
             refresh_token_hash=refresh_token_hash,
-            device_type="web",
-            device_id=device_name or "Unknown Device",
-            ip_address=ip_address,
+            device_type=device_info.get("device_type", "unknown"),
+            device_id=device_info.get("fingerprint", device_name or "Unknown Device"),
+            ip_address=device_info.get("ip_address", ip_address),
             login_method="password",
             is_active=True,
             expires_at=datetime.utcnow() + timedelta(hours=max_duration_hours),
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
+            metadata_json=session_metadata
         )
         
         logger.info("Session Step 5: Adding session to database")

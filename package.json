@@ -49,7 +49,12 @@
     "format:python": "poetry run black . ; poetry run isort .",
     "migrate:theme-variants": "node -e \"const { execSync } = require('child_process'); const platform = process.platform; const script = platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File scripts/migrations/migrate-theme-variants.ps1' : 'bash scripts/migrations/migrate-theme-variants.sh'; execSync(script, { stdio: 'inherit' });\"",
     "migrate:theme-variants:verify": "node -e \"const { execSync } = require('child_process'); const platform = process.platform; const script = platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File scripts/migrations/migrate-theme-variants.ps1 -Verify' : 'bash scripts/migrations/migrate-theme-variants.sh --verify'; execSync(script, { stdio: 'inherit' });\"",
-    "migrate:theme-variants:dry-run": "node -e \"const { execSync } = require('child_process'); const platform = process.platform; const script = platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File scripts/migrations/migrate-theme-variants.ps1 -DryRun' : 'bash scripts/migrations/migrate-theme-variants.sh --dry-run'; execSync(script, { stdio: 'inherit' });\""
+    "migrate:theme-variants:dry-run": "node -e \"const { execSync } = require('child_process'); const platform = process.platform; const script = platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File scripts/migrations/migrate-theme-variants.ps1 -DryRun' : 'bash scripts/migrations/migrate-theme-variants.sh --dry-run'; execSync(script, { stdio: 'inherit' });\"",
+    "setup:laptop": "node -e \"const { execSync } = require('child_process'); const platform = process.platform; const script = platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File scripts/setup/laptop_setup.ps1' : 'bash scripts/setup/laptop_setup.sh'; execSync(script, { stdio: 'inherit' });\"",
+    "verify:setup": "node -e \"const { execSync } = require('child_process'); const platform = process.platform; const script = platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File scripts/quick-verify.ps1' : 'bash scripts/quick-verify.sh'; execSync(script, { stdio: 'inherit' });\"",
+    "db:seed": "cd services/api && poetry run python data/seed-scripts/seed_all.py",
+    "db:migrate": "cd services/api && poetry run alembic upgrade head",
+    "db:reset": "npm run db:migrate && npm run db:seed"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.19",

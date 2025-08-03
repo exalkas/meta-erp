@@ -1,0 +1,123 @@
+{
+  "page_id": "30000000-0000-0000-0000-000000000002",
+  "page_name": "roles_onboarding",
+  "route": "/roles/onboarding",
+  "title": "Role Setup Wizard",
+  "description": "Multi-step role setup for new tenants and businesses",
+  "page_type": "wizard",
+  "layout_id": "c0000000-0000-0000-0000-000000000001",
+  "sections_data_json": {
+    "header": [
+      {
+        "type": "Navigation",
+        "props": {
+          "variant": "minimal",
+          "showUserMenu": true,
+          "items": [
+            {
+              "id": "nav-back",
+              "label": "Back to Roles",
+              "route": "/roles",
+              "icon": "ArrowLeft"
+            }
+          ]
+        }
+      }
+    ],
+    "main": [
+      {
+        "type": "Wizard",
+        "props": {
+          "title": "Setup Your Organization Roles",
+          "description": "Configure the role system for your organization in a few simple steps.",
+          "steps": [
+            {
+              "id": "select_vertical",
+              "title": "Choose Industry",
+              "description": "Select your business vertical",
+              "component": "VerticalFilter",
+              "validation": {
+                "required": true
+              },
+              "estimatedTime": "1 min"
+            },
+            {
+              "id": "select_roles",
+              "title": "Select Roles",
+              "description": "Choose roles for your team",
+              "component": "ItemGrid",
+              "props": {
+                "itemComponent": "RoleTemplateCard",
+                "enableSelection": true,
+                "layout": "grid",
+                "columns": 2
+              },
+              "validation": {
+                "minSelection": 1
+              },
+              "estimatedTime": "3 min"
+            },
+            {
+              "id": "customize_roles",
+              "title": "Customize",
+              "description": "Fine-tune role names",
+              "component": "Form",
+              "props": {
+                "formId": "role_customization"
+              },
+              "estimatedTime": "5 min"
+            },
+            {
+              "id": "review_create",
+              "title": "Review & Create",
+              "description": "Review and create roles",
+              "component": "StatsGrid",
+              "props": {
+                "showSummary": true
+              },
+              "estimatedTime": "2 min"
+            }
+          ],
+          "showProgress": true,
+          "showStepNumbers": true,
+          "showEstimatedTime": true,
+          "allowBackNavigation": true,
+          "persistState": true,
+          "apiEndpoints": {
+            "templates": "/roles/templates",
+            "verticals": "/roles/templates/by-vertical",
+            "create": "/roles/tenant/{tenant_id}/create-from-template"
+          },
+          "onComplete": {
+            "redirectTo": "/roles/manage",
+            "showSuccess": true
+          }
+        }
+      }
+    ]
+  },
+  "components": [],
+  "initial_state": {},
+  "state_bindings": {},
+  "api_endpoints": {},
+  "callbacks": {},
+  "real_time_updates": false,
+  "cache_strategy": "no-cache",
+  "websocket_events": {},
+  "metadata_json": {
+    "wizard": {
+      "allowBackNavigation": true,
+      "showProgress": true,
+      "autoSave": false
+    },
+    "seo": {
+      "title": "Role Setup | Business Platform",
+      "description": "Set up roles for your team"
+    }
+  },
+  "access_roles": ["ROLE_CREATE"],
+  "is_public": false,
+  "tenant_id": null,
+  "created_at": "2025-01-29T00:00:00Z",
+  "updated_at": "2025-01-29T00:00:00Z"
+}

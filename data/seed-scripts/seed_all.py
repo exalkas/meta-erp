@@ -67,6 +67,7 @@ class DataSeeder:
             # 2. Auth data (roles, permissions, users)
             await self.seed_roles()
             await self.seed_permissions()
+            await self.seed_role_permissions()
             await self.seed_users()
             
             # 3. Metadata (pages, layouts, themes, translations)
@@ -230,6 +231,42 @@ class DataSeeder:
             )
             self.session.add(permission)
             logger.info(f"✅ Added permission: {permission.display_name}")
+
+    async def seed_role_permissions(self):
+        """Seed role-permission assignments."""
+        logger.info("🔗 Seeding role-permission assignments...")
+        
+        # Load role-permission assignments
+        assignments_data = self.load_json_data("auth/role-permissions/default-role-permissions.json")
+        
+        for assignment_data in assignments_data:
+            # Check if assignment already exists
+            from sqlalchemy import select, and_
+            from app.models.auth import role_permissions
+            
+            existing = await self.session.execute(
+                select(role_permissions).where(
+                    and_(
+                        role_permissions.c.role_id == assignment_data["role_id"],
+                        role_permissions.c.permission_id == assignment_data["permission_id"]
+                    )
+                )
+            )
+            if existing.fetchone():
+                logger.info(f"⏭️ Role-permission assignment already exists: {assignment_data['description']}")
+                continue
+            
+            # Insert role-permission assignment
+            await self.session.execute(
+                role_permissions.insert().values(
+                    role_id=assignment_data["role_id"],
+                    permission_id=assignment_data["permission_id"],
+                    granted_at=datetime.fromisoformat(assignment_data["granted_at"].replace('Z', '+00:00')),
+                    granted_by=assignment_data.get("granted_by")
+                )
+            )
+            
+            logger.info(f"✅ Added role-permission: {assignment_data['description']}")
     
     async def seed_users(self):
         """Seed user data with auth methods."""
@@ -431,23 +468,25 @@ class DataSeeder:
         
         page_files = [
             "metadata/pages/login-page.json",
-            "metadata/pages/dashboard-page.json"
+            "metadata/pages/dashboard-page.json",
+            "metadata/pages/roles-catalog-page.json",
+            "metadata/pages/roles-onboarding-page.json", 
+            "metadata/pages/roles-management-page.json"
         ]
         
         for file_path in page_files:
-            pages_data = self.load_json_data(file_path)
+            page_data = self.load_json_data(file_path)  # Single page object, not array
             
-            for page_data in pages_data:
-                # Check if page already exists
-                existing = await self.session.get(PageDefinition, page_data["page_id"])
-                if existing:
-                    logger.info(f"⏭️ Page {page_data['page_name']} already exists")
-                    continue
+            # Check if page already exists
+            existing = await self.session.get(PageDefinition, page_data["page_id"])
+            if existing:
+                logger.info(f"⏭️ Page {page_data['page_name']} already exists")
+                continue
                     
-                # Extract SEO metadata for dedicated columns
-                seo_data = page_data.get("metadata_json", {}).get("seo", {})
-                
-                page = PageDefinition(
+            # Extract SEO metadata for dedicated columns
+            seo_data = page_data.get("metadata_json", {}).get("seo", {})
+            
+            page = PageDefinition(
                     page_id=page_data["page_id"],
                     page_name=page_data["page_name"],
                     route=page_data["route"],
@@ -472,9 +511,9 @@ class DataSeeder:
                     tenant_id=page_data.get("tenant_id"),
                     created_at=datetime.fromisoformat(page_data["created_at"].replace('Z', '+00:00')),
                     updated_at=datetime.fromisoformat(page_data["updated_at"].replace('Z', '+00:00'))
-                )
-                self.session.add(page)
-                logger.info(f"✅ Added page: {page.page_name}")
+            )
+            self.session.add(page)
+            logger.info(f"✅ Added page: {page.page_name}")
     
     async def seed_entities(self):
         """Seed entity definitions (placeholder)."""

@@ -1,557 +1,242 @@
-import React, { useState, useCallback, useMemo } from "react";
-import { useTranslation } from "../../contexts/TranslationContext";
+/**
+ * Generic Pagination Component - Metadata-Driven
+ * Universal pagination for any paginated data
+ */
+
+import React from "react";
+import { Button } from "./Button";
+import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 
 interface PaginationProps {
-  current?: number;
-  total: number;
+  // Data
+  currentPage: number;
+  totalPages: number;
+  totalItems?: number;
   pageSize?: number;
-  showSizeChanger?: boolean;
-  showQuickJumper?: boolean;
-  showTotal?:
-    | boolean
-    | ((total: number, range: [number, number]) => React.ReactNode);
-  onChange?: (page: number, pageSize: number) => void;
-  onShowSizeChange?: (current: number, size: number) => void;
-  pageSizeOptions?: string[];
-  size?: "sm" | "md" | "lg";
-  disabled?: boolean;
-  hideOnSinglePage?: boolean;
-  showPrevNextJumpers?: boolean;
-  showLessItems?: boolean;
-  responsive?: boolean;
-  className?: string;
-  itemClassName?: string;
-  activeClassName?: string;
-  disabledClassName?: string;
-  simple?: boolean;
-  position?: "left" | "center" | "right";
+
+  // Behavior
+  onPageChange: (page: number) => void;
+  showInfo?: boolean;
+  showSizeSelector?: boolean;
+  pageSizeOptions?: number[];
+  onPageSizeChange?: (size: number) => void;
+
+  // Display
+  maxVisiblePages?: number;
   showFirstLast?: boolean;
-  maxPageButtons?: number;
-  ellipsisText?: string;
-  prevText?: string;
-  nextText?: string;
-  firstText?: string;
-  lastText?: string;
-  jumpPrevText?: string;
-  jumpNextText?: string;
-  showTotalText?: string;
-  itemRender?: (
-    page: number,
-    type:
-      | "page"
-      | "prev"
-      | "next"
-      | "jump-prev"
-      | "jump-next"
-      | "first"
-      | "last",
-    originalElement: React.ReactNode
-  ) => React.ReactNode;
+  size?: "sm" | "md" | "lg";
+
+  // Labels
+  previousLabel?: string;
+  nextLabel?: string;
+  firstLabel?: string;
+  lastLabel?: string;
+
+  // Styling
+  className?: string;
 }
 
-const ChevronLeftIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M15 19l-7-7 7-7"
-    />
-  </svg>
-);
-
-const ChevronRightIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M9 5l7 7-7 7"
-    />
-  </svg>
-);
-
-const DoubleChevronLeftIcon: React.FC<{ className?: string }> = ({
-  className,
-}) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
-    />
-  </svg>
-);
-
-const DoubleChevronRightIcon: React.FC<{ className?: string }> = ({
-  className,
-}) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M13 5l7 7-7 7M5 5l7 7-7 7"
-    />
-  </svg>
-);
-
-const EllipsisIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-    />
-  </svg>
-);
-
 export const Pagination: React.FC<PaginationProps> = ({
-  current = 1,
-  total,
+  currentPage,
+  totalPages,
+  totalItems,
   pageSize = 10,
-  showSizeChanger = false,
-  showQuickJumper = false,
-  showTotal = false,
-  onChange,
-  onShowSizeChange,
-  pageSizeOptions = ["10", "20", "50", "100"],
+  onPageChange,
+  showInfo = true,
+  showSizeSelector = false,
+  pageSizeOptions = [10, 25, 50, 100],
+  onPageSizeChange,
+  maxVisiblePages = 7,
+  showFirstLast = true,
   size = "md",
-  disabled = false,
-  hideOnSinglePage = false,
-  showPrevNextJumpers = false,
-  showLessItems = false,
-  responsive = true,
+  previousLabel = "Previous",
+  nextLabel = "Next",
+  firstLabel = "First",
+  lastLabel = "Last",
   className = "",
-  itemClassName = "",
-  activeClassName = "",
-  disabledClassName = "",
-  simple = false,
-  position = "center",
-  showFirstLast = false,
-  maxPageButtons = 7,
-  ellipsisText = "...",
-  prevText,
-  nextText,
-  firstText,
-  lastText,
-  jumpPrevText,
-  jumpNextText,
-  showTotalText,
-  itemRender,
 }) => {
-  const { t } = useTranslation();
-  const [jumpPage, setJumpPage] = useState("");
+  const isFirstPage = currentPage === 1;
+  const isLastPage = currentPage === totalPages;
 
-  const totalPages = Math.ceil(total / pageSize);
-  const startRecord = (current - 1) * pageSize + 1;
-  const endRecord = Math.min(current * pageSize, total);
+  // Calculate visible page numbers
+  const getVisiblePages = (): (number | "ellipsis")[] => {
+    if (totalPages <= maxVisiblePages) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
 
-  const sizeClasses = {
-    sm: "px-2 py-1 text-xs",
-    md: "px-3 py-2 text-sm",
-    lg: "px-4 py-3 text-base",
-  };
+    const pages: (number | "ellipsis")[] = [];
+    const halfVisible = Math.floor(maxVisiblePages / 2);
 
-  const positionClasses = {
-    left: "justify-start",
-    center: "justify-center",
-    right: "justify-end",
-  };
-
-  // Don't render if there's only one page and hideOnSinglePage is true
-  if (hideOnSinglePage && totalPages <= 1) {
-    return null;
-  }
-
-  const handlePageChange = useCallback(
-    (page: number) => {
-      if (page !== current && page >= 1 && page <= totalPages && !disabled) {
-        onChange?.(page, pageSize);
+    if (currentPage <= halfVisible + 1) {
+      // Show pages from start
+      for (let i = 1; i <= maxVisiblePages - 2; i++) {
+        pages.push(i);
       }
-    },
-    [current, totalPages, pageSize, disabled, onChange]
-  );
-
-  const handleSizeChange = useCallback(
-    (newSize: number) => {
-      if (newSize !== pageSize && !disabled) {
-        const newPage = Math.min(current, Math.ceil(total / newSize));
-        onShowSizeChange?.(newPage, newSize);
-        onChange?.(newPage, newSize);
-      }
-    },
-    [current, total, pageSize, disabled, onShowSizeChange, onChange]
-  );
-
-  const handleJumpToPage = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter") {
-        const page = parseInt(jumpPage);
-        if (page >= 1 && page <= totalPages) {
-          handlePageChange(page);
-          setJumpPage("");
-        }
-      }
-    },
-    [jumpPage, totalPages, handlePageChange]
-  );
-
-  const generatePageNumbers = useCallback(() => {
-    const pages: (number | string)[] = [];
-
-    if (totalPages <= maxPageButtons) {
-      // Show all pages if total pages is less than max buttons
-      for (let i = 1; i <= totalPages; i++) {
+      pages.push("ellipsis");
+      pages.push(totalPages);
+    } else if (currentPage >= totalPages - halfVisible) {
+      // Show pages from end
+      pages.push(1);
+      pages.push("ellipsis");
+      for (let i = totalPages - maxVisiblePages + 3; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
-      // Complex pagination logic
-      const halfMax = Math.floor(maxPageButtons / 2);
+      // Show pages around current
+      pages.push(1);
+      pages.push("ellipsis");
 
-      if (current <= halfMax + 1) {
-        // Current page is near the beginning
-        for (let i = 1; i <= maxPageButtons - 2; i++) {
-          pages.push(i);
-        }
-        pages.push("...");
-        pages.push(totalPages);
-      } else if (current >= totalPages - halfMax) {
-        // Current page is near the end
-        pages.push(1);
-        pages.push("...");
-        for (let i = totalPages - maxPageButtons + 3; i <= totalPages; i++) {
-          pages.push(i);
-        }
-      } else {
-        // Current page is in the middle
-        pages.push(1);
-        pages.push("...");
-        for (let i = current - halfMax + 1; i <= current + halfMax - 1; i++) {
-          pages.push(i);
-        }
-        pages.push("...");
-        pages.push(totalPages);
+      const start = currentPage - Math.floor((maxVisiblePages - 4) / 2);
+      const end = start + maxVisiblePages - 5;
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
       }
+
+      pages.push("ellipsis");
+      pages.push(totalPages);
     }
 
     return pages;
-  }, [current, totalPages, maxPageButtons]);
+  };
 
-  const renderPageButton = useCallback(
-    (page: number | string, key: string) => {
-      const isActive = page === current;
-      const isDisabled = disabled || typeof page === "string";
-      const isEllipsis = typeof page === "string";
+  const visiblePages = getVisiblePages();
 
-      let content: React.ReactNode;
-      let onClick: (() => void) | undefined;
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages && page !== currentPage) {
+      onPageChange(page);
+    }
+  };
 
-      if (isEllipsis) {
-        content = ellipsisText;
-      } else {
-        content = page;
-        onClick = () => handlePageChange(page as number);
-      }
+  const getSizeClasses = () => {
+    switch (size) {
+      case "sm":
+        return "text-xs";
+      case "lg":
+        return "text-lg";
+      default:
+        return "text-sm";
+    }
+  };
 
-      const defaultButton = (
-        <button
-          key={key}
-          type="button"
-          onClick={onClick}
-          disabled={isDisabled}
-          className={`
-          ${sizeClasses[size]}
-          ${itemClassName}
-          ${
-            isActive
-              ? `bg-blue-600 text-white ${activeClassName}`
-              : "bg-white text-gray-700 hover:bg-gray-50"
-          }
-          ${
-            isDisabled
-              ? `cursor-not-allowed opacity-50 ${disabledClassName}`
-              : "cursor-pointer"
-          }
-          ${isEllipsis ? "cursor-default" : ""}
-          border border-gray-300 transition-colors duration-200
-          ${responsive ? "hidden sm:inline-flex" : "inline-flex"}
-          items-center justify-center
-        `}
-        >
-          {content}
-        </button>
-      );
+  const getButtonSize = () => {
+    switch (size) {
+      case "sm":
+        return "sm" as const;
+      case "lg":
+        return "lg" as const;
+      default:
+        return "sm" as const;
+    }
+  };
 
-      if (itemRender && !isEllipsis) {
-        return itemRender(page as number, "page", defaultButton);
-      }
-
-      return defaultButton;
-    },
-    [
-      current,
-      disabled,
-      size,
-      itemClassName,
-      activeClassName,
-      disabledClassName,
-      ellipsisText,
-      responsive,
-      handlePageChange,
-      itemRender,
-      sizeClasses,
-    ]
-  );
-
-  const renderNavButton = useCallback(
-    (
-      type: "prev" | "next" | "first" | "last",
-      page: number,
-      icon: React.ReactNode,
-      text: string
-    ) => {
-      const isDisabled =
-        disabled ||
-        (type === "prev" && current === 1) ||
-        (type === "next" && current === totalPages) ||
-        (type === "first" && current === 1) ||
-        (type === "last" && current === totalPages);
-
-      const defaultButton = (
-        <button
-          type="button"
-          onClick={() => !isDisabled && handlePageChange(page)}
-          disabled={isDisabled}
-          className={`
-          ${sizeClasses[size]}
-          ${itemClassName}
-          ${
-            isDisabled
-              ? `cursor-not-allowed opacity-50 ${disabledClassName}`
-              : "cursor-pointer hover:bg-gray-50"
-          }
-          bg-white text-gray-700 border border-gray-300 transition-colors duration-200
-          inline-flex items-center justify-center space-x-1
-        `}
-        >
-          {icon}
-          {!showLessItems && <span>{text}</span>}
-        </button>
-      );
-
-      if (itemRender) {
-        return itemRender(page, type, defaultButton);
-      }
-
-      return defaultButton;
-    },
-    [
-      current,
-      totalPages,
-      disabled,
-      size,
-      itemClassName,
-      disabledClassName,
-      showLessItems,
-      handlePageChange,
-      itemRender,
-      sizeClasses,
-    ]
-  );
-
-  const pageNumbers = useMemo(
-    () => generatePageNumbers(),
-    [generatePageNumbers]
-  );
-
-  if (simple) {
-    return (
-      <div
-        className={`flex items-center space-x-2 ${positionClasses[position]} ${className}`}
-      >
-        {renderNavButton(
-          "prev",
-          current - 1,
-          <ChevronLeftIcon className="w-4 h-4" />,
-          prevText || t("previous")
-        )}
-
-        <div className="flex items-center space-x-2">
-          <input
-            type="number"
-            min="1"
-            max={totalPages}
-            value={current}
-            onChange={(e) => {
-              const page = parseInt(e.target.value);
-              if (page >= 1 && page <= totalPages) {
-                handlePageChange(page);
-              }
-            }}
-            className={`${sizeClasses[size]} w-16 text-center border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-            disabled={disabled}
-          />
-          <span className="text-sm text-gray-500">/ {totalPages}</span>
-        </div>
-
-        {renderNavButton(
-          "next",
-          current + 1,
-          <ChevronRightIcon className="w-4 h-4" />,
-          nextText || t("next")
-        )}
-      </div>
-    );
+  if (totalPages <= 1) {
+    return null;
   }
 
   return (
-    <div className={`space-y-4 ${className}`}>
-      {/* Main pagination */}
-      <div
-        className={`flex items-center space-x-1 ${positionClasses[position]}`}
-      >
-        {showFirstLast && (
-          <>
-            {renderNavButton(
-              "first",
-              1,
-              <DoubleChevronLeftIcon className="w-4 h-4" />,
-              firstText || t("first")
-            )}
-            {showPrevNextJumpers &&
-              renderNavButton(
-                "prev",
-                Math.max(1, current - 5),
-                <EllipsisIcon className="w-4 h-4" />,
-                jumpPrevText || t("jump_prev")
-              )}
-          </>
+    <div
+      className={`flex flex-col sm:flex-row gap-4 justify-between items-center ${className}`}
+    >
+      {/* Info */}
+      {showInfo && totalItems && (
+        <div className={`text-gray-600 ${getSizeClasses()}`}>
+          Showing {(currentPage - 1) * pageSize + 1} to{" "}
+          {Math.min(currentPage * pageSize, totalItems)} of{" "}
+          {totalItems.toLocaleString()} results
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      <div className="flex items-center gap-1">
+        {/* First Page */}
+        {showFirstLast && !isFirstPage && (
+          <Button
+            variant="outline"
+            size={getButtonSize()}
+            onClick={() => handlePageChange(1)}
+            className="hidden sm:flex"
+          >
+            {firstLabel}
+          </Button>
         )}
 
-        {renderNavButton(
-          "prev",
-          current - 1,
-          <ChevronLeftIcon className="w-4 h-4" />,
-          prevText || t("previous")
-        )}
+        {/* Previous Page */}
+        <Button
+          variant="outline"
+          size={getButtonSize()}
+          disabled={isFirstPage}
+          onClick={() => handlePageChange(currentPage - 1)}
+        >
+          <ChevronLeft className="h-4 w-4 mr-1" />
+          <span className="hidden sm:inline">{previousLabel}</span>
+        </Button>
 
-        <div className="flex items-center space-x-1">
-          {pageNumbers.map((page, index) =>
-            renderPageButton(page, `page-${index}`)
-          )}
+        {/* Page Numbers */}
+        <div className="flex items-center gap-1">
+          {visiblePages.map((page, index) => {
+            if (page === "ellipsis") {
+              return (
+                <div key={`ellipsis-${index}`} className="px-2">
+                  <MoreHorizontal className="h-4 w-4 text-gray-400" />
+                </div>
+              );
+            }
+
+            return (
+              <Button
+                key={page}
+                variant={currentPage === page ? "primary" : "outline"}
+                size={getButtonSize()}
+                onClick={() => handlePageChange(page)}
+                className="min-w-[40px]"
+              >
+                {page}
+              </Button>
+            );
+          })}
         </div>
 
-        {renderNavButton(
-          "next",
-          current + 1,
-          <ChevronRightIcon className="w-4 h-4" />,
-          nextText || t("next")
-        )}
+        {/* Next Page */}
+        <Button
+          variant="outline"
+          size={getButtonSize()}
+          disabled={isLastPage}
+          onClick={() => handlePageChange(currentPage + 1)}
+        >
+          <span className="hidden sm:inline">{nextLabel}</span>
+          <ChevronRight className="h-4 w-4 ml-1" />
+        </Button>
 
-        {showFirstLast && (
-          <>
-            {showPrevNextJumpers &&
-              renderNavButton(
-                "next",
-                Math.min(totalPages, current + 5),
-                <EllipsisIcon className="w-4 h-4" />,
-                jumpNextText || t("jump_next")
-              )}
-            {renderNavButton(
-              "last",
-              totalPages,
-              <DoubleChevronRightIcon className="w-4 h-4" />,
-              lastText || t("last")
-            )}
-          </>
+        {/* Last Page */}
+        {showFirstLast && !isLastPage && (
+          <Button
+            variant="outline"
+            size={getButtonSize()}
+            onClick={() => handlePageChange(totalPages)}
+            className="hidden sm:flex"
+          >
+            {lastLabel}
+          </Button>
         )}
       </div>
 
-      {/* Additional controls */}
-      {(showSizeChanger || showQuickJumper || showTotal) && (
-        <div className="flex items-center justify-between text-sm text-gray-600">
-          <div className="flex items-center space-x-4">
-            {showSizeChanger && (
-              <div className="flex items-center space-x-2">
-                <span>{t("show")}</span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => handleSizeChange(parseInt(e.target.value))}
-                  disabled={disabled}
-                  className="px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {pageSizeOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-                <span>{t("items_per_page")}</span>
-              </div>
-            )}
-
-            {showQuickJumper && (
-              <div className="flex items-center space-x-2">
-                <span>{t("go_to_page")}</span>
-                <input
-                  type="number"
-                  min="1"
-                  max={totalPages}
-                  value={jumpPage}
-                  onChange={(e) => setJumpPage(e.target.value)}
-                  onKeyDown={handleJumpToPage}
-                  className="w-16 px-2 py-1 text-center border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  disabled={disabled}
-                  placeholder={current.toString()}
-                />
-              </div>
-            )}
-          </div>
-
-          {showTotal && (
-            <div>
-              {typeof showTotal === "function" ? (
-                showTotal(total, [startRecord, endRecord])
-              ) : (
-                <span>
-                  {showTotalText ||
-                    t("showing_records", {
-                      start: startRecord,
-                      end: endRecord,
-                      total,
-                    })}
-                </span>
-              )}
-            </div>
-          )}
+      {/* Page Size Selector */}
+      {showSizeSelector && onPageSizeChange && (
+        <div className="flex items-center gap-2">
+          <span className={`text-gray-600 ${getSizeClasses()}`}>Show:</span>
+          <select
+            value={pageSize}
+            onChange={(e) => onPageSizeChange(Number(e.target.value))}
+            className={`border border-gray-300 rounded-md px-2 py-1 ${getSizeClasses()} focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+          >
+            {pageSizeOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+          <span className={`text-gray-600 ${getSizeClasses()}`}>per page</span>
         </div>
       )}
     </div>

@@ -1,0 +1,209 @@
+{
+  "page_id": "30000000-0000-0000-0000-000000000003",
+  "page_name": "roles_management",
+  "route": "/roles/manage",
+  "title": "Manage Team Roles",
+  "description": "Manage your team roles and permissions",
+  "page_type": "management",
+  "layout_id": "d0000000-0000-0000-0000-000000000001",
+  "sections_data_json": {
+    "header": [
+      {
+        "type": "Navigation",
+        "props": {
+          "variant": "horizontal",
+          "showUserMenu": true,
+          "showNotifications": true,
+          "items": [
+            {
+              "id": "nav-dashboard",
+              "label": "Dashboard",
+              "route": "/dashboard",
+              "icon": "LayoutDashboard"
+            },
+            {
+              "id": "nav-roles",
+              "label": "Roles",
+              "route": "/roles",
+              "icon": "Users"
+            },
+            {
+              "id": "nav-manage-roles",
+              "label": "Manage Roles",
+              "route": "/roles/manage",
+              "icon": "Settings",
+              "active": true
+            }
+          ]
+        }
+      }
+    ],
+    "main": [
+      {
+        "type": "PageHeader",
+        "props": {
+          "title": "Manage Roles",
+          "description": "Manage your team roles and permissions",
+          "actions": [
+            {
+              "type": "Button",
+              "props": {
+                "variant": "outline",
+                "href": "/roles/onboarding",
+                "icon": "Plus",
+                "label": "Add More Roles"
+              }
+            },
+            {
+              "type": "Button",
+              "props": {
+                "variant": "primary",
+                "href": "/roles",
+                "icon": "Building2",
+                "label": "Browse Templates"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "StatsGrid",
+        "props": {
+          "stats": [
+            {
+              "key": "total",
+              "label": "Total Roles",
+              "value": "{{ totalRoles }}",
+              "icon": "users",
+              "color": "blue"
+            },
+            {
+              "key": "active",
+              "label": "Active Roles",
+              "value": "{{ activeRoles }}",
+              "icon": "check",
+              "color": "green"
+            },
+            {
+              "key": "inactive",
+              "label": "Inactive Roles",
+              "value": "{{ inactiveRoles }}",
+              "icon": "clock",
+              "color": "gray"
+            },
+            {
+              "key": "critical",
+              "label": "Critical Roles",
+              "value": "{{ criticalRoles }}",
+              "icon": "star",
+              "color": "yellow"
+            }
+          ],
+          "apiEndpoint": "/roles/tenant/{tenant_id}/stats"
+        }
+      },
+      {
+        "type": "Filter",
+        "props": {
+          "layout": "horizontal",
+          "fields": [
+            {
+              "key": "search",
+              "type": "search",
+              "label": "Search",
+              "placeholder": "Search roles..."
+            },
+            {
+              "key": "status",
+              "type": "select",
+              "label": "Status",
+              "options": [
+                { "value": "all", "label": "All Roles" },
+                { "value": "active", "label": "Active Only" },
+                { "value": "inactive", "label": "Inactive Only" }
+              ]
+            },
+            {
+              "key": "vertical",
+              "type": "select",
+              "label": "Industry",
+              "options": "{{ verticals }}"
+            }
+          ],
+          "showClearAll": true
+        }
+      },
+      {
+        "type": "RoleManagementTable",
+        "props": {
+          "apiEndpoint": "/roles/tenant/{tenant_id}",
+          "deleteEndpoint": "/roles/tenant/{tenant_id}/role/{role_id}",
+          "columns": [
+            { "key": "display_name", "label": "Role", "sortable": true },
+            {
+              "key": "vertical",
+              "label": "Industry",
+              "sortable": true,
+              "type": "badge"
+            },
+            {
+              "key": "hierarchy_level",
+              "label": "Level",
+              "sortable": true,
+              "type": "level"
+            },
+            {
+              "key": "compliance_level",
+              "label": "Compliance",
+              "sortable": true,
+              "type": "compliance"
+            },
+            {
+              "key": "is_active",
+              "label": "Status",
+              "sortable": true,
+              "type": "status"
+            },
+            {
+              "key": "created_at",
+              "label": "Created",
+              "sortable": true,
+              "type": "date"
+            },
+            { "key": "actions", "label": "Actions", "type": "actions" }
+          ],
+          "enableSelection": true,
+          "enableBulkDelete": true,
+          "enableInlineEdit": false,
+          "showPagination": true,
+          "pageSize": 20
+        }
+      }
+    ]
+  },
+  "components": [],
+  "initial_state": {},
+  "state_bindings": {},
+  "api_endpoints": {},
+  "callbacks": {},
+  "real_time_updates": true,
+  "cache_strategy": "cache",
+  "websocket_events": {},
+  "metadata_json": {
+    "table": {
+      "enableExport": true,
+      "exportFormats": ["csv", "xlsx"],
+      "defaultSort": "display_name",
+      "defaultOrder": "asc"
+    },
+    "seo": {
+      "title": "Manage Roles | Business Platform",
+      "description": "Manage team roles and permissions"
+    }
+  },
+  "access_roles": ["ROLE_MANAGE"],
+  "is_public": false,
+  "tenant_id": null,
+  "created_at": "2025-01-29T00:00:00Z",
+  "updated_at": "2025-01-29T00:00:00Z"
+}

@@ -25,6 +25,7 @@ from app.core.middleware import (
     SecurityHeadersMiddleware,
     PerformanceMonitoringMiddleware,
 )
+from app.core.auth_middleware import PermissionEnforcementMiddleware
 
 
 @asynccontextmanager
@@ -70,6 +71,7 @@ def create_app() -> FastAPI:
     # Add custom middleware (order matters - reverse of execution order)
     app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(PerformanceMonitoringMiddleware, slow_request_threshold_ms=1000.0)
+    app.add_middleware(PermissionEnforcementMiddleware, auth_service_url=settings.auth_service_url)
     app.add_middleware(TenantContextMiddleware)
     # Temporarily disabled due to logging attribute error
     # app.add_middleware(RequestLoggingMiddleware)
@@ -84,10 +86,8 @@ def create_app() -> FastAPI:
     )
     
     # Add API routes
-    from app.api.auth import router as auth_router
     from app.api.metadata import router as metadata_router
     from app.api.roles import router as roles_router
-    app.include_router(auth_router)
     app.include_router(metadata_router)
     app.include_router(roles_router)
     

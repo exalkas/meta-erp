@@ -21,6 +21,19 @@ import { Sidebar } from "../ui/Sidebar";
 import { MetadataDataTable } from "./MetadataDataTable";
 import { DynamicForm } from "./DynamicForm";
 
+// Generic UI Components
+import Filter from "../ui/Filter";
+import StatsGrid from "../ui/StatsGrid";
+import Wizard from "../ui/Wizard";
+import ItemGrid from "../ui/ItemGrid";
+import Pagination from "../ui/Pagination";
+import Progress from "../ui/Progress";
+
+// Domain-specific components (minimal wrappers)
+import RoleTemplateCard from "../roles/RoleTemplateCard";
+import VerticalFilter from "../roles/VerticalFilter";
+import RoleList from "../roles/RoleList";
+
 // Simple PageHeader component
 const PageHeader: React.FC<{
   title?: string;
@@ -323,6 +336,22 @@ const COMPONENT_REGISTRY: Record<string, React.ComponentType<any>> = {
 
   // Complex Components
   Form: DynamicForm,
+
+  // Generic UI Components
+  Filter: Filter,
+  StatsGrid: StatsGrid,
+  Wizard: Wizard,
+  ItemGrid: ItemGrid,
+  Pagination: Pagination,
+  Progress: Progress,
+
+  // Domain-specific Components
+  RoleTemplateCard: RoleTemplateCard,
+  VerticalFilter: VerticalFilter,
+  RoleList: RoleList,
+
+  // DataTable alias for role management
+  RoleManagementTable: MetadataDataTable,
 };
 
 interface DynamicComponentProps {

@@ -619,6 +619,56 @@ async def get_tenant_config(
         )
 
 # =============================================
+# TOKEN VALIDATION
+# =============================================
+
+@router.post("/validate-token")
+async def validate_token(
+    request: dict,
+    db: AsyncSession = Depends(get_db_session)
+):
+    """Validate JWT token and return user information for API middleware."""
+    
+    try:
+        token = request.get("token")
+        if not token:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Token is required"
+            )
+        
+        # Initialize auth engine
+        auth_engine = SAPStyleAuthEngine(db)
+        
+        # Validate token and get user info
+        # This would need to be implemented in the SAP auth engine
+        # For now, return a basic structure
+        
+        # TODO: Implement actual token validation in SAPStyleAuthEngine
+        # user_data = await auth_engine.validate_token(token)
+        
+        # Placeholder implementation - replace with actual validation
+        return {
+            "valid": True,
+            "user": {
+                "user_id": "placeholder",
+                "email": "user@example.com",
+                "tenant_id": "placeholder",
+                "is_active": True,
+                "is_verified": True
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Token validation failed", error=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token validation failed"
+        )
+
+# =============================================
 # UTILITY ENDPOINTS
 # =============================================
 

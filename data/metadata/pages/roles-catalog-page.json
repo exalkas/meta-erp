@@ -1,0 +1,166 @@
+{
+  "page_id": "30000000-0000-0000-0000-000000000001",
+  "page_name": "roles_catalog",
+  "route": "/roles",
+  "title": "Role Templates Catalog",
+  "description": "Browse and discover professional role templates for your business",
+  "page_type": "catalog",
+  "layout_id": "d0000000-0000-0000-0000-000000000001",
+  "sections_data_json": {
+    "header": [
+      {
+        "type": "Navigation",
+        "props": {
+          "variant": "horizontal",
+          "showUserMenu": true,
+          "showNotifications": true,
+          "items": [
+            {
+              "id": "nav-dashboard",
+              "label": "Dashboard",
+              "route": "/dashboard",
+              "icon": "LayoutDashboard"
+            },
+            {
+              "id": "nav-roles",
+              "label": "Roles",
+              "route": "/roles",
+              "icon": "Users",
+              "active": true
+            },
+            {
+              "id": "nav-settings",
+              "label": "Settings",
+              "route": "/settings",
+              "icon": "Settings"
+            }
+          ]
+        }
+      }
+    ],
+    "main": [
+      {
+        "type": "PageHeader",
+        "props": {
+          "title": "Role Templates",
+          "description": "Discover and use professional role templates for your business",
+          "actions": [
+            {
+              "type": "Button",
+              "props": {
+                "variant": "primary",
+                "href": "/roles/onboarding",
+                "icon": "Plus",
+                "label": "Setup Roles"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "StatsGrid",
+        "props": {
+          "stats": [
+            {
+              "key": "total",
+              "label": "Total Templates",
+              "value": "{{ templatesCount }}",
+              "icon": "users",
+              "color": "blue"
+            },
+            {
+              "key": "verticals",
+              "label": "Industries",
+              "value": "{{ verticalsCount }}",
+              "icon": "trending",
+              "color": "green"
+            },
+            {
+              "key": "critical",
+              "label": "Critical Roles",
+              "value": "{{ criticalCount }}",
+              "icon": "star",
+              "color": "yellow"
+            }
+          ],
+          "apiEndpoint": "/roles/templates/stats"
+        }
+      },
+      {
+        "type": "Filter",
+        "props": {
+          "layout": "horizontal",
+          "fields": [
+            {
+              "key": "search",
+              "type": "search",
+              "label": "Search",
+              "placeholder": "Search role templates..."
+            },
+            {
+              "key": "vertical",
+              "type": "multiselect",
+              "label": "Industry",
+              "options": "{{ verticals }}"
+            }
+          ],
+          "quickFilters": [
+            {
+              "key": "critical",
+              "label": "Critical Roles Only",
+              "filter": { "compliance_level": "critical" }
+            },
+            {
+              "key": "management",
+              "label": "Management Roles",
+              "filter": { "category": "management" }
+            }
+          ]
+        }
+      },
+      {
+        "type": "ItemGrid",
+        "props": {
+          "itemComponent": "RoleTemplateCard",
+          "apiEndpoint": "/roles/templates",
+          "layout": "grid",
+          "columns": 3,
+          "showActions": true,
+          "enableSelection": true,
+          "searchFields": [
+            "display_name",
+            "role_name",
+            "description",
+            "vertical"
+          ],
+          "sortableFields": [
+            { "key": "display_name", "label": "Name" },
+            { "key": "vertical", "label": "Industry" },
+            { "key": "hierarchy_level", "label": "Level" }
+          ],
+          "showViewToggle": true,
+          "showSort": true
+        }
+      }
+    ]
+  },
+  "components": [],
+  "initial_state": {},
+  "state_bindings": {},
+  "api_endpoints": {},
+  "callbacks": {},
+  "real_time_updates": false,
+  "cache_strategy": "cache",
+  "websocket_events": {},
+  "metadata_json": {
+    "seo": {
+      "title": "Role Templates | Business Platform",
+      "description": "Browse professional role templates"
+    }
+  },
+  "access_roles": ["ROLE_VIEW"],
+  "is_public": false,
+  "tenant_id": null,
+  "created_at": "2025-01-29T00:00:00Z",
+  "updated_at": "2025-01-29T00:00:00Z"
+}
