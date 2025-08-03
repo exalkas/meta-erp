@@ -1,12 +1,43 @@
 # 🚀 Quick Setup Guide - Legal Practice CRM + ERP Platform
 
-**Get your laptop ready for development in 15 minutes!**
+**Get your laptop ready for development in 2 minutes with Docker!**
 
 ---
 
-## 📋 **Prerequisites**
+## 🐳 **Recommended: Docker Setup (Super Easy)**
 
-Before starting, install these on your Windows 11 laptop:
+**Install only 1 thing and you're done!**
+
+### **Prerequisites**
+
+1. **Docker Desktop** - https://www.docker.com/products/docker-desktop/
+
+### **Setup**
+
+```bash
+# One command to start everything
+npm run docker:dev
+```
+
+**That's it!** 🎉 Access your platform at http://localhost:3000
+
+👉 **[Full Docker Guide](DOCKER_SETUP.md)** for complete instructions
+
+### **Why Docker?**
+
+| Aspect               | Docker Setup    | Manual Setup           |
+| -------------------- | --------------- | ---------------------- |
+| **Prerequisites**    | 1 tool (Docker) | 5+ tools               |
+| **Setup Time**       | 2 minutes       | 30+ minutes            |
+| **Troubleshooting**  | Minimal         | Common issues          |
+| **Consistency**      | Same everywhere | Environment variations |
+| **New Team Members** | 2 minutes       | 30+ minutes setup      |
+
+---
+
+## 📋 **Alternative: Manual Setup**
+
+If you prefer manual installation, you'll need these on Windows 11:
 
 1. **Node.js 18+** - https://nodejs.org/download/
 2. **Python 3.11+** - https://python.org/downloads/
@@ -16,7 +47,7 @@ Before starting, install these on your Windows 11 laptop:
 
 ---
 
-## ⚡ **Quick Setup (Automated)**
+## ⚡ **Manual Setup (If Not Using Docker)**
 
 ### **Option 1: One-Command Setup**
 
@@ -276,6 +307,23 @@ npm run verify:setup
 
 ## 💡 **Quick Commands Reference**
 
+### **Docker Commands (Recommended)**
+
+```bash
+# Development
+npm run docker:dev          # Start everything with logs
+npm run docker:up           # Start in background
+npm run docker:down         # Stop all services
+npm run docker:logs         # View logs
+npm run docker:status       # Check service status
+
+# Management
+npm run docker:build        # Rebuild containers
+npm run docker:clean        # Reset everything
+```
+
+### **Manual Setup Commands**
+
 ```powershell
 # Setup & Verification
 npm run setup:laptop        # Automated setup
@@ -301,4 +349,8 @@ npm run lint                # Lint all code
 
 **🎉 You're ready to build the future of legal practice management!**
 
-Need help? Check the detailed guide: `docs/LAPTOP_SETUP_GUIDE.md`
+### **Need Help?**
+
+- **Docker Setup**: [DOCKER_SETUP.md](DOCKER_SETUP.md) (Recommended)
+- **Manual Setup**: [docs/LAPTOP_SETUP_GUIDE.md](docs/LAPTOP_SETUP_GUIDE.md)
+- **Already set up manually?** You can switch to Docker anytime - just run `npm run docker:dev`

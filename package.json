@@ -54,7 +54,16 @@
     "verify:setup": "node -e \"const { execSync } = require('child_process'); const platform = process.platform; const script = platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File scripts/quick-verify.ps1' : 'bash scripts/quick-verify.sh'; execSync(script, { stdio: 'inherit' });\"",
     "db:seed": "cd services/api && poetry run python data/seed-scripts/seed_all.py",
     "db:migrate": "cd services/api && poetry run alembic upgrade head",
-    "db:reset": "npm run db:migrate && npm run db:seed"
+    "db:reset": "npm run db:migrate && npm run db:seed",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build",
+    "docker:logs": "docker-compose logs -f",
+    "docker:restart": "docker-compose restart",
+    "docker:clean": "docker-compose down -v && docker system prune -f",
+    "docker:setup": "docker-compose up --build -d",
+    "docker:dev": "docker-compose up --build",
+    "docker:status": "docker-compose ps"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.19",

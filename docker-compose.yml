@@ -1,39 +1,63 @@
+# Docker Compose for Legal Practice CRM + ERP Platform
 version: "3.8"
 
 services:
-  # Core ERP Services
-  api:
-    build: ./services/api
-    ports:
-      - "8000:8000"
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: metadata-erp-postgres
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/metadata_erp
-      - REDIS_URL=redis://redis:6379
-      - AUTH_SERVICE_URL=http://auth:8001
-      - FILES_SERVICE_URL=http://files:8002
-      - INTEGRATIONS_SERVICE_URL=http://integrations:8003
-      - AI_VOICE_SERVICE_URL=http://voice-service:8004
-      - AI_SUPPORT_SERVICE_URL=http://ai-support-service:8005
-      - ENV=development
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      auth:
-        condition: service_started
+      POSTGRES_DB: metadata_erp_master
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - ./services/api:/app
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - erp-network
 
-  auth:
-    build: ./services/auth
+  # Redis Cache & Sessions
+  redis:
+    image: redis:7-alpine
+    container_name: metadata-erp-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - erp-network
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./services/auth
+      dockerfile: Dockerfile
+    container_name: metadata-erp-auth
+    environment:
+      - DATABASE_URL=postgresql://erp_user:@postgres:5432/metadata_erp_master
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET_KEY=
+      - SECRET_KEY=
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - PORT=8001
+      - CORS_ORIGINS=["http://localhost:3000", "http://localhost:3001"]
     ports:
       - "8001:8001"
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/metadata_erp
-      - REDIS_URL=redis://redis:6379
-      - ENV=development
     depends_on:
       postgres:
         condition: service_healthy
@@ -41,217 +65,105 @@ services:
         condition: service_healthy
     volumes:
       - ./services/auth:/app
-    command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+      - auth_cache:/root/.cache
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - erp-network
+    restart: unless-stopped
 
-  files:
-    build: ./services/files
-    ports:
-      - "8002:8002"
+  # API Service
+  api-service:
+    build:
+      context: ./services/api
+      dockerfile: Dockerfile
+    container_name: metadata-erp-api
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/metadata_erp
-      - REDIS_URL=redis://redis:6379
-      - STORAGE_PATH=/app/storage
-      - ENV=development
+      - DATABASE_URL=postgresql://erp_user:@postgres:5432/metadata_erp_master
+      - TENANT_DB_TEMPLATE=postgresql://erp_user:@postgres:5432/metadata_erp_tenant_{tenant_id}
+      - REDIS_URL=redis://redis:6379/1
+      - AUTH_SERVICE_URL=http://auth-service:8001
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - PORT=8000
+      - CORS_ORIGINS=["http://localhost:3000", "http://localhost:3001"]
+      - UPLOAD_DIR=./uploads
+      - MAX_FILE_SIZE=10485760
+    ports:
+      - "8000:8000"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    volumes:
-      - ./services/files:/app
-      - files_storage:/app/storage
-    command: uvicorn main:app --host 0.0.0.0 --port 8002 --reload
-
-  integrations:
-    build: ./services/integrations
-    ports:
-      - "8003:8003"
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/metadata_erp
-      - REDIS_URL=redis://redis:6379
-      - AADE_API_URL=https://mydataapidev.aade.gr
-      - ENV=development
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
+      auth-service:
         condition: service_healthy
     volumes:
-      - ./services/integrations:/app
-    command: uvicorn main:app --host 0.0.0.0 --port 8003 --reload
+      - ./services/api:/app
+      - ./data:/app/data
+      - api_uploads:/app/uploads
+      - api_cache:/root/.cache
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - erp-network
+    restart: unless-stopped
 
-  # AI Services
-  voice-service:
-    build: ./packages/ai-services/voice-service
-    ports:
-      - "8004:8004"
-    environment:
-      - WHISPER_MODEL=large-v3
-      - CUDA_VISIBLE_DEVICES=0
-      - GPU_MEMORY_FRACTION=0.6
-      - ENV=development
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-    volumes:
-      - ./packages/ai-services/voice-service:/app
-      - ./ai-models:/app/models
-    command: uvicorn main:app --host 0.0.0.0 --port 8004 --reload
-
-  ai-support-service:
-    build: ./packages/ai-services/ai-support-service
-    ports:
-      - "8005:8005"
-    environment:
-      - MODEL_NAME=llama-2-13b-greek-business
-      - CUDA_VISIBLE_DEVICES=0
-      - GPU_MEMORY_FRACTION=0.4
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/metadata_erp
-      - REDIS_URL=redis://redis:6379
-      - ENV=development
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    volumes:
-      - ./packages/ai-services/ai-support-service:/app
-      - ./ai-models:/app/models
-    command: uvicorn main:app --host 0.0.0.0 --port 8005 --reload
-
-  # Frontend
-  # Frontend Applications
+  # Frontend Client
   client:
-    build: ./apps/client
-    ports:
-      - "3000:3000"
+    build:
+      context: .
+      dockerfile: ./apps/client/Dockerfile
+    container_name: metadata-erp-client
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
       - NEXT_PUBLIC_AUTH_URL=http://localhost:8001
       - NODE_ENV=development
+      - NEXT_PUBLIC_ENV=development
+      - NEXT_PUBLIC_DEFAULT_TENANT_ID=demo-eshop-crm
+    ports:
+      - "3000:3000"
     depends_on:
-      - api
+      api-service:
+        condition: service_healthy
     volumes:
-      - ./apps/client:/app
-      - client_node_modules:/app/node_modules
-    command: npm run dev
-
-  admin:
-    build: ./apps/admin
-    ports:
-      - "3001:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
-      - NODE_ENV=development
-    depends_on:
-      - api
-    volumes:
-      - ./apps/admin:/app
-      - admin_node_modules:/app/node_modules
-    command: npm run dev
-
-  marketing:
-    build: ./apps/marketing
-    ports:
-      - "3002:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
-      - NODE_ENV=development
-    volumes:
-      - ./apps/marketing:/app
-      - marketing_node_modules:/app/node_modules
-    command: npm run dev
-
-  setup:
-    build: ./apps/setup
-    ports:
-      - "3003:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
-      - NODE_ENV=development
-    depends_on:
-      - api
-    volumes:
-      - ./apps/setup:/app
-      - setup_node_modules:/app/node_modules
-    command: npm run dev
-
-  staff-support:
-    build: ./apps/staff-support
-    ports:
-      - "3004:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
-      - NODE_ENV=development
-    depends_on:
-      - api
-    volumes:
-      - ./apps/staff-support:/app
-      - staff_support_node_modules:/app/node_modules
-    command: npm run dev
-
-  user-support:
-    build: ./apps/user-support
-    ports:
-      - "3005:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
-      - NODE_ENV=development
-    depends_on:
-      - api
-    volumes:
-      - ./apps/user-support:/app
-      - user_support_node_modules:/app/node_modules
-    command: npm run dev
-
-  # Database & Cache
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: metadata_erp
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./services/api/sql:/docker-entrypoint-initdb.d
+      - ./apps/client:/app/apps/client
+      - ./packages:/app/packages
+      - ./data:/app/data
+      - node_modules:/app/node_modules
+      - next_cache:/app/apps/client/.next
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - erp-network
+    restart: unless-stopped
 
 volumes:
   postgres_data:
+    name: metadata-erp-postgres-data
   redis_data:
-  files_storage:
-  client_node_modules:
-  admin_node_modules:
-  marketing_node_modules:
-  setup_node_modules:
-  staff_support_node_modules:
-  user_support_node_modules:
+    name: metadata-erp-redis-data
+  auth_cache:
+    name: metadata-erp-auth-cache
+  api_cache:
+    name: metadata-erp-api-cache
+  api_uploads:
+    name: metadata-erp-api-uploads
+  node_modules:
+    name: metadata-erp-node-modules
+  next_cache:
+    name: metadata-erp-next-cache
+
+networks:
+  erp-network:
+    name: metadata-erp-network
+    driver: bridge
