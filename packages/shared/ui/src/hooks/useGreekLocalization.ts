@@ -4,7 +4,7 @@
  */
 
 import { useCallback, useMemo } from "react";
-import { useGreekLocale } from "../contexts/GreekLocaleContext";
+import { useGreekLocale } from "../contexts/vertical/TranslationContextGreek";
 import { useTranslation } from "../contexts/TranslationContext";
 import { useGreekValidation } from "./useGreekValidation";
 import { Language } from "../types";
@@ -186,21 +186,23 @@ export const useGreekLocalization = (): GreekLocalizationHookResult => {
   // Reference data finders
   const findRegion = useCallback(
     (regionCode: string): GreekRegion | undefined => {
-      return referenceData?.regions.find((r) => r.regionCode === regionCode);
+      return referenceData?.regions.find(
+        (r: any) => r.regionCode === regionCode
+      );
     },
     [referenceData?.regions]
   );
 
   const findDOY = useCallback(
     (doyCode: string): GreekTaxOffice | undefined => {
-      return referenceData?.taxOffices.find((d) => d.doyCode === doyCode);
+      return referenceData?.taxOffices.find((d: any) => d.doyCode === doyCode);
     },
     [referenceData?.taxOffices]
   );
 
   const findBank = useCallback(
     (bankCode: string): GreekBank | undefined => {
-      return referenceData?.banks.find((b) => b.bankCode === bankCode);
+      return referenceData?.banks.find((b: any) => b.bankCode === bankCode);
     },
     [referenceData?.banks]
   );
@@ -208,7 +210,7 @@ export const useGreekLocalization = (): GreekLocalizationHookResult => {
   const findLegalForm = useCallback(
     (legalFormCode: string): GreekLegalForm | undefined => {
       return referenceData?.legalForms.find(
-        (l) => l.legalFormCode === legalFormCode
+        (l: any) => l.legalFormCode === legalFormCode
       );
     },
     [referenceData?.legalForms]
@@ -217,7 +219,7 @@ export const useGreekLocalization = (): GreekLocalizationHookResult => {
   const findBusinessActivity = useCallback(
     (kadCode: string): GreekBusinessActivity | undefined => {
       return referenceData?.businessActivities.find(
-        (a) => a.kadCode === kadCode
+        (a: any) => a.kadCode === kadCode
       );
     },
     [referenceData?.businessActivities]
@@ -315,7 +317,7 @@ export const useGreekLocalization = (): GreekLocalizationHookResult => {
   );
 
   return {
-    language,
+    language: language || "el",
     isGreek,
     formatAFM: baseFormatAFM,
     formatPhone: baseFormatPhone,

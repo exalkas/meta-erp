@@ -13,13 +13,17 @@ async def create_demo_tenant():
     session = AsyncSessionLocal()
     
     try:
+        # NOTE: In production, locale should be determined by vertical configuration
+        # This is hardcoded ONLY for demo purposes - real tenant creation should
+        # read from vertical configuration files or user selection during onboarding
+        
         tenant = Tenant(
             tenant_id=uuid.UUID('89f84fea-b5b9-413c-945b-002c7fd9555d'),
             name='Demo Tenant',
-            domain='demo.local',
+            domain='demo.local', 
             subdomain='demo',
-            default_locale='en-US',
-            supported_locales=['en-US'],
+            default_locale='en_US',        # Fixed format (underscore) for legal vertical
+            supported_locales=['en_US', 'es_US'],  # Legal vertical supports these locales
             status='active',
             database_name='demo_db',
             max_users=100,

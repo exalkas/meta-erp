@@ -130,10 +130,12 @@ export const Navigation: React.FC<NavigationProps> = ({
       return <span className="flex-shrink-0">{icon}</span>;
     };
 
-    // Render label - support both localized and simple string
+    // Render label - support both localized and translation keys
     const renderItemLabel = (label: Record<Language, string> | string) => {
       if (typeof label === "string") {
-        return <span className="flex-1 text-left">{label}</span>;
+        // Try to translate the string (in case it's a translation key)
+        const translated = t(label, { defaultValue: label });
+        return <span className="flex-1 text-left">{translated}</span>;
       }
       return <LocalizedText text={label} className="flex-1 text-left" />;
     };
@@ -311,7 +313,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                   {typeof menuItem.icon === "string" &&
                     renderIcon(menuItem.icon, "w-4 h-4 mr-3")}
                   {typeof menuItem.label === "string" ? (
-                    menuItem.label
+                    t(menuItem.label, { defaultValue: menuItem.label })
                   ) : (
                     <LocalizedText text={menuItem.label} />
                   )}
@@ -388,7 +390,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                     className={`flex items-center space-x-1 px-2 py-1 rounded-md text-sm transition-colors ${navigationClasses.userMenu}`}
                     title={
                       typeof menuItem.label === "string"
-                        ? menuItem.label
+                        ? t(menuItem.label, { defaultValue: menuItem.label })
                         : menuItem.label.en || menuItem.label.el
                     }
                   >
@@ -396,7 +398,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                       renderIcon(menuItem.icon, "w-4 h-4")}
                     <span className="hidden lg:inline">
                       {typeof menuItem.label === "string" ? (
-                        menuItem.label
+                        t(menuItem.label, { defaultValue: menuItem.label })
                       ) : (
                         <LocalizedText text={menuItem.label} />
                       )}

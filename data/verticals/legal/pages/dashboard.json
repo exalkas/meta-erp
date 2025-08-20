@@ -20,19 +20,19 @@
           "userMenu": [
             {
               "id": "user-profile",
-              "label": "Profile",
+              "label": "navigation.profile",
               "action": "navigate:/profile",
               "icon": "User"
             },
             {
               "id": "user-settings",
-              "label": "Settings",
+              "label": "navigation.settings",
               "action": "navigate:/settings",
               "icon": "Settings"
             },
             {
               "id": "logout",
-              "label": "Logout",
+              "label": "navigation.logout",
               "action": "logout",
               "icon": "LogOut"
             }
@@ -40,32 +40,32 @@
           "items": [
             {
               "id": "nav-dashboard",
-              "label": "Dashboard",
+              "label": "navigation.dashboard",
               "route": "/dashboard",
               "icon": "LayoutDashboard",
               "active": true
             },
             {
               "id": "nav-clients",
-              "label": "Clients",
+              "label": "navigation.clients",
               "route": "/clients",
               "icon": "Users"
             },
             {
               "id": "nav-matters",
-              "label": "Matters",
+              "label": "navigation.matters",
               "route": "/matters",
               "icon": "Briefcase"
             },
             {
               "id": "nav-time",
-              "label": "Time Entry",
+              "label": "navigation.time_entry",
               "route": "/time-entry",
               "icon": "Clock"
             },
             {
               "id": "nav-billing",
-              "label": "Billing",
+              "label": "navigation.billing",
               "route": "/invoices",
               "icon": "CreditCard"
             }

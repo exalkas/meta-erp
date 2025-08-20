@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { LanguageSelector } from "./LanguageSelector";
-import { useTranslation } from "../../contexts/TranslationContext";
+import { useTranslation, useLanguage } from "../../contexts/TranslationContext";
 import { Language } from "../../types";
 
 export interface MultilingualTextareaProps
@@ -53,7 +53,8 @@ export const MultilingualTextarea: React.FC<MultilingualTextareaProps> = ({
   className = "",
   ...textareaProps
 }) => {
-  const { t, language: currentLanguage } = useTranslation();
+  const { t } = useTranslation();
+  const { language: currentLanguage } = useLanguage();
   const [activeLanguage, setActiveLanguage] = useState<Language>(
     supportedLanguages.includes(currentLanguage)
       ? currentLanguage

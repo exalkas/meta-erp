@@ -18,9 +18,10 @@ export interface LanguageSelectorProps {
   className?: string;
   theme?: "light" | "dark";
   onLanguageChange?: (language: Language) => void;
+  supportedLanguages?: Language[]; // NEW: Override default languages
 }
 
-const languageOptions: LanguageOption[] = [
+const allLanguageOptions: LanguageOption[] = [
   {
     code: "el",
     name: "Greek",
@@ -35,6 +36,20 @@ const languageOptions: LanguageOption[] = [
     flag: "🇺🇸",
     dir: "ltr",
   },
+  {
+    code: "en_US",
+    name: "English",
+    nativeName: "English",
+    flag: "🇺🇸",
+    dir: "ltr",
+  },
+  {
+    code: "es_US",
+    name: "Spanish",
+    nativeName: "Español",
+    flag: "🇪🇸",
+    dir: "ltr",
+  },
 ];
 
 export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
@@ -45,6 +60,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   className = "",
   theme = "light",
   onLanguageChange,
+  supportedLanguages = ["en_US", "es_US"], // Default to US English/Spanish for legal vertical
 }) => {
   const { t } = useTranslation();
   const { language, setLanguage } = useLanguage();
@@ -56,8 +72,15 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     setIsClient(true);
   }, []);
 
+  // Filter language options based on supported languages
+  const languageOptions = allLanguageOptions.filter((option) =>
+    supportedLanguages.includes(option.code)
+  );
+
   // Use stable language during SSR to prevent hydration mismatch
-  const displayLanguage = isClient ? language : "el";
+  const displayLanguage = isClient
+    ? language
+    : supportedLanguages[0] || "en_US";
 
   const currentLanguage =
     languageOptions.find((lang) => lang.code === displayLanguage) ||
@@ -98,7 +121,9 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
 
   // Use default aria-label during SSR to prevent hydration mismatch
   const ariaLabel = isClient
-    ? t("select_language", { ns: "auth" })
+    ? t("language_switcher.select_language", {
+        defaultValue: "Select language",
+      })
     : "Select language";
 
   if (variant === "dropdown") {

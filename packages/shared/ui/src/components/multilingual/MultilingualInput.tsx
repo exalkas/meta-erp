@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Input, InputProps } from "../ui/Input";
 import { LanguageSelector } from "./LanguageSelector";
-import { useTranslation } from "../../contexts/TranslationContext";
+import { useTranslation, useLanguage } from "../../contexts/TranslationContext";
 import { Language } from "../../types";
 
 export interface MultilingualInputProps
@@ -39,7 +39,8 @@ export const MultilingualInput: React.FC<MultilingualInputProps> = ({
   helperText,
   ...inputProps
 }) => {
-  const { t, language: currentLanguage } = useTranslation();
+  const { t } = useTranslation();
+  const { language: currentLanguage } = useLanguage();
   const [activeLanguage, setActiveLanguage] = useState<Language>(
     supportedLanguages.includes(currentLanguage)
       ? currentLanguage

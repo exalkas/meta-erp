@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: false, // Disable React strict mode to reduce double loading
   transpilePackages: ["@erp/shared-ui", "@erp/dynamic-entities"],
   experimental: {
     turbo: {

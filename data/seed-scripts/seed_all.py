@@ -744,8 +744,8 @@ class DataSeeder:
             "metadata/apps/admin/translations/en-translations.json",
             "metadata/apps/admin/translations/el-translations.json",
             # Legal vertical translations
-            "verticals/legal/translations/en-US.json",
-            "verticals/legal/translations/es-US.json"
+            "verticals/legal/translations/en_US.json",
+            "verticals/legal/translations/es_US.json"
         ]
         
         for file_path in translation_files:

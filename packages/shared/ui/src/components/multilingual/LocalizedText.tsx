@@ -1,5 +1,5 @@
 import React from "react";
-import { useTranslation } from "../../contexts/TranslationContext";
+import { useTranslation, useLanguage } from "../../contexts/TranslationContext";
 import { Language, TranslationKey } from "../../types";
 
 export interface LocalizedTextProps {
@@ -31,7 +31,8 @@ export const LocalizedText: React.FC<LocalizedTextProps> = ({
   children,
   ...props
 }) => {
-  const { t, language: currentLanguage } = useTranslation();
+  const { t } = useTranslation();
+  const { language: currentLanguage } = useLanguage();
 
   const activeLanguage = overrideLanguage || currentLanguage;
 
@@ -170,7 +171,8 @@ export const LocalizedButton: React.FC<
 
 // Hook for getting localized text values
 export const useLocalizedText = () => {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
+  const { language } = useLanguage();
 
   const getLocalizedText = (
     text: TranslationKey | Record<Language, string>,

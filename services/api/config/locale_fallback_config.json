@@ -4,9 +4,9 @@
   "default_fallback_chain": ["en-US", "en", "es-US", "es"],
   "vertical_specific_fallbacks": {
     "legal": {
-      "description": "Legal vertical prioritizes business locales (en-US, es-US) over generic ones",
-      "supported_locales": ["en-US", "es-US"],
-      "fallback_chain": ["en-US", "es-US"]
+      "description": "Legal vertical prioritizes business locales (en_US, es_US) over generic ones",
+      "supported_locales": ["en_US", "es_US"],
+      "fallback_chain": ["en_US", "es_US"]
     },
     "admin": {
       "description": "Admin vertical uses generic locales for platform management",

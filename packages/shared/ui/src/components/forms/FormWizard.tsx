@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "../../contexts/TranslationContext";
+import { useTranslation, useLanguage } from "../../contexts/TranslationContext";
 import { Button } from "../ui/Button";
 import { Card, CardHeader, CardContent } from "../ui/Card";
 import { Language } from "../../types";
@@ -35,7 +35,8 @@ export const FormWizard: React.FC<FormWizardProps> = ({
   showStepNumbers = true,
   className = "",
 }) => {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
+  const { language } = useLanguage();
 
   // Helper function to resolve title/description (translation key or language object)
   const resolveText = (text: string | Record<Language, string>): string => {

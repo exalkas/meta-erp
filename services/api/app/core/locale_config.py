@@ -46,16 +46,11 @@ class LocaleFallbackConfig:
     
     def _get_default_config(self) -> Dict[str, Any]:
         """Provide minimal default configuration if file is missing."""
+        logger.error("❌ CRITICAL: No locale config file found, using emergency minimal config")
+        logger.error("❌ This should never happen in production - locale config file is mandatory!")
         return {
-            "default_fallback_chain": ["en-US", "en"],
-            "vertical_specific_fallbacks": {
-                "legal": {
-                    "fallback_chain": ["en-US", "es-US"]
-                },
-                "admin": {
-                    "fallback_chain": ["el", "en", "es"]
-                }
-            }
+            "default_fallback_chain": [],  # NO hardcoded fallbacks!
+            "vertical_specific_fallbacks": {}  # NO hardcoded verticals!
         }
     
     def get_fallback_chain(self, 
@@ -72,18 +67,30 @@ class LocaleFallbackConfig:
             List of locales to try in order of preference
         """
         if not self._config:
-            return [requested_locale, "en-US", "en"]
+            # If no config file, just use the requested locale - no hardcoded fallbacks!
+            logger.error(f"❌ CRITICAL: No locale config found and no fallback allowed. Requested: {requested_locale}")
+            raise RuntimeError(f"Locale configuration missing and fallbacks are forbidden. Requested locale: {requested_locale}")
         
         # Check for vertical-specific fallback
         if vertical and vertical in self._config.get("vertical_specific_fallbacks", {}):
             vertical_config = self._config["vertical_specific_fallbacks"][vertical]
             fallback_chain = vertical_config.get("fallback_chain", [])
             
-            logger.info(f"Using vertical '{vertical}' fallback chain: {fallback_chain}")
+            # IMPORTANT: Always put requested locale first if it's not already
+            if requested_locale not in fallback_chain:
+                fallback_chain = [requested_locale] + fallback_chain
+            else:
+                # Move requested locale to the front
+                fallback_chain = [requested_locale] + [loc for loc in fallback_chain if loc != requested_locale]
+            
+            logger.info(f"Using vertical '{vertical}' fallback chain (requested '{requested_locale}' first): {fallback_chain}")
             return fallback_chain
         
-        # Use default fallback chain
-        default_chain = self._config.get("default_fallback_chain", ["en-US", "en"])
+        # Use default fallback chain - but NO hardcoded fallbacks allowed!
+        default_chain = self._config.get("default_fallback_chain", [])
+        if not default_chain:
+            logger.error(f"❌ CRITICAL: No default fallback chain configured and hardcoded fallbacks forbidden")
+            raise RuntimeError("Default fallback chain is missing from configuration and hardcoded fallbacks are forbidden")
         
         # Include requested locale at the beginning if not already present
         if requested_locale not in default_chain:
@@ -97,7 +104,8 @@ class LocaleFallbackConfig:
     def get_supported_verticals(self) -> List[str]:
         """Get list of supported verticals."""
         if not self._config:
-            return ["legal", "admin"]
+            logger.error("❌ CRITICAL: No locale config found, cannot return default verticals")
+            raise RuntimeError("Locale configuration missing - no default verticals available")
             
         return list(self._config.get("vertical_specific_fallbacks", {}).keys())
     

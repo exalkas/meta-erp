@@ -33,9 +33,10 @@ class Tenant(Base):
     domain = Column(String(255), unique=True, nullable=False)
     subdomain = Column(String(100), unique=True, nullable=True)
     
-    # Localization settings
-    default_locale = Column(String(10), default="el_GR", nullable=False)
-    supported_locales = Column(JSON, default=["el_GR", "en_US"])
+    # Localization settings - NO HARDCODED DEFAULTS!
+    # These MUST be set explicitly during tenant creation based on vertical configuration
+    default_locale = Column(String(10), nullable=False)  # REMOVED hardcoded default
+    supported_locales = Column(JSON, nullable=False)     # REMOVED hardcoded default
     
     # Theme settings
     default_theme_id = Column(UUID(as_uuid=True), ForeignKey("themes.theme_id"), nullable=True)

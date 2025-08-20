@@ -21,7 +21,7 @@ export {
 
 // App constants and configurations (server-safe)
 export { AppName, APP_CONFIGS } from "./types";
-export { GreekLocaleProvider } from "./contexts/GreekLocaleContext";
+export { GreekLocaleProvider } from "./contexts/vertical/TranslationContextGreek";
 
 // Authentication Context
 export {

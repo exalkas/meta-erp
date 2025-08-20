@@ -204,7 +204,7 @@ export default function LegalDashboardPage() {
     >
       <TranslationProvider
         tenantId={tenantId}
-        defaultLanguage="en-US"
+        defaultLanguage="en_US"
         verticalContext="legal"
       >
         <ThemeProvider tenantId={tenantId} userId={userId}>

@@ -1,6 +1,4 @@
 // Core contexts
-export { GreekLocaleProvider, useGreekLocale } from "./GreekLocaleContext";
-
 export { LanguageProvider, useLanguageContext } from "./LanguageContext";
 
 export {
