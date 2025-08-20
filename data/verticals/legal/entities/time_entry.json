@@ -1,0 +1,282 @@
+{
+  "entity_name": "TimeEntry",
+  "display_label": "Time Entry",
+  "plural_label": "Time Entries",
+  "description": "Time tracking entries for legal matters with AI-powered automation",
+  "category": "BILLING",
+  "is_system_entity": false,
+  "vertical": "LEGAL",
+  "business_rules": [
+    "ai_time_categorization",
+    "billable_validation",
+    "matter_association_required",
+    "reasonable_hours_check",
+    "duplicate_prevention",
+    "billing_rate_optimization"
+  ],
+  "validation_rules": [
+    "required_fields",
+    "valid_time_range",
+    "matter_active_check"
+  ],
+  "workflow_triggers": [
+    "time_entry_created",
+    "time_entry_approved",
+    "billing_status_changed"
+  ],
+  "audit_enabled": true,
+  "soft_delete": true,
+  "fields": [
+    {
+      "field_name": "matter_id",
+      "label_key": "time_entry.matter_id",
+      "data_type": "foreign_key",
+      "is_required": true,
+      "related_entity": "Matter",
+      "validation_rules": ["required", "exists:Matter,id"],
+      "display_order": 1
+    },
+    {
+      "field_name": "attorney_id",
+      "label_key": "time_entry.attorney_id",
+      "data_type": "foreign_key",
+      "is_required": true,
+      "related_entity": "User",
+      "validation_rules": ["required", "exists:User,id"],
+      "display_order": 2
+    },
+    {
+      "field_name": "entry_date",
+      "label_key": "time_entry.entry_date",
+      "data_type": "date",
+      "is_required": true,
+      "default_value": "today",
+      "validation_rules": ["required", "date", "not_future"],
+      "display_order": 3
+    },
+    {
+      "field_name": "start_time",
+      "label_key": "time_entry.start_time",
+      "data_type": "time",
+      "is_required": false,
+      "validation_rules": ["time"],
+      "help_text": "Start time for continuous time tracking",
+      "display_order": 4
+    },
+    {
+      "field_name": "end_time",
+      "label_key": "time_entry.end_time",
+      "data_type": "time",
+      "is_required": false,
+      "validation_rules": ["time", "after:start_time"],
+      "help_text": "End time for continuous time tracking",
+      "display_order": 5
+    },
+    {
+      "field_name": "hours_worked",
+      "label_key": "time_entry.hours_worked",
+      "data_type": "decimal",
+      "is_required": true,
+      "precision": 10,
+      "scale": 2,
+      "validation_rules": ["required", "numeric", "min:0.1", "max:24"],
+      "help_text": "Hours worked (calculated or manual entry)",
+      "display_order": 6
+    },
+    {
+      "field_name": "description",
+      "label_key": "time_entry.description",
+      "data_type": "text",
+      "is_required": true,
+      "max_length": 1000,
+      "validation_rules": ["required", "max_length:1000", "min_length:10"],
+      "help_text": "Detailed description of work performed",
+      "display_order": 7
+    },
+    {
+      "field_name": "activity_type",
+      "label_key": "time_entry.activity_type",
+      "data_type": "select",
+      "is_required": true,
+      "options": [
+        "Research",
+        "Document Review",
+        "Document Drafting",
+        "Client Communication",
+        "Court Appearance",
+        "Deposition",
+        "Meeting",
+        "Phone Call",
+        "Email",
+        "Travel",
+        "Administrative",
+        "Case Strategy",
+        "Investigation",
+        "Negotiation",
+        "Other"
+      ],
+      "validation_rules": ["required"],
+      "display_order": 8,
+      "ai_suggested": true
+    },
+    {
+      "field_name": "billing_status",
+      "label_key": "time_entry.billing_status",
+      "data_type": "select",
+      "is_required": true,
+      "options": ["Billable", "Non-Billable", "Pro Bono", "Administrative"],
+      "default_value": "Billable",
+      "validation_rules": ["required"],
+      "display_order": 9
+    },
+    {
+      "field_name": "billing_rate",
+      "label_key": "time_entry.billing_rate",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 10,
+      "scale": 2,
+      "validation_rules": ["numeric", "min:0"],
+      "help_text": "Billing rate per hour (defaults to attorney rate)",
+      "display_order": 10,
+      "is_calculated": true
+    },
+    {
+      "field_name": "total_amount",
+      "label_key": "time_entry.total_amount",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 12,
+      "scale": 2,
+      "validation_rules": ["numeric", "min:0"],
+      "help_text": "Total billable amount (hours × rate)",
+      "display_order": 11,
+      "is_calculated": true
+    },
+    {
+      "field_name": "entry_method",
+      "label_key": "time_entry.entry_method",
+      "data_type": "select",
+      "is_required": false,
+      "options": [
+        "Manual",
+        "Timer",
+        "AI_Suggested",
+        "Email_Tracking",
+        "Calendar_Import"
+      ],
+      "default_value": "Manual",
+      "display_order": 12,
+      "is_calculated": true
+    },
+    {
+      "field_name": "approval_status",
+      "label_key": "time_entry.approval_status",
+      "data_type": "select",
+      "is_required": false,
+      "options": ["Pending", "Approved", "Rejected", "Needs_Review"],
+      "default_value": "Pending",
+      "display_order": 13
+    },
+    {
+      "field_name": "approved_by",
+      "label_key": "time_entry.approved_by",
+      "data_type": "foreign_key",
+      "is_required": false,
+      "related_entity": "User",
+      "validation_rules": ["exists:User,id"],
+      "display_order": 14
+    },
+    {
+      "field_name": "approval_date",
+      "label_key": "time_entry.approval_date",
+      "data_type": "datetime",
+      "is_required": false,
+      "validation_rules": ["datetime"],
+      "display_order": 15
+    },
+    {
+      "field_name": "invoice_id",
+      "label_key": "time_entry.invoice_id",
+      "data_type": "foreign_key",
+      "is_required": false,
+      "related_entity": "Invoice",
+      "validation_rules": ["exists:Invoice,id"],
+      "help_text": "Invoice this time entry is included in",
+      "display_order": 16
+    },
+    {
+      "field_name": "task_code",
+      "label_key": "time_entry.task_code",
+      "data_type": "string",
+      "is_required": false,
+      "max_length": 50,
+      "help_text": "UTBMS task code for legal billing standards",
+      "display_order": 17
+    },
+    {
+      "field_name": "expense_code",
+      "label_key": "time_entry.expense_code",
+      "data_type": "string",
+      "is_required": false,
+      "max_length": 50,
+      "help_text": "UTBMS expense code for legal billing standards",
+      "display_order": 18
+    },
+    {
+      "field_name": "ai_confidence_score",
+      "label_key": "time_entry.ai_confidence_score",
+      "data_type": "integer",
+      "is_required": false,
+      "validation_rules": ["integer", "min:0", "max:100"],
+      "help_text": "AI confidence in activity categorization (0-100)",
+      "display_order": 19,
+      "is_calculated": true
+    },
+    {
+      "field_name": "productivity_score",
+      "label_key": "time_entry.productivity_score",
+      "data_type": "integer",
+      "is_required": false,
+      "validation_rules": ["integer", "min:0", "max:100"],
+      "help_text": "Productivity score based on time vs output",
+      "display_order": 20,
+      "is_calculated": true
+    },
+    {
+      "field_name": "related_documents",
+      "label_key": "time_entry.related_documents",
+      "data_type": "json",
+      "is_required": false,
+      "help_text": "JSON array of related document IDs",
+      "display_order": 21
+    },
+    {
+      "field_name": "location",
+      "label_key": "time_entry.location",
+      "data_type": "select",
+      "is_required": false,
+      "options": ["Office", "Client_Site", "Court", "Home", "Travel", "Other"],
+      "default_value": "Office",
+      "display_order": 22
+    },
+    {
+      "field_name": "notes",
+      "label_key": "time_entry.notes",
+      "data_type": "text",
+      "is_required": false,
+      "max_length": 2000,
+      "help_text": "Additional notes or context",
+      "display_order": 23
+    },
+    {
+      "field_name": "quality_score",
+      "label_key": "time_entry.quality_score",
+      "data_type": "integer",
+      "is_required": false,
+      "validation_rules": ["integer", "min:1", "max:5"],
+      "help_text": "Quality rating of work performed (1-5)",
+      "display_order": 24
+    }
+  ]
+}

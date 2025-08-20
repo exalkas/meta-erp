@@ -1,0 +1,226 @@
+{
+  "entity_name": "Client",
+  "display_label": "Client",
+  "plural_label": "Clients",
+  "description": "Legal clients and prospects",
+  "category": "CORE",
+  "is_system_entity": false,
+  "vertical": "LEGAL",
+  "business_rules": [
+    "conflict_checking",
+    "client_intake_workflow",
+    "billing_validation",
+    "ai_lead_scoring",
+    "relationship_mapping",
+    "communication_tracking",
+    "retention_analysis"
+  ],
+  "validation_rules": ["unique_email", "required_fields"],
+  "workflow_triggers": ["client_created", "status_changed", "contact_updated"],
+  "audit_enabled": true,
+  "soft_delete": true,
+  "fields": [
+    {
+      "field_name": "client_name",
+      "label_key": "client.client_name",
+      "data_type": "string",
+      "is_required": true,
+      "max_length": 255,
+      "validation_rules": ["required", "max_length:255"],
+      "display_order": 1
+    },
+    {
+      "field_name": "client_type",
+      "label_key": "client.client_type",
+      "data_type": "select",
+      "is_required": true,
+      "options": [
+        "Individual",
+        "Corporation",
+        "Partnership",
+        "LLC",
+        "Trust",
+        "Government",
+        "Non-Profit"
+      ],
+      "default_value": "Individual",
+      "validation_rules": [
+        "required",
+        "in:Individual,Corporation,Partnership,LLC,Trust,Government,Non-Profit"
+      ],
+      "display_order": 2
+    },
+    {
+      "field_name": "contact_email",
+      "label_key": "client.contact_email",
+      "data_type": "email",
+      "is_required": true,
+      "validation_rules": ["required", "email", "unique"],
+      "display_order": 3
+    },
+    {
+      "field_name": "phone",
+      "label_key": "client.phone",
+      "data_type": "phone",
+      "is_required": false,
+      "validation_rules": ["phone_us"],
+      "display_order": 4
+    },
+    {
+      "field_name": "address",
+      "label_key": "client.address",
+      "data_type": "text",
+      "is_required": false,
+      "max_length": 500,
+      "display_order": 5
+    },
+    {
+      "field_name": "tax_id",
+      "label_key": "client.tax_id",
+      "data_type": "string",
+      "is_required": false,
+      "max_length": 20,
+      "validation_rules": ["tax_id_us"],
+      "help_text": "SSN for individuals, EIN for businesses",
+      "display_order": 6
+    },
+    {
+      "field_name": "intake_date",
+      "label_key": "client.intake_date",
+      "data_type": "date",
+      "is_required": true,
+      "default_value": "today",
+      "validation_rules": ["required", "date"],
+      "display_order": 7
+    },
+    {
+      "field_name": "client_status",
+      "label_key": "client.client_status",
+      "data_type": "select",
+      "is_required": true,
+      "options": ["Prospect", "Active", "Inactive", "Archived"],
+      "default_value": "Prospect",
+      "validation_rules": ["required", "in:Prospect,Active,Inactive,Archived"],
+      "display_order": 8
+    },
+    {
+      "field_name": "billing_rate_override",
+      "label_key": "client.billing_rate_override",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 10,
+      "scale": 2,
+      "validation_rules": ["numeric", "min:0"],
+      "help_text": "Override default billing rate for this client",
+      "display_order": 9
+    },
+    {
+      "field_name": "referral_source",
+      "label_key": "client.referral_source",
+      "data_type": "string",
+      "is_required": false,
+      "max_length": 255,
+      "display_order": 10
+    },
+    {
+      "field_name": "lead_score",
+      "label_key": "client.lead_score",
+      "data_type": "integer",
+      "is_required": false,
+      "validation_rules": ["integer", "min:0", "max:100"],
+      "help_text": "AI-generated lead score (0-100)",
+      "display_order": 11,
+      "is_calculated": true
+    },
+    {
+      "field_name": "client_value_score",
+      "label_key": "client.client_value_score",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 10,
+      "scale": 2,
+      "validation_rules": ["numeric", "min:0"],
+      "help_text": "Estimated lifetime value of client",
+      "display_order": 12,
+      "is_calculated": true
+    },
+    {
+      "field_name": "communication_preference",
+      "label_key": "client.communication_preference",
+      "data_type": "select",
+      "is_required": false,
+      "options": ["Email", "Phone", "Text", "Portal", "Mail"],
+      "default_value": "Email",
+      "display_order": 13
+    },
+    {
+      "field_name": "language_preference",
+      "label_key": "client.language_preference",
+      "data_type": "select",
+      "is_required": false,
+      "options": ["English", "Spanish"],
+      "default_value": "English",
+      "display_order": 14
+    },
+    {
+      "field_name": "risk_level",
+      "label_key": "client.risk_level",
+      "data_type": "select",
+      "is_required": false,
+      "options": ["Low", "Medium", "High"],
+      "default_value": "Medium",
+      "help_text": "Payment and conflict risk assessment",
+      "display_order": 15,
+      "is_calculated": true
+    },
+    {
+      "field_name": "last_communication_date",
+      "label_key": "client.last_communication_date",
+      "data_type": "datetime",
+      "is_required": false,
+      "validation_rules": ["datetime"],
+      "display_order": 16,
+      "is_calculated": true
+    },
+    {
+      "field_name": "total_matters",
+      "label_key": "client.total_matters",
+      "data_type": "integer",
+      "is_required": false,
+      "validation_rules": ["integer", "min:0"],
+      "help_text": "Total number of matters for this client",
+      "display_order": 17,
+      "is_calculated": true
+    },
+    {
+      "field_name": "total_billed_amount",
+      "label_key": "client.total_billed_amount",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 12,
+      "scale": 2,
+      "validation_rules": ["numeric", "min:0"],
+      "help_text": "Total amount billed to this client",
+      "display_order": 18,
+      "is_calculated": true
+    },
+    {
+      "field_name": "payment_terms",
+      "label_key": "client.payment_terms",
+      "data_type": "select",
+      "is_required": false,
+      "options": ["Net 15", "Net 30", "Net 60", "Due on Receipt", "Retainer"],
+      "default_value": "Net 30",
+      "display_order": 19
+    },
+    {
+      "field_name": "marketing_consent",
+      "label_key": "client.marketing_consent",
+      "data_type": "boolean",
+      "is_required": false,
+      "default_value": false,
+      "help_text": "Consent to receive marketing communications",
+      "display_order": 20
+    }
+  ]
+}

@@ -1,0 +1,331 @@
+{
+  "entity_name": "Communication",
+  "display_label": "Communication",
+  "plural_label": "Communications",
+  "description": "All client communications including emails, calls, meetings, and messages",
+  "category": "CRM",
+  "is_system_entity": false,
+  "vertical": "LEGAL",
+  "business_rules": [
+    "privilege_protection",
+    "communication_logging",
+    "response_time_tracking",
+    "privacy_compliance",
+    "ai_sentiment_analysis"
+  ],
+  "validation_rules": [
+    "required_fields",
+    "valid_participants",
+    "privilege_classification"
+  ],
+  "workflow_triggers": [
+    "communication_created",
+    "response_required",
+    "privilege_breach_detected"
+  ],
+  "audit_enabled": true,
+  "soft_delete": true,
+  "fields": [
+    {
+      "field_name": "communication_type",
+      "label_key": "communication.communication_type",
+      "data_type": "select",
+      "is_required": true,
+      "options": [
+        "Email",
+        "Phone Call",
+        "Video Call",
+        "In-Person Meeting",
+        "Text Message",
+        "Portal Message",
+        "Letter",
+        "Fax",
+        "Voicemail",
+        "Other"
+      ],
+      "validation_rules": ["required"],
+      "display_order": 1
+    },
+    {
+      "field_name": "client_id",
+      "label_key": "communication.client_id",
+      "data_type": "foreign_key",
+      "is_required": true,
+      "related_entity": "Client",
+      "validation_rules": ["required", "exists:Client,id"],
+      "display_order": 2
+    },
+    {
+      "field_name": "matter_id",
+      "label_key": "communication.matter_id",
+      "data_type": "foreign_key",
+      "is_required": false,
+      "related_entity": "Matter",
+      "validation_rules": ["exists:Matter,id"],
+      "help_text": "Related matter (if applicable)",
+      "display_order": 3
+    },
+    {
+      "field_name": "attorney_id",
+      "label_key": "communication.attorney_id",
+      "data_type": "foreign_key",
+      "is_required": true,
+      "related_entity": "User",
+      "validation_rules": ["required", "exists:User,id"],
+      "display_order": 4
+    },
+    {
+      "field_name": "direction",
+      "label_key": "communication.direction",
+      "data_type": "select",
+      "is_required": true,
+      "options": ["Inbound", "Outbound"],
+      "validation_rules": ["required"],
+      "display_order": 5
+    },
+    {
+      "field_name": "communication_date",
+      "label_key": "communication.communication_date",
+      "data_type": "datetime",
+      "is_required": true,
+      "default_value": "now",
+      "validation_rules": ["required", "datetime"],
+      "display_order": 6
+    },
+    {
+      "field_name": "duration_minutes",
+      "label_key": "communication.duration_minutes",
+      "data_type": "integer",
+      "is_required": false,
+      "validation_rules": ["integer", "min:0", "max:480"],
+      "help_text": "Duration in minutes (for calls/meetings)",
+      "display_order": 7
+    },
+    {
+      "field_name": "subject",
+      "label_key": "communication.subject",
+      "data_type": "string",
+      "is_required": true,
+      "max_length": 255,
+      "validation_rules": ["required", "max_length:255"],
+      "display_order": 8
+    },
+    {
+      "field_name": "summary",
+      "label_key": "communication.summary",
+      "data_type": "text",
+      "is_required": true,
+      "max_length": 2000,
+      "validation_rules": ["required", "max_length:2000"],
+      "help_text": "Summary or content of communication",
+      "display_order": 9
+    },
+    {
+      "field_name": "full_content",
+      "label_key": "communication.full_content",
+      "data_type": "text",
+      "is_required": false,
+      "max_length": 10000,
+      "help_text": "Full email/message content (encrypted)",
+      "display_order": 10
+    },
+    {
+      "field_name": "participants",
+      "label_key": "communication.participants",
+      "data_type": "json",
+      "is_required": false,
+      "help_text": "JSON array of additional participants",
+      "display_order": 11
+    },
+    {
+      "field_name": "communication_status",
+      "label_key": "communication.communication_status",
+      "data_type": "select",
+      "is_required": false,
+      "options": [
+        "Completed",
+        "Follow_Up_Required",
+        "Response_Pending",
+        "Escalated"
+      ],
+      "default_value": "Completed",
+      "display_order": 12
+    },
+    {
+      "field_name": "priority_level",
+      "label_key": "communication.priority_level",
+      "data_type": "select",
+      "is_required": false,
+      "options": ["Low", "Normal", "High", "Urgent"],
+      "default_value": "Normal",
+      "display_order": 13
+    },
+    {
+      "field_name": "privilege_status",
+      "label_key": "communication.privilege_status",
+      "data_type": "select",
+      "is_required": true,
+      "options": [
+        "Privileged",
+        "Not_Privileged",
+        "Work_Product",
+        "Confidential",
+        "Public"
+      ],
+      "default_value": "Privileged",
+      "validation_rules": ["required"],
+      "help_text": "Attorney-client privilege classification",
+      "display_order": 14
+    },
+    {
+      "field_name": "billable_time",
+      "label_key": "communication.billable_time",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 10,
+      "scale": 2,
+      "validation_rules": ["numeric", "min:0"],
+      "help_text": "Billable time in hours",
+      "display_order": 15
+    },
+    {
+      "field_name": "time_entry_id",
+      "label_key": "communication.time_entry_id",
+      "data_type": "foreign_key",
+      "is_required": false,
+      "related_entity": "TimeEntry",
+      "validation_rules": ["exists:TimeEntry,id"],
+      "help_text": "Associated time entry",
+      "display_order": 16
+    },
+    {
+      "field_name": "follow_up_required",
+      "label_key": "communication.follow_up_required",
+      "data_type": "boolean",
+      "is_required": false,
+      "default_value": false,
+      "display_order": 17
+    },
+    {
+      "field_name": "follow_up_date",
+      "label_key": "communication.follow_up_date",
+      "data_type": "datetime",
+      "is_required": false,
+      "validation_rules": ["datetime", "after:communication_date"],
+      "display_order": 18
+    },
+    {
+      "field_name": "response_required",
+      "label_key": "communication.response_required",
+      "data_type": "boolean",
+      "is_required": false,
+      "default_value": false,
+      "display_order": 19
+    },
+    {
+      "field_name": "response_deadline",
+      "label_key": "communication.response_deadline",
+      "data_type": "datetime",
+      "is_required": false,
+      "validation_rules": ["datetime", "after:communication_date"],
+      "display_order": 20
+    },
+    {
+      "field_name": "sentiment_score",
+      "label_key": "communication.sentiment_score",
+      "data_type": "integer",
+      "is_required": false,
+      "validation_rules": ["integer", "min:-100", "max:100"],
+      "help_text": "AI sentiment analysis score (-100 to 100)",
+      "display_order": 21,
+      "is_calculated": true
+    },
+    {
+      "field_name": "sentiment_label",
+      "label_key": "communication.sentiment_label",
+      "data_type": "select",
+      "is_required": false,
+      "options": [
+        "Positive",
+        "Neutral",
+        "Negative",
+        "Urgent",
+        "Angry",
+        "Satisfied"
+      ],
+      "help_text": "AI-detected sentiment classification",
+      "display_order": 22,
+      "is_calculated": true
+    },
+    {
+      "field_name": "keywords",
+      "label_key": "communication.keywords",
+      "data_type": "json",
+      "is_required": false,
+      "help_text": "AI-extracted keywords and topics",
+      "display_order": 23,
+      "is_calculated": true
+    },
+    {
+      "field_name": "urgency_detected",
+      "label_key": "communication.urgency_detected",
+      "data_type": "boolean",
+      "is_required": false,
+      "default_value": false,
+      "help_text": "AI-detected urgency indicators",
+      "display_order": 24,
+      "is_calculated": true
+    },
+    {
+      "field_name": "external_reference",
+      "label_key": "communication.external_reference",
+      "data_type": "string",
+      "is_required": false,
+      "max_length": 255,
+      "help_text": "External system reference (email ID, etc.)",
+      "display_order": 25
+    },
+    {
+      "field_name": "attachments",
+      "label_key": "communication.attachments",
+      "data_type": "json",
+      "is_required": false,
+      "help_text": "JSON array of attachment file references",
+      "display_order": 26
+    },
+    {
+      "field_name": "encryption_status",
+      "label_key": "communication.encryption_status",
+      "data_type": "select",
+      "is_required": false,
+      "options": ["Encrypted", "Not_Encrypted", "Unknown"],
+      "default_value": "Unknown",
+      "display_order": 27
+    },
+    {
+      "field_name": "compliance_flags",
+      "label_key": "communication.compliance_flags",
+      "data_type": "json",
+      "is_required": false,
+      "help_text": "Compliance warnings or flags",
+      "display_order": 28
+    },
+    {
+      "field_name": "client_satisfaction",
+      "label_key": "communication.client_satisfaction",
+      "data_type": "integer",
+      "is_required": false,
+      "validation_rules": ["integer", "min:1", "max:5"],
+      "help_text": "Client satisfaction rating (1-5)",
+      "display_order": 29
+    },
+    {
+      "field_name": "tags",
+      "label_key": "communication.tags",
+      "data_type": "json",
+      "is_required": false,
+      "help_text": "User-defined tags for categorization",
+      "display_order": 30
+    }
+  ]
+}

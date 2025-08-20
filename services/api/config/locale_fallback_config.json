@@ -1,0 +1,69 @@
+{
+  "description": "Locale fallback configuration for translation system - defines fallback priority for different verticals and locales",
+  "version": "1.0.0",
+  "default_fallback_chain": ["en-US", "en", "es-US", "es"],
+  "vertical_specific_fallbacks": {
+    "legal": {
+      "description": "Legal vertical prioritizes business locales (en-US, es-US) over generic ones",
+      "supported_locales": ["en-US", "es-US"],
+      "fallback_chain": ["en-US", "es-US"]
+    },
+    "admin": {
+      "description": "Admin vertical uses generic locales for platform management",
+      "supported_locales": ["el", "en", "es"],
+      "fallback_chain": ["el", "en", "es"]
+    },
+    "automotive": {
+      "description": "Automotive vertical for car dealerships and service",
+      "supported_locales": ["en-US", "es-US", "de-DE"],
+      "fallback_chain": ["en-US", "es-US", "de-DE"]
+    },
+    "healthcare": {
+      "description": "Healthcare vertical with HIPAA compliance",
+      "supported_locales": ["en-US", "es-US"],
+      "fallback_chain": ["en-US", "es-US"]
+    },
+    "fintech": {
+      "description": "FinTech vertical for financial services compliance",
+      "supported_locales": ["en-US", "en-GB", "de-DE", "fr-FR"],
+      "fallback_chain": ["en-US", "en-GB", "de-DE", "fr-FR"]
+    },
+    "ecommerce": {
+      "description": "E-commerce vertical for retail operations",
+      "supported_locales": ["en-US", "es-US", "fr-CA", "en-CA"],
+      "fallback_chain": ["en-US", "es-US", "fr-CA", "en-CA"]
+    },
+    "real_estate": {
+      "description": "Real estate vertical for property management",
+      "supported_locales": ["en-US", "es-US"],
+      "fallback_chain": ["en-US", "es-US"]
+    }
+  },
+  "locale_priority_rules": {
+    "business_locales": {
+      "description": "Full locale codes for business/compliance contexts",
+      "priority": 1,
+      "examples": ["en-US", "es-US", "en-GB", "de-DE"]
+    },
+    "generic_locales": {
+      "description": "Generic language codes for general UI",
+      "priority": 2,
+      "examples": ["en", "es", "de", "fr"]
+    }
+  },
+  "deployment_context": {
+    "description": "Fallback behavior based on deployment type",
+    "saas_deployment": {
+      "respect_vertical_context": true,
+      "allow_cross_vertical_fallback": false
+    },
+    "standalone_deployment": {
+      "respect_vertical_context": true,
+      "allow_cross_vertical_fallback": true
+    },
+    "custom_deployment": {
+      "respect_vertical_context": false,
+      "use_default_fallback_only": true
+    }
+  }
+}

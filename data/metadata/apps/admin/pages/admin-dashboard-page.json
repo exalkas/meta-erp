@@ -1,0 +1,329 @@
+{
+  "page_id": "a0000000-0000-0000-0000-000000000002",
+  "page_name": "admin_dashboard",
+  "route": "/admin-dashboard",
+  "title": "Admin Platform Dashboard",
+  "description": "Administrative dashboard for platform management and application building",
+  "page_type": "admin-dashboard",
+  "layout_id": "d0000000-0000-0000-0000-000000000001",
+  "sections_data_json": {
+    "header": [
+      {
+        "type": "Navigation",
+        "props": {
+          "variant": "horizontal",
+          "showUserMenu": true,
+          "showThemeSelector": true,
+          "showNotifications": true,
+          "userMenuStyle": "buttons",
+          "adminMode": true,
+          "user": {
+            "name": "Admin User",
+            "email": "admin@example.com",
+            "role": "Platform Administrator"
+          },
+          "userMenu": [
+            {
+              "id": "user-profile",
+              "label": "Profile",
+              "action": "navigate:/profile",
+              "icon": "User"
+            },
+            {
+              "id": "user-settings",
+              "label": "Settings",
+              "action": "navigate:/settings",
+              "icon": "Settings"
+            },
+            {
+              "id": "user-preferences",
+              "label": "Preferences",
+              "action": "navigate:/preferences",
+              "icon": "Sliders"
+            },
+            {
+              "id": "logout",
+              "label": "Logout",
+              "action": "logout",
+              "icon": "LogOut"
+            }
+          ],
+          "items": [
+            {
+              "id": "nav-dashboard",
+              "label": "Dashboard",
+              "route": "/dashboard",
+              "icon": "LayoutDashboard",
+              "active": true
+            },
+            {
+              "id": "nav-app-builder",
+              "label": "App Builder",
+              "route": "/app-builder",
+              "icon": "Wrench",
+              "badge": "New"
+            },
+            {
+              "id": "nav-platform",
+              "label": "Platform",
+              "route": "/platform",
+              "icon": "Settings"
+            },
+            {
+              "id": "nav-users",
+              "label": "Users",
+              "route": "/users",
+              "icon": "Users"
+            }
+          ]
+        }
+      }
+    ],
+    "sidebar": [
+      {
+        "type": "SidebarMenu",
+        "props": {
+          "variant": "vertical",
+          "collapsible": true,
+          "adminMode": true,
+          "sections": [
+            {
+              "title": "application_builder_section",
+              "items": [
+                { "label": "overview", "route": "/dashboard", "icon": "Home" },
+                {
+                  "label": "new_application",
+                  "route": "/app-builder",
+                  "icon": "Plus"
+                },
+                {
+                  "label": "templates",
+                  "route": "/app-builder/templates",
+                  "icon": "Layout"
+                },
+                {
+                  "label": "components",
+                  "route": "/app-builder/components",
+                  "icon": "Puzzle"
+                }
+              ]
+            },
+            {
+              "title": "platform_management_section",
+              "items": [
+                {
+                  "label": "tenants",
+                  "route": "/platform/tenants",
+                  "icon": "Building"
+                },
+                {
+                  "label": "users",
+                  "route": "/platform/users",
+                  "icon": "Users"
+                },
+                {
+                  "label": "permissions",
+                  "route": "/platform/permissions",
+                  "icon": "Shield"
+                },
+                {
+                  "label": "monitoring",
+                  "route": "/platform/monitoring",
+                  "icon": "Activity"
+                }
+              ]
+            },
+            {
+              "title": "system_section",
+              "items": [
+                {
+                  "label": "logs",
+                  "route": "/system/logs",
+                  "icon": "FileText"
+                },
+                {
+                  "label": "health",
+                  "route": "/system/health",
+                  "icon": "Heart"
+                },
+                {
+                  "label": "settings",
+                  "route": "/system/settings",
+                  "icon": "Settings"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "main": [
+      {
+        "type": "DashboardGrid",
+        "props": {
+          "columns": 3,
+          "gap": 6,
+          "adminMode": true,
+          "widgets": [
+            {
+              "type": "KPICard",
+              "props": {
+                "title": "Applications Built",
+                "value": "147",
+                "change": "+23",
+                "changeType": "positive",
+                "icon": "Wrench",
+                "period": "This month",
+                "adminMode": true
+              }
+            },
+            {
+              "type": "KPICard",
+              "props": {
+                "title": "Active Tenants",
+                "value": "89",
+                "change": "+12",
+                "changeType": "positive",
+                "icon": "Building",
+                "period": "This month",
+                "adminMode": true
+              }
+            },
+            {
+              "type": "KPICard",
+              "props": {
+                "title": "Platform Health",
+                "value": "99.9%",
+                "change": "+0.1%",
+                "changeType": "positive",
+                "icon": "Heart",
+                "period": "Uptime",
+                "adminMode": true
+              }
+            },
+            {
+              "type": "ItemGrid",
+              "props": {
+                "title": "Quick Actions",
+                "colspan": 2,
+                "adminMode": true,
+                "items": [
+                  {
+                    "id": "new-app",
+                    "title": "Build New Application",
+                    "description": "Use the Application Builder to create custom business apps",
+                    "icon": "Plus",
+                    "action": "navigate:/app-builder",
+                    "variant": "primary"
+                  },
+                  {
+                    "id": "manage-templates",
+                    "title": "Manage Templates",
+                    "description": "Edit and create application templates",
+                    "icon": "Layout",
+                    "action": "navigate:/app-builder/templates",
+                    "variant": "secondary"
+                  },
+                  {
+                    "id": "platform-settings",
+                    "title": "Platform Settings",
+                    "description": "Configure global platform settings",
+                    "icon": "Settings",
+                    "action": "navigate:/platform/settings",
+                    "variant": "secondary"
+                  },
+                  {
+                    "id": "view-logs",
+                    "title": "System Logs",
+                    "description": "Monitor platform activity and performance",
+                    "icon": "FileText",
+                    "action": "navigate:/system/logs",
+                    "variant": "secondary"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "RecentActivity",
+              "props": {
+                "title": "Recent Platform Activity",
+                "colspan": 1,
+                "maxItems": 6,
+                "adminMode": true,
+                "activityTypes": [
+                  "app_built",
+                  "tenant_created",
+                  "user_registered",
+                  "system_updated"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "footer": [
+      {
+        "type": "StatusBar",
+        "props": {
+          "showConnectionStatus": true,
+          "showLastUpdate": true,
+          "showVersion": true,
+          "adminMode": true,
+          "showSystemHealth": true
+        }
+      }
+    ]
+  },
+  "components": [],
+  "initial_state": {
+    "isLoading": true,
+    "selectedTimeRange": "7d",
+    "refreshInterval": 15000,
+    "adminView": true,
+    "widgets": {
+      "applications": { "loading": false, "error": null },
+      "tenants": { "loading": false, "error": null },
+      "health": { "loading": false, "error": null }
+    }
+  },
+  "state_bindings": {
+    "user.profile": "auth.currentUser",
+    "admin.timeRange": "ui.timeRange",
+    "admin.autoRefresh": "ui.autoRefresh"
+  },
+  "api_endpoints": {
+    "dashboardData": "/api/admin/dashboard/overview",
+    "kpiData": "/api/admin/dashboard/kpis",
+    "activityFeed": "/api/admin/dashboard/activities",
+    "systemHealth": "/api/admin/system/health"
+  },
+  "callbacks": {
+    "onDataRefresh": "action.refreshAdminDashboard",
+    "onTimeRangeChange": "action.updateTimeRange",
+    "onQuickAction": "action.executeQuickAction"
+  },
+  "real_time_updates": true,
+  "cache_strategy": "stale-while-revalidate",
+  "websocket_events": {
+    "admin.platform.update": "action.refreshSystemHealth",
+    "admin.app.built": "action.updateAppCount",
+    "admin.tenant.created": "action.updateTenantCount"
+  },
+  "metadata_json": {
+    "layout": "admin-dashboard",
+    "theme": "admin",
+    "autoRefresh": true,
+    "refreshInterval": 15000,
+    "adminMode": true,
+    "seo": {
+      "title": "Admin Dashboard - Axiologic Platform",
+      "description": "Administrative dashboard for platform management and application building"
+    }
+  },
+  "access_roles": ["admin", "platform_manager"],
+  "is_public": false,
+  "tenant_id": null,
+  "created_at": "2025-01-31T00:00:00Z",
+  "updated_at": "2025-01-31T00:00:00Z"
+}

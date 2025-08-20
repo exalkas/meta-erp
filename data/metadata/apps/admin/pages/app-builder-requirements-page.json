@@ -1,0 +1,343 @@
+{
+  "page_id": "a0000000-0000-0000-0000-000000000004",
+  "page_name": "app_builder_requirements",
+  "route": "/app-builder/requirements",
+  "title": "Application Requirements - Define Your Business Needs",
+  "description": "Describe your business requirements to build the perfect custom application",
+  "page_type": "app-builder-form",
+  "layout_id": "d0000000-0000-0000-0000-000000000001",
+  "sections_data_json": {
+    "header": [
+      {
+        "type": "Navigation",
+        "props": {
+          "variant": "horizontal",
+          "showUserMenu": true,
+          "showNotifications": false,
+          "adminMode": true,
+          "breadcrumbs": [
+            { "label": "Admin", "route": "/dashboard" },
+            { "label": "App Builder", "route": "/app-builder" },
+            {
+              "label": "Requirements",
+              "route": "/app-builder/requirements",
+              "active": true
+            }
+          ]
+        }
+      }
+    ],
+    "sidebar": [
+      {
+        "type": "SidebarMenu",
+        "props": {
+          "variant": "vertical",
+          "collapsible": false,
+          "builderMode": true,
+          "currentStep": 1,
+          "sections": [
+            {
+              "title": "Build Process",
+              "items": [
+                {
+                  "label": "1. Requirements",
+                  "route": "/app-builder/requirements",
+                  "icon": "FileText",
+                  "step": 1,
+                  "active": true,
+                  "status": "current"
+                },
+                {
+                  "label": "2. Template Selection",
+                  "route": "/app-builder/templates",
+                  "icon": "Layout",
+                  "step": 2,
+                  "disabled": true
+                },
+                {
+                  "label": "3. Components",
+                  "route": "/app-builder/components",
+                  "icon": "Puzzle",
+                  "step": 3,
+                  "disabled": true
+                },
+                {
+                  "label": "4. Preview & Build",
+                  "route": "/app-builder/preview",
+                  "icon": "Eye",
+                  "step": 4,
+                  "disabled": true
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "main": [
+      {
+        "type": "PageHeader",
+        "props": {
+          "title": "Application Requirements",
+          "subtitle": "Step 1 of 4: Tell us about your business needs",
+          "showProgress": true,
+          "currentStep": 1,
+          "totalSteps": 4
+        }
+      },
+      {
+        "type": "Form",
+        "props": {
+          "formId": "app-requirements-form",
+          "title": "Client Requirements Form",
+          "description": "Please provide detailed information about your business needs and requirements",
+          "submitText": "Analyze Requirements & Continue",
+          "submitIcon": "ArrowRight",
+          "fields": [
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "text",
+              "required": true,
+              "placeholder": "e.g., Real Estate CRM, Legal Practice Management",
+              "help": "A descriptive name for your application"
+            },
+            {
+              "name": "app_type",
+              "label": "Application Type",
+              "type": "select",
+              "required": true,
+              "options": [
+                {
+                  "value": "CRM",
+                  "label": "Customer Relationship Management (CRM)"
+                },
+                {
+                  "value": "ERP",
+                  "label": "Enterprise Resource Planning (ERP)"
+                },
+                {
+                  "value": "PROJECT_TRACKER",
+                  "label": "Project Management System"
+                },
+                { "value": "REAL_ESTATE", "label": "Real Estate Management" },
+                {
+                  "value": "AUTOMOTIVE",
+                  "label": "Automotive Service Management"
+                },
+                { "value": "MEDICAL", "label": "Medical Practice Management" },
+                { "value": "RETAIL", "label": "Retail & E-commerce" },
+                {
+                  "value": "MANUFACTURING",
+                  "label": "Manufacturing Operations"
+                },
+                { "value": "CUSTOM", "label": "Custom Application" }
+              ],
+              "help": "Select the primary type of application you need"
+            },
+            {
+              "name": "industry",
+              "label": "Industry",
+              "type": "text",
+              "required": false,
+              "placeholder": "e.g., Legal Services, Real Estate, Healthcare",
+              "help": "Your specific industry or business domain"
+            },
+            {
+              "name": "user_count",
+              "label": "Expected Number of Users",
+              "type": "number",
+              "required": true,
+              "min": 1,
+              "max": 10000,
+              "placeholder": "25",
+              "help": "How many people will use this application?"
+            },
+            {
+              "name": "required_features",
+              "label": "Required Features",
+              "type": "checkbox-group",
+              "required": true,
+              "options": [
+                {
+                  "value": "user_management",
+                  "label": "User Management & Authentication"
+                },
+                {
+                  "value": "contact_management",
+                  "label": "Contact/Customer Management"
+                },
+                {
+                  "value": "document_management",
+                  "label": "Document Management"
+                },
+                {
+                  "value": "financial_tracking",
+                  "label": "Financial Tracking & Billing"
+                },
+                {
+                  "value": "reporting_analytics",
+                  "label": "Reporting & Analytics"
+                },
+                {
+                  "value": "workflow_automation",
+                  "label": "Workflow Automation"
+                },
+                {
+                  "value": "calendar_scheduling",
+                  "label": "Calendar & Scheduling"
+                },
+                { "value": "email_integration", "label": "Email Integration" },
+                { "value": "mobile_access", "label": "Mobile Access" },
+                {
+                  "value": "api_integration",
+                  "label": "Third-party API Integration"
+                },
+                { "value": "custom_fields", "label": "Custom Fields & Forms" },
+                { "value": "multi_location", "label": "Multi-location Support" }
+              ],
+              "help": "Select all features your application must have"
+            },
+            {
+              "name": "integration_requirements",
+              "label": "Integration Requirements",
+              "type": "checkbox-group",
+              "required": false,
+              "options": [
+                {
+                  "value": "email_providers",
+                  "label": "Email Providers (Gmail, Outlook)"
+                },
+                {
+                  "value": "payment_gateways",
+                  "label": "Payment Gateways (Stripe, PayPal)"
+                },
+                {
+                  "value": "accounting_software",
+                  "label": "Accounting Software (QuickBooks, Xero)"
+                },
+                { "value": "crm_systems", "label": "Existing CRM Systems" },
+                {
+                  "value": "marketing_tools",
+                  "label": "Marketing Tools (MailChimp, HubSpot)"
+                },
+                {
+                  "value": "cloud_storage",
+                  "label": "Cloud Storage (Google Drive, Dropbox)"
+                },
+                {
+                  "value": "communication",
+                  "label": "Communication Tools (Slack, Teams)"
+                },
+                { "value": "calendar_systems", "label": "Calendar Systems" },
+                { "value": "social_media", "label": "Social Media Platforms" },
+                {
+                  "value": "industry_specific",
+                  "label": "Industry-specific Systems"
+                }
+              ],
+              "help": "Which external systems need to integrate with your application?"
+            },
+            {
+              "name": "timeline_requirements",
+              "label": "Desired Timeline",
+              "type": "select",
+              "required": true,
+              "options": [
+                { "value": "3", "label": "3 days - Basic functionality" },
+                { "value": "7", "label": "1 week - Standard features" },
+                { "value": "14", "label": "2 weeks - Advanced features" },
+                { "value": "30", "label": "1 month - Complex system" },
+                { "value": "60", "label": "2 months - Enterprise solution" }
+              ],
+              "help": "When do you need this application ready?"
+            },
+            {
+              "name": "budget_range",
+              "label": "Budget Range",
+              "type": "select",
+              "required": false,
+              "options": [
+                { "value": "5000", "label": "Under €5,000" },
+                { "value": "15000", "label": "€5,000 - €15,000" },
+                { "value": "50000", "label": "€15,000 - €50,000" },
+                { "value": "100000", "label": "€50,000 - €100,000" },
+                { "value": "custom", "label": "Over €100,000 (Enterprise)" }
+              ],
+              "help": "What's your approximate budget for this project?"
+            },
+            {
+              "name": "special_requirements",
+              "label": "Special Requirements or Notes",
+              "type": "textarea",
+              "required": false,
+              "rows": 4,
+              "placeholder": "Any specific compliance requirements, unique business processes, or special considerations...",
+              "help": "Describe any unique needs or constraints for your application"
+            }
+          ],
+          "validation": {
+            "project_name": { "minLength": 3, "maxLength": 100 },
+            "user_count": { "min": 1, "max": 10000 },
+            "required_features": { "minItems": 1 },
+            "special_requirements": { "maxLength": 1000 }
+          }
+        }
+      }
+    ],
+    "footer": [
+      {
+        "type": "StatusBar",
+        "props": {
+          "showConnectionStatus": false,
+          "showLastUpdate": false,
+          "showVersion": false,
+          "builderMode": true,
+          "showProgress": true,
+          "currentStep": 1,
+          "totalSteps": 4
+        }
+      }
+    ]
+  },
+  "components": [],
+  "initial_state": {
+    "isLoading": false,
+    "formData": {},
+    "formErrors": {},
+    "isSubmitting": false,
+    "analysisResults": null
+  },
+  "state_bindings": {
+    "user.profile": "auth.currentUser",
+    "form.data": "builder.requirements",
+    "form.errors": "builder.requirementErrors"
+  },
+  "api_endpoints": {
+    "analyzeRequirements": "/api/v1/app-builder/analyze-requirements",
+    "saveRequirements": "/api/v1/app-builder/requirements/save"
+  },
+  "callbacks": {
+    "onFormSubmit": "action.analyzeRequirements",
+    "onFormChange": "action.saveFormData",
+    "onAnalysisComplete": "redirect:/app-builder/templates"
+  },
+  "real_time_updates": false,
+  "cache_strategy": "no-cache",
+  "websocket_events": null,
+  "metadata_json": {
+    "layout": "form-builder",
+    "theme": "admin",
+    "builderMode": true,
+    "formStep": 1,
+    "seo": {
+      "title": "Requirements - Application Builder",
+      "description": "Define your business requirements for custom application development"
+    }
+  },
+  "access_roles": ["admin", "app_builder"],
+  "is_public": false,
+  "tenant_id": null,
+  "created_at": "2025-01-31T00:00:00Z",
+  "updated_at": "2025-01-31T00:00:00Z"
+}

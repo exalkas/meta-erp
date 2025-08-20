@@ -9,6 +9,57 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
+/**
+ * Check if user has required permissions (including wildcard support)
+ */
+function checkPermissions(
+  requiredPermissions: string[],
+  userPermissions: string[]
+): boolean {
+  return requiredPermissions.some((required) => {
+    // Direct permission match
+    if (userPermissions.includes(required)) {
+      return true;
+    }
+
+    // Check for wildcard permissions that would grant this permission
+    return userPermissions.some((userPerm) => {
+      return matchesWildcardPermission(required, userPerm);
+    });
+  });
+}
+
+/**
+ * Check if a required permission matches a wildcard permission
+ * Example: TENANT.APPLICATIONS.BUILDER.CREATE matches TENANT.APPLICATIONS.BUILDER.*
+ */
+function matchesWildcardPermission(
+  required: string,
+  wildcard: string
+): boolean {
+  if (!wildcard.includes("*")) {
+    return false;
+  }
+
+  const requiredParts = required.split(".");
+  const wildcardParts = wildcard.split(".");
+
+  if (requiredParts.length !== wildcardParts.length) {
+    return false;
+  }
+
+  for (let i = 0; i < wildcardParts.length; i++) {
+    if (wildcardParts[i] === "*") {
+      continue; // Wildcard matches anything
+    }
+    if (wildcardParts[i] !== requiredParts[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 interface AuthTokens {
   accessToken: string;
   refreshToken: string;
@@ -25,6 +76,8 @@ interface AuthUser {
   display_name: string;
   status: string;
   compliance_level: string;
+  roles?: string[]; // Role names like ["SAP_SYSTEM_ADMIN", "SAP_TENANT_ADMIN"]
+  permissions?: string[]; // Resolved permissions like ["TENANT.APPLICATIONS.BUILDER.CREATE"]
   // ... other user fields
 }
 
@@ -47,12 +100,12 @@ interface AuthGuardResult extends AuthState {
  * Custom hook for authentication guard functionality
  *
  * @param redirectToLogin - Whether to redirect to login if not authenticated
- * @param requiredRoles - Array of roles required to access the component
+ * @param requiredPermissions - Array of permissions required to access the component
  * @returns AuthGuardResult with auth state and utility functions
  */
 export function useAuthGuard(
   redirectToLogin: boolean = true,
-  requiredRoles: string[] = []
+  requiredPermissions: string[] = []
 ): AuthGuardResult {
   const router = useRouter();
 
@@ -99,17 +152,24 @@ export function useAuthGuard(
         return false;
       }
 
-      // Check role requirements
-      if (requiredRoles.length > 0) {
-        const userRole = user.compliance_level || "basic";
-        if (!requiredRoles.includes(userRole)) {
+      // Check permission requirements
+      if (requiredPermissions.length > 0) {
+        const userPermissions = user.permissions || [];
+        const hasPermission = checkPermissions(
+          requiredPermissions,
+          userPermissions
+        );
+
+        if (!hasPermission) {
           console.log(
-            `❌ User role '${userRole}' not in required roles:`,
-            requiredRoles
+            `❌ User permissions insufficient. Required:`,
+            requiredPermissions,
+            `Available:`,
+            userPermissions
           );
           setAuthState((prev) => ({
             ...prev,
-            error: `Access denied. Required role: ${requiredRoles.join(" or ")}`,
+            error: `Access denied. Required permissions: ${requiredPermissions.join(" or ")}`,
           }));
           return false;
         }
@@ -132,7 +192,7 @@ export function useAuthGuard(
       localStorage.removeItem("auth_user");
       return false;
     }
-  }, [isTokenExpired, requiredRoles]);
+  }, [isTokenExpired, requiredPermissions]);
 
   // Login function to store auth data
   const login = useCallback((tokens: AuthTokens, user: AuthUser) => {

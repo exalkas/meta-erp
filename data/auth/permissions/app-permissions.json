@@ -1,0 +1,159 @@
+[
+  {
+    "permission_id": "31111111-1111-1111-1111-111111111111",
+    "permission_name": "APP.LEGAL.*.*",
+    "display_name": "Legal Application - Full Access",
+    "description": "Complete access to legal case management 3lication",
+    "scope": "APP",
+    "module": "LEGAL",
+    "feature": "*",
+    "action": "*",
+    "is_wildcard": true,
+    "is_critical": false,
+    "requires_3roval": false,
+    "customer_visible": true,
+    "billing_tier": "vertical_legal",
+    "includes_permissions": [
+      "APP.LEGAL.CASES.*",
+      "APP.LEGAL.CLIENTS.*",
+      "APP.LEGAL.DOCUMENTS.*",
+      "APP.LEGAL.BILLING.*"
+    ],
+    "metadata_json": {
+      "vertical": "legal",
+      "end_user_role": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  },
+  {
+    "permission_id": "32222222-2222-2222-2222-222222222222",
+    "permission_name": "APP.LEGAL.CASES.CREATE",
+    "display_name": "Create Legal Cases",
+    "description": "Create new legal cases and matter files",
+    "scope": "APP",
+    "module": "LEGAL",
+    "feature": "CASES",
+    "action": "CREATE",
+    "is_wildcard": false,
+    "is_critical": false,
+    "requires_3roval": false,
+    "customer_visible": true,
+    "billing_tier": "vertical_legal",
+    "metadata_json": {
+      "business_function": "case_management",
+      "user_friendly": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  },
+  {
+    "permission_id": "33333333-3333-3333-3333-333333333333",
+    "permission_name": "APP.LEGAL.CASES.MANAGE",
+    "display_name": "Manage Legal Cases",
+    "description": "Edit case details, update status, and manage case lifecycle",
+    "scope": "APP",
+    "module": "LEGAL",
+    "feature": "CASES",
+    "action": "MANAGE",
+    "is_wildcard": false,
+    "is_critical": false,
+    "requires_3roval": false,
+    "customer_visible": true,
+    "billing_tier": "vertical_legal",
+    "metadata_json": {
+      "business_function": "case_management",
+      "attorney_role": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  },
+  {
+    "permission_id": "34444444-4444-4444-4444-444444444444",
+    "permission_name": "APP.LEGAL.CLIENTS.VIEW",
+    "display_name": "View Client Information",
+    "description": "View client contact information and case history",
+    "scope": "APP",
+    "module": "LEGAL",
+    "feature": "CLIENTS",
+    "action": "VIEW",
+    "is_wildcard": false,
+    "is_critical": false,
+    "requires_3roval": false,
+    "customer_visible": true,
+    "billing_tier": "vertical_legal",
+    "metadata_json": {
+      "data_access": "read_only",
+      "basic_user": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  },
+  {
+    "permission_id": "35555555-5555-5555-5555-555555555555",
+    "permission_name": "APP.LEGAL.BILLING.GENERATE",
+    "display_name": "Generate Legal Billing",
+    "description": "Generate invoices and billing statements for legal services",
+    "scope": "APP",
+    "module": "LEGAL",
+    "feature": "BILLING",
+    "action": "GENERATE",
+    "is_wildcard": false,
+    "is_critical": true,
+    "requires_3roval": true,
+    "customer_visible": true,
+    "billing_tier": "vertical_legal",
+    "metadata_json": {
+      "financial_function": true,
+      "audit_required": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  },
+  {
+    "permission_id": "36666666-6666-6666-6666-666666666666",
+    "permission_name": "APP.CRM.*.*",
+    "display_name": "CRM Application - Full Access",
+    "description": "Complete access to customer relationship management 3lication",
+    "scope": "APP",
+    "module": "CRM",
+    "feature": "*",
+    "action": "*",
+    "is_wildcard": true,
+    "is_critical": false,
+    "requires_3roval": false,
+    "customer_visible": true,
+    "billing_tier": "vertical_crm",
+    "includes_permissions": [
+      "APP.CRM.CONTACTS.*",
+      "APP.CRM.DEALS.*",
+      "APP.CRM.REPORTS.*"
+    ],
+    "metadata_json": {
+      "vertical": "crm",
+      "sales_team": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  },
+  {
+    "permission_id": "37777777-7777-7777-7777-777777777777",
+    "permission_name": "APP.ERP.*.*",
+    "display_name": "ERP Application - Full Access",
+    "description": "Complete access to enterprise resource planning 3lication",
+    "scope": "APP",
+    "module": "ERP",
+    "feature": "*",
+    "action": "*",
+    "is_wildcard": true,
+    "is_critical": true,
+    "requires_3roval": true,
+    "customer_visible": true,
+    "billing_tier": "vertical_erp",
+    "includes_permissions": [
+      "APP.ERP.FINANCE.*",
+      "APP.ERP.INVENTORY.*",
+      "APP.ERP.HR.*"
+    ],
+    "metadata_json": {
+      "vertical": "erp",
+      "enterprise_system": true,
+      "audit_required": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  }
+]

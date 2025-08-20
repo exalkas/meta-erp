@@ -1,0 +1,534 @@
+[
+  {
+    "locale": "el",
+    "key": "login.title",
+    "text": "Σύνδεση",
+    "namespace": "auth",
+    "description": "Login page title"
+  },
+  {
+    "locale": "el",
+    "key": "login.email",
+    "text": "Email",
+    "namespace": "auth",
+    "description": "Email field label"
+  },
+  {
+    "locale": "el",
+    "key": "login.password",
+    "text": "Κωδικός",
+    "namespace": "auth",
+    "description": "Password field label"
+  },
+  {
+    "locale": "el",
+    "key": "login.submit",
+    "text": "Σύνδεση",
+    "namespace": "auth",
+    "description": "Login submit button"
+  },
+  {
+    "locale": "el",
+    "key": "login.forgot_password",
+    "text": "Ξεχάσατε τον κωδικό σας;",
+    "namespace": "auth",
+    "description": "Forgot password link"
+  },
+  {
+    "locale": "el",
+    "key": "login.magic_link",
+    "text": "Αποστολή Magic Link",
+    "namespace": "auth",
+    "description": "Magic link login button"
+  },
+  {
+    "locale": "el",
+    "key": "login.two_factor",
+    "text": "Κωδικός Δύο Παραγόντων",
+    "namespace": "auth",
+    "description": "2FA code field label"
+  },
+  {
+    "locale": "el",
+    "key": "dashboard.title",
+    "text": "Πίνακας Ελέγχου",
+    "namespace": "app",
+    "description": "Dashboard page title"
+  },
+  {
+    "locale": "el",
+    "key": "dashboard.welcome",
+    "text": "Καλώς ήρθατε",
+    "namespace": "app",
+    "description": "Dashboard welcome message"
+  },
+  {
+    "locale": "el",
+    "key": "dashboard.overview",
+    "text": "Επισκόπηση",
+    "namespace": "app",
+    "description": "Dashboard overview section"
+  },
+  {
+    "locale": "el",
+    "key": "navigation.customers",
+    "text": "Πελάτες",
+    "namespace": "nav",
+    "description": "Customers navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "navigation.suppliers",
+    "text": "Προμηθευτές",
+    "namespace": "nav",
+    "description": "Suppliers navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "navigation.orders",
+    "text": "Παραγγελίες",
+    "namespace": "nav",
+    "description": "Orders navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "navigation.inventory",
+    "text": "Απόθεμα",
+    "namespace": "nav",
+    "description": "Inventory navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "navigation.shipping",
+    "text": "Αποστολές",
+    "namespace": "nav",
+    "description": "Shipping navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "navigation.invoices",
+    "text": "Τιμολόγια",
+    "namespace": "nav",
+    "description": "Invoices navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "navigation.payments",
+    "text": "Πληρωμές",
+    "namespace": "nav",
+    "description": "Payments navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "navigation.reports",
+    "text": "Αναφορές",
+    "namespace": "nav",
+    "description": "Reports navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "kpi.total_revenue",
+    "text": "Συνολικά Έσοδα",
+    "namespace": "kpi",
+    "description": "Revenue KPI title"
+  },
+  {
+    "locale": "el",
+    "key": "kpi.active_customers",
+    "text": "Ενεργοί Πελάτες",
+    "namespace": "kpi",
+    "description": "Active customers KPI title"
+  },
+  {
+    "locale": "el",
+    "key": "kpi.pending_orders",
+    "text": "Εκκρεμείς Παραγγελίες",
+    "namespace": "kpi",
+    "description": "Pending orders KPI title"
+  },
+  {
+    "locale": "el",
+    "key": "common.loading",
+    "text": "Φόρτωση...",
+    "namespace": "common",
+    "description": "Loading state message"
+  },
+  {
+    "locale": "el",
+    "key": "common.error",
+    "text": "Σφάλμα",
+    "namespace": "common",
+    "description": "Generic error message"
+  },
+  {
+    "locale": "el",
+    "key": "common.save",
+    "text": "Αποθήκευση",
+    "namespace": "common",
+    "description": "Save button text"
+  },
+  {
+    "locale": "el",
+    "key": "common.cancel",
+    "text": "Άκυρο",
+    "namespace": "common",
+    "description": "Cancel button text"
+  },
+  {
+    "locale": "el",
+    "key": "common.submit",
+    "text": "Υποβολή",
+    "namespace": "common",
+    "description": "Submit button text"
+  },
+  {
+    "locale": "el",
+    "key": "error.page_load_failed",
+    "text": "Αποτυχία φόρτωσης σελίδας",
+    "namespace": "error",
+    "description": "Page load error message"
+  },
+  {
+    "locale": "el",
+    "key": "error.authentication_failed",
+    "text": "Αποτυχία ταυτοποίησης",
+    "namespace": "error",
+    "description": "Auth error message"
+  },
+  {
+    "locale": "el",
+    "key": "error.access_denied",
+    "text": "Άρνηση πρόσβασης",
+    "namespace": "error",
+    "description": "Access denied error message"
+  },
+  {
+    "locale": "el",
+    "key": "theme.light",
+    "text": "Φωτεινό",
+    "namespace": "theme",
+    "description": "Light theme option"
+  },
+  {
+    "locale": "el",
+    "key": "theme.dark",
+    "text": "Σκοτεινό",
+    "namespace": "theme",
+    "description": "Dark theme option"
+  },
+  {
+    "locale": "el",
+    "key": "theme.maritime",
+    "text": "Ναυτιλιακό",
+    "namespace": "theme",
+    "description": "Maritime theme option"
+  },
+  {
+    "locale": "el",
+    "key": "app_builder_title",
+    "text": "Δημιουργός Εφαρμογών",
+    "namespace": "app_builder",
+    "description": "Application Builder page title"
+  },
+  {
+    "locale": "el",
+    "key": "app_builder_subtitle",
+    "text": "Δημιουργήστε προσαρμοσμένες επιχειρηματικές εφαρμογές σε ημέρες, όχι μήνες",
+    "namespace": "app_builder",
+    "description": "Application Builder page subtitle"
+  },
+  {
+    "locale": "el",
+    "key": "app_builder_description",
+    "text": "Αυτή η σελίδα συλλέγει τις απαιτήσεις των πελατών και δημιουργεί σχέδια εφαρμογών χρησιμοποιώντας τη Μηχανή Δημιουργίας Εφαρμογών.",
+    "namespace": "app_builder",
+    "description": "Application Builder page description"
+  },
+  {
+    "locale": "el",
+    "key": "project_information",
+    "text": "Πληροφορίες Έργου",
+    "namespace": "app_builder",
+    "description": "FormWizard step 1 title"
+  },
+  {
+    "locale": "el",
+    "key": "project_information_description",
+    "text": "Παρέχετε βασικές λεπτομέρειες για την εφαρμογή σας.",
+    "namespace": "app_builder",
+    "description": "FormWizard step 1 description"
+  },
+  {
+    "locale": "el",
+    "key": "project_name",
+    "text": "Όνομα Έργου",
+    "namespace": "app_builder",
+    "description": "Project name field label"
+  },
+  {
+    "locale": "el",
+    "key": "application_type",
+    "text": "Τύπος Εφαρμογής",
+    "namespace": "app_builder",
+    "description": "Application type field label"
+  },
+  {
+    "locale": "el",
+    "key": "industry",
+    "text": "Κλάδος",
+    "namespace": "app_builder",
+    "description": "Industry field label"
+  },
+  {
+    "locale": "el",
+    "key": "description",
+    "text": "Περιγραφή",
+    "namespace": "app_builder",
+    "description": "Description field label"
+  },
+  {
+    "locale": "el",
+    "key": "requirements_features",
+    "text": "Απαιτήσεις & Χαρακτηριστικά",
+    "namespace": "app_builder",
+    "description": "FormWizard step 2 title"
+  },
+  {
+    "locale": "el",
+    "key": "requirements_features_description",
+    "text": "Καθορίστε τις βασικές λειτουργίες και τις ανάγκες των χρηστών.",
+    "namespace": "app_builder",
+    "description": "FormWizard step 2 description"
+  },
+  {
+    "locale": "el",
+    "key": "number_of_users",
+    "text": "Αριθμός Χρηστών",
+    "namespace": "app_builder",
+    "description": "User count field label"
+  },
+  {
+    "locale": "el",
+    "key": "required_features",
+    "text": "Απαιτούμενα Χαρακτηριστικά",
+    "namespace": "app_builder",
+    "description": "Required features field label"
+  },
+  {
+    "locale": "el",
+    "key": "custom_entities",
+    "text": "Προσαρμοσμένες Οντότητες (JSON)",
+    "namespace": "app_builder",
+    "description": "Custom entities field label"
+  },
+  {
+    "locale": "el",
+    "key": "integrations",
+    "text": "Ενσωματώσεις",
+    "namespace": "app_builder",
+    "description": "Integration requirements field label"
+  },
+  {
+    "locale": "el",
+    "key": "compliance",
+    "text": "Συμμόρφωση",
+    "namespace": "app_builder",
+    "description": "Compliance requirements field label"
+  },
+  {
+    "locale": "el",
+    "key": "desired_timeline_days",
+    "text": "Επιθυμητό Χρονοδιάγραμμα (ημέρες)",
+    "namespace": "app_builder",
+    "description": "Timeline requirements field label"
+  },
+  {
+    "locale": "el",
+    "key": "budget_preferences",
+    "text": "Προϋπολογισμός & Προτιμήσεις",
+    "namespace": "app_builder",
+    "description": "FormWizard step 3 title"
+  },
+  {
+    "locale": "el",
+    "key": "budget_preferences_description",
+    "text": "Καθορίστε τους περιορισμούς προϋπολογισμού και άλλες προτιμήσεις.",
+    "namespace": "app_builder",
+    "description": "FormWizard step 3 description"
+  },
+  {
+    "locale": "el",
+    "key": "min_budget",
+    "text": "Ελάχιστος Προϋπολογισμός",
+    "namespace": "app_builder",
+    "description": "Minimum budget field label"
+  },
+  {
+    "locale": "el",
+    "key": "max_budget",
+    "text": "Μέγιστος Προϋπολογισμός",
+    "namespace": "app_builder",
+    "description": "Maximum budget field label"
+  },
+  {
+    "locale": "el",
+    "key": "performance_needs",
+    "text": "Ανάγκες Απόδοσης (JSON)",
+    "namespace": "app_builder",
+    "description": "Performance requirements field label"
+  },
+  {
+    "locale": "el",
+    "key": "custom_business_rules",
+    "text": "Προσαρμοσμένοι Επιχειρηματικοί Κανόνες (JSON)",
+    "namespace": "app_builder",
+    "description": "Custom business rules field label"
+  },
+  {
+    "locale": "el",
+    "key": "Dashboard",
+    "text": "Πίνακας Ελέγχου",
+    "namespace": "navigation",
+    "description": "Dashboard navigation label"
+  },
+  {
+    "locale": "el",
+    "key": "App Builder",
+    "text": "Δημιουργός Εφαρμογών",
+    "namespace": "navigation",
+    "description": "App Builder navigation label"
+  },
+  {
+    "locale": "el",
+    "key": "Platform",
+    "text": "Πλατφόρμα",
+    "namespace": "navigation",
+    "description": "Platform navigation label"
+  },
+  {
+    "locale": "el",
+    "key": "Users",
+    "text": "Χρήστες",
+    "namespace": "navigation",
+    "description": "Users navigation label"
+  },
+  {
+    "locale": "el",
+    "key": "Settings",
+    "text": "Ρυθμίσεις",
+    "namespace": "navigation",
+    "description": "Settings navigation label"
+  },
+  {
+    "locale": "el",
+    "key": "Profile",
+    "text": "Προφίλ",
+    "namespace": "navigation",
+    "description": "Profile navigation label"
+  },
+  {
+    "locale": "el",
+    "key": "Preferences",
+    "text": "Προτιμήσεις",
+    "namespace": "navigation",
+    "description": "Preferences navigation label"
+  },
+  {
+    "locale": "el",
+    "key": "Logout",
+    "text": "Αποσύνδεση",
+    "namespace": "navigation",
+    "description": "Logout navigation label"
+  },
+  {
+    "locale": "el",
+    "key": "application_builder_section",
+    "text": "Δημιουργός Εφαρμογών",
+    "namespace": "common",
+    "description": "Application Builder section title in sidebar"
+  },
+  {
+    "locale": "el",
+    "key": "platform_management_section",
+    "text": "Διαχείριση Πλατφόρμας",
+    "namespace": "common",
+    "description": "Platform Management section title in sidebar"
+  },
+  {
+    "locale": "el",
+    "key": "system_section",
+    "text": "Σύστημα",
+    "namespace": "common",
+    "description": "System section title in sidebar"
+  },
+  {
+    "locale": "el",
+    "key": "overview",
+    "text": "Επισκόπηση",
+    "namespace": "common",
+    "description": "Overview navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "new_application",
+    "text": "Νέα Εφαρμογή",
+    "namespace": "common",
+    "description": "New Application navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "templates",
+    "text": "Πρότυπα",
+    "namespace": "common",
+    "description": "Templates navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "components",
+    "text": "Στοιχεία",
+    "namespace": "common",
+    "description": "Components navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "tenants",
+    "text": "Ενοικιαστές",
+    "namespace": "common",
+    "description": "Tenants navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "users",
+    "text": "Χρήστες",
+    "namespace": "common",
+    "description": "Users navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "permissions",
+    "text": "Δικαιώματα",
+    "namespace": "common",
+    "description": "Permissions navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "monitoring",
+    "text": "Παρακολούθηση",
+    "namespace": "common",
+    "description": "Monitoring navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "logs",
+    "text": "Αρχεία Καταγραφής",
+    "namespace": "common",
+    "description": "Logs navigation item"
+  },
+  {
+    "locale": "el",
+    "key": "health",
+    "text": "Υγεία",
+    "namespace": "common",
+    "description": "Health navigation item"
+  }
+]

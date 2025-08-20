@@ -1385,7 +1385,7 @@ export const LayoutDesigner: React.FC<LayoutDesignerProps> = ({
             </h5>
             <div className="flex items-center space-x-2 mt-1">
               <Badge variant="outline" className="text-xs">
-                {getLayoutTypeLabel(formData.type, language)}
+                {getLayoutTypeLabel(formData.type, language as "el" | "en")}
               </Badge>
               <Badge variant="secondary" className="text-xs">
                 {formData.columns}{" "}

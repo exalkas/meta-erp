@@ -110,6 +110,8 @@ export const Grid: React.FC<GridProps> = ({
   style = {},
   ...props
 }) => {
+  // Filter out non-DOM props to prevent React warnings
+  const { adminMode, legalMode, ...domProps } = props as any;
   const classes = [
     "grid",
     !autoFit && cols !== "auto" ? colClasses[cols] : "",
@@ -133,7 +135,7 @@ export const Grid: React.FC<GridProps> = ({
     : style;
 
   return (
-    <div className={classes} style={gridStyle} {...props}>
+    <div className={classes} style={gridStyle} {...domProps}>
       {children}
     </div>
   );

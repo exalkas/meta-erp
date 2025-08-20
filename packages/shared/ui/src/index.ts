@@ -41,6 +41,7 @@ export { useAuthGuard } from "./hooks/useAuthGuard";
 export { useTranslationWithFallback } from "./hooks/useTranslationWithFallback";
 export { useLanguageDetection } from "./hooks/useLanguageDetection";
 export { useGreekLocalization } from "./hooks/useGreekLocalization";
+export { useMetadataPage } from "./hooks/useMetadataPage";
 
 // Basic UI Components ✅ PHASE 2 COMPLETE
 export { Button, LoadingButton, IconButton } from "./components/ui/Button";
@@ -216,6 +217,7 @@ export { GreekPostalCodeInput } from "./components/greek/GreekPostalCodeInput";
 // Multilingual Components ✅ PHASE 4 & 7 COMPLETE
 export { LanguageSelector } from "./components/multilingual/LanguageSelector";
 export { ThemeSelector } from "./components/multilingual/ThemeSelector";
+export { ThemeChooser } from "./components/multilingual/ThemeChooser";
 export {
   LocalizedText,
   LocalizedHeading,
@@ -327,6 +329,15 @@ export type {
 } from "./types";
 export type { FormFieldType, FormSchema } from "./types/forms";
 export type { GreekReferenceData } from "./types/greek";
+
+// Icon Utilities
+export {
+  getIconComponent,
+  isValidIconName,
+  getAvailableIconNames,
+  renderIcon,
+  type IconName,
+} from "./utils/iconMapper";
 
 // Custom Hooks
 export { useGreekValidation } from "./hooks/useGreekValidation";

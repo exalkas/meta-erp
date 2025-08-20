@@ -950,15 +950,30 @@ async def get_layout(
         
         from app.models.platform import LayoutDefinition
         from sqlalchemy import select
+        import uuid
+        
+        # Convert string layout_id to UUID
+        try:
+            layout_uuid = uuid.UUID(layout_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid layout_id format: {layout_id}")
+        
+        # Validate tenant_id if provided
+        tenant_uuid = None
+        if tenant_id and tenant_id != "undefined" and tenant_id != "null":
+            try:
+                tenant_uuid = uuid.UUID(tenant_id)
+            except ValueError:
+                raise HTTPException(status_code=400, detail=f"Invalid tenant_id format: {tenant_id}")
         
         query = select(LayoutDefinition).where(
-            LayoutDefinition.layout_id == layout_id,
+            LayoutDefinition.layout_id == layout_uuid,
             LayoutDefinition.is_active == True
         )
         
-        if tenant_id:
+        if tenant_uuid:
             query = query.where(
-                (LayoutDefinition.tenant_id == tenant_id) |
+                (LayoutDefinition.tenant_id == tenant_uuid) |
                 (LayoutDefinition.tenant_id.is_(None))
             )
         else:
@@ -1000,33 +1015,57 @@ async def get_translations(
     locale: str,
     tenant_id: Optional[str] = Query(None),
     namespace: Optional[str] = Query(None),
+    vertical: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get translations for a locale."""
+    """Get translations for a locale with fallback to default locale."""
     try:
         logger.info(f"Getting translations for locale: {locale}, tenant: {tenant_id}, namespace: {namespace}")
         
         from app.models.metadata import Translation
         from sqlalchemy import select
         
-        query = select(Translation).where(Translation.locale == locale)
+        # Get fallback locales from configuration (no hardcoded values)
+        from app.core.locale_config import get_locale_fallback_chain
         
-        if tenant_id:
-            query = query.where(
-                (Translation.tenant_id == tenant_id) |
-                (Translation.tenant_id.is_(None))  # Include global translations
-            )
-        else:
-            query = query.where(Translation.tenant_id.is_(None))
-            
-        if namespace:
-            query = query.where(Translation.namespace == namespace)
-            
-        result = await db.execute(query)
-        translations = result.scalars().all()
+        fallback_locales = get_locale_fallback_chain(
+            requested_locale=locale,
+            vertical=vertical
+        )
         
-        # Return flattened key-value pairs for easy consumption
-        return {translation.key: translation.text for translation in translations}
+        logger.info(f"Using configuration-driven fallback for locale '{locale}' (vertical: {vertical}): {fallback_locales}")
+        
+        translations_dict = {}
+        
+        for fallback_locale in fallback_locales:
+            query = select(Translation).where(Translation.locale == fallback_locale)
+            
+            if tenant_id:
+                query = query.where(
+                    (Translation.tenant_id == tenant_id) |
+                    (Translation.tenant_id.is_(None))  # Include global translations
+                )
+            else:
+                query = query.where(Translation.tenant_id.is_(None))
+                
+            if namespace:
+                query = query.where(Translation.namespace == namespace)
+                
+            result = await db.execute(query)
+            translations = result.scalars().all()
+            
+            if translations:
+                translations_dict = {translation.key: translation.text for translation in translations}
+                if fallback_locale != locale:
+                    logger.info(f"Using fallback locale '{fallback_locale}' for requested locale '{locale}'")
+                break
+        
+        if not translations_dict:
+            logger.warning(f"No translations found for locale '{locale}' or any fallback locales")
+            return {}
+        
+        logger.info(f"Found {len(translations_dict)} translations for locale {locale}")
+        return translations_dict
         
     except Exception as e:
         logger.error(f"Error getting translations for {locale}: {str(e)}")

@@ -71,7 +71,7 @@ class AuthSettings(BaseSettings):
     
     # Security headers
     CORS_ORIGINS: List[str] = Field(
-        default=["http://localhost:3000", "http://localhost:3001"],
+        default=["http://localhost:3000", "http://localhost:3001", "http://localhost:3006"],
         env="CORS_ORIGINS"
     )
     TRUSTED_HOSTS: List[str] = Field(default=["localhost"], env="TRUSTED_HOSTS")
@@ -368,6 +368,7 @@ class AuthSettings(BaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = True
+        extra = "ignore"  # Ignore extra fields from .env
 
 
 # =============================================

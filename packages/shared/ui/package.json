@@ -30,7 +30,8 @@
     "@hookform/resolvers": "^3.0.0",
     "react-hook-form": "^7.0.0",
     "zod": "^3.0.0",
-    "lucide-react": "^0.263.0"
+    "lucide-react": "^0.263.0",
+    "@erp/dynamic-entities": "*"
   },
   "devDependencies": {
     "typescript": "^5.0.0",

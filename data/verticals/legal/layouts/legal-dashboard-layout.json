@@ -1,0 +1,194 @@
+{
+  "layout_id": "90000000-0000-0000-0000-000000000001",
+  "name": "legal-dashboard-layout",
+  "display_name": "Legal Practice Dashboard Layout",
+  "description": "Shared layout for legal practice pages with consistent navigation and sidebar",
+  "category": "legal-dashboard",
+  "sections_json": {
+    "header": {
+      "className": "bg-card shadow-sm border-b border-border h-16 fixed top-0 left-0 right-0 z-50",
+      "maxComponents": 1,
+      "allowedComponents": ["Navigation", "TopBar"],
+      "components": [
+        {
+          "type": "Navigation",
+          "props": {
+            "variant": "horizontal",
+            "showUserMenu": true,
+            "showThemeSelector": true,
+            "showNotifications": true,
+            "userMenuStyle": "buttons",
+            "legalMode": true,
+            "userMenu": [
+              {
+                "id": "user-profile",
+                "label": "Profile",
+                "action": "navigate:/profile",
+                "icon": "User"
+              },
+              {
+                "id": "user-settings",
+                "label": "Settings",
+                "action": "navigate:/settings",
+                "icon": "Settings"
+              },
+              {
+                "id": "logout",
+                "label": "Logout",
+                "action": "logout",
+                "icon": "LogOut"
+              }
+            ],
+            "items": [
+              {
+                "id": "nav-dashboard",
+                "label": "Dashboard",
+                "route": "/dashboard",
+                "icon": "LayoutDashboard"
+              },
+              {
+                "id": "nav-clients",
+                "label": "Clients",
+                "route": "/clients",
+                "icon": "Users"
+              },
+              {
+                "id": "nav-matters",
+                "label": "Matters",
+                "route": "/matters",
+                "icon": "Briefcase"
+              },
+              {
+                "id": "nav-time",
+                "label": "Time Entry",
+                "route": "/time-entry",
+                "icon": "Clock"
+              },
+              {
+                "id": "nav-billing",
+                "label": "Billing",
+                "route": "/invoices",
+                "icon": "CreditCard"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "sidebar": {
+      "className": "bg-card shadow-sm border-r border-border w-64 min-h-screen fixed left-0 top-16 bottom-0 z-40 transition-transform duration-300",
+      "maxComponents": 1,
+      "allowedComponents": ["SidebarMenu"],
+      "components": [
+        {
+          "type": "SidebarMenu",
+          "props": {
+            "variant": "vertical",
+            "collapsible": true,
+            "legalMode": true,
+            "sections": [
+              {
+                "title": "Practice Management",
+                "items": [
+                  {
+                    "label": "Dashboard",
+                    "route": "/dashboard",
+                    "icon": "Home"
+                  },
+                  { "label": "Clients", "route": "/clients", "icon": "Users" },
+                  {
+                    "label": "Matters",
+                    "route": "/matters",
+                    "icon": "Briefcase"
+                  },
+                  {
+                    "label": "Calendar",
+                    "route": "/calendar",
+                    "icon": "Calendar"
+                  }
+                ]
+              },
+              {
+                "title": "Time & Billing",
+                "items": [
+                  {
+                    "label": "Time Entry",
+                    "route": "/time-entry",
+                    "icon": "Clock"
+                  },
+                  {
+                    "label": "Time Reports",
+                    "route": "/time-reports",
+                    "icon": "BarChart3"
+                  },
+                  {
+                    "label": "Invoices",
+                    "route": "/invoices",
+                    "icon": "CreditCard"
+                  },
+                  {
+                    "label": "Trust Accounts",
+                    "route": "/trust-accounts",
+                    "icon": "Shield"
+                  }
+                ]
+              },
+              {
+                "title": "Legal Tools",
+                "items": [
+                  {
+                    "label": "Documents",
+                    "route": "/documents",
+                    "icon": "FileText"
+                  },
+                  {
+                    "label": "Court Filings",
+                    "route": "/court-filings",
+                    "icon": "Scale"
+                  },
+                  {
+                    "label": "Research",
+                    "route": "/research",
+                    "icon": "Search"
+                  },
+                  {
+                    "label": "Conflicts",
+                    "route": "/conflicts",
+                    "icon": "AlertTriangle"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "main": {
+      "className": "flex-1 bg-background p-6 ml-64 mt-16 min-h-screen transition-colors duration-300",
+      "maxComponents": 10,
+      "allowedComponents": [
+        "DashboardGrid",
+        "Widget",
+        "DataTable",
+        "Chart",
+        "Form",
+        "KPICards",
+        "RecentActivity",
+        "ChartWidget"
+      ]
+    }
+  },
+  "css_classes_json": {
+    "header": "bg-card shadow-sm border-b border-border h-16 fixed top-0 left-0 right-0 z-50",
+    "sidebar": "bg-card shadow-sm border-r border-border w-64 min-h-screen fixed left-0 top-16 bottom-0 z-40 transition-transform duration-300",
+    "main": "flex-1 bg-background p-6 ml-64 mt-16 min-h-screen transition-colors duration-300"
+  },
+  "container_classes": "min-h-screen bg-background flex flex-col transition-colors duration-300",
+  "is_responsive": true,
+  "supports_theming": true,
+  "max_sections": 3,
+  "is_system_layout": true,
+  "is_active": true,
+  "created_at": "2025-01-31T00:00:00Z",
+  "updated_at": "2025-01-31T00:00:00Z"
+}

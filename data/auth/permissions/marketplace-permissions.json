@@ -1,0 +1,84 @@
+[
+  {
+    "permission_id": "41111111-1111-1111-1111-111111111111",
+    "permission_name": "MARKETPLACE.COMPONENTS.CREATION.PUBLISH",
+    "display_name": "Publish Components to Marketplace",
+    "description": "Create and publish components to the platform marketplace for sale",
+    "scope": "MARKETPLACE",
+    "module": "COMPONENTS",
+    "feature": "CREATION",
+    "action": "PUBLISH",
+    "is_wildcard": false,
+    "is_critical": false,
+    "requires_approval": true,
+    "customer_visible": true,
+    "billing_tier": "creator",
+    "metadata_json": {
+      "component_creator": true,
+      "revenue_sharing": true,
+      "quality_review": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  },
+  {
+    "permission_id": "42222222-2222-2222-2222-222222222222",
+    "permission_name": "MARKETPLACE.COMPONENTS.REVENUE.RECEIVE",
+    "display_name": "Receive Component Revenue",
+    "description": "Receive revenue share from component sales in marketplace",
+    "scope": "MARKETPLACE",
+    "module": "COMPONENTS",
+    "feature": "REVENUE",
+    "action": "RECEIVE",
+    "is_wildcard": false,
+    "is_critical": true,
+    "requires_approval": true,
+    "customer_visible": true,
+    "billing_tier": "creator",
+    "metadata_json": {
+      "financial_benefit": true,
+      "revenue_tracking": true,
+      "tax_implications": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  },
+  {
+    "permission_id": "43333333-3333-3333-3333-333333333333",
+    "permission_name": "MARKETPLACE.VERTICALS.DEVELOPMENT.CONTRIBUTE",
+    "display_name": "Contribute to Vertical Development",
+    "description": "Contribute components and features to specific industry verticals",
+    "scope": "MARKETPLACE",
+    "module": "VERTICALS",
+    "feature": "DEVELOPMENT",
+    "action": "CONTRIBUTE",
+    "is_wildcard": false,
+    "is_critical": false,
+    "requires_approval": true,
+    "customer_visible": true,
+    "billing_tier": "creator",
+    "metadata_json": {
+      "vertical_specialist": true,
+      "community_contributor": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  },
+  {
+    "permission_id": "44444444-4444-4444-4444-444444444444",
+    "permission_name": "MARKETPLACE.TEMPLATES.SHARING.MONETIZE",
+    "display_name": "Monetize Application Templates",
+    "description": "Create and sell application templates in the marketplace",
+    "scope": "MARKETPLACE",
+    "module": "TEMPLATES",
+    "feature": "SHARING",
+    "action": "MONETIZE",
+    "is_wildcard": false,
+    "is_critical": false,
+    "requires_approval": true,
+    "customer_visible": true,
+    "billing_tier": "creator",
+    "metadata_json": {
+      "template_creator": true,
+      "business_model": "template_sales"
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  }
+]

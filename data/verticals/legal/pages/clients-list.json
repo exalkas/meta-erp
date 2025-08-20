@@ -1,0 +1,279 @@
+{
+  "page_name": "clients_list",
+  "page_title_key": "clients_title",
+  "page_type": "LIST",
+  "route_path": "/clients",
+  "vertical": "LEGAL",
+  "supported_languages": ["en-US", "es-US"],
+  "theme_variants": ["light", "dark"],
+  "accessibility_level": "WCAG_2_1_AA",
+  "page_config": {
+    "entity": "Client",
+    "layout": "legal_list_layout",
+    "permissions": ["view_clients"],
+    "features": {
+      "search": true,
+      "filter": true,
+      "sort": true,
+      "export": true,
+      "bulk_actions": true,
+      "ai_insights": true
+    },
+    "header": {
+      "title_key": "clients_title",
+      "description_key": "clients_description",
+      "actions": [
+        {
+          "action_id": "add_client",
+          "label_key": "add_client",
+          "type": "primary_button",
+          "icon": "user-plus",
+          "route": "/clients/new",
+          "permissions": ["create_client"]
+        },
+        {
+          "action_id": "import_clients",
+          "label_key": "import_clients",
+          "type": "secondary_button",
+          "icon": "upload",
+          "action": "import_modal",
+          "permissions": ["import_data"]
+        }
+      ]
+    },
+    "search_config": {
+      "placeholder_key": "search_clients",
+      "fields": [
+        "client_name",
+        "contact_email",
+        "contact_phone",
+        "company_name"
+      ],
+      "search_suggestions": true,
+      "ai_enhanced": true
+    },
+    "filter_config": {
+      "filters": [
+        {
+          "field": "client_type",
+          "label_key": "client_type",
+          "type": "select",
+          "options_source": "field_options"
+        },
+        {
+          "field": "client_status",
+          "label_key": "client_status",
+          "type": "select",
+          "options_source": "field_options"
+        },
+        {
+          "field": "responsible_attorney",
+          "label_key": "responsible_attorney",
+          "type": "user_select",
+          "filter_role": "attorney"
+        },
+        {
+          "field": "lead_score",
+          "label_key": "lead_score",
+          "type": "range",
+          "min": 0,
+          "max": 100
+        },
+        {
+          "field": "intake_date",
+          "label_key": "intake_date",
+          "type": "date_range"
+        }
+      ],
+      "advanced_filters": true,
+      "saved_filters": true
+    },
+    "table_config": {
+      "columns": [
+        {
+          "field": "client_name",
+          "label_key": "client_name",
+          "sortable": true,
+          "searchable": true,
+          "width": "200px",
+          "render_type": "link",
+          "link_route": "/clients/{id}"
+        },
+        {
+          "field": "client_type",
+          "label_key": "client_type",
+          "sortable": true,
+          "width": "120px",
+          "render_type": "badge"
+        },
+        {
+          "field": "contact_email",
+          "label_key": "contact_email",
+          "sortable": true,
+          "searchable": true,
+          "width": "200px",
+          "render_type": "email_link"
+        },
+        {
+          "field": "contact_phone",
+          "label_key": "contact_phone",
+          "sortable": false,
+          "width": "140px",
+          "render_type": "phone_link"
+        },
+        {
+          "field": "intake_date",
+          "label_key": "intake_date",
+          "sortable": true,
+          "width": "120px",
+          "render_type": "date"
+        },
+        {
+          "field": "matter_count",
+          "label_key": "matter_count",
+          "sortable": true,
+          "width": "100px",
+          "render_type": "count_badge",
+          "link_route": "/matters?client_id={id}"
+        },
+        {
+          "field": "total_billed_amount",
+          "label_key": "total_billed",
+          "sortable": true,
+          "width": "120px",
+          "render_type": "currency"
+        },
+        {
+          "field": "lead_score",
+          "label_key": "lead_score",
+          "sortable": true,
+          "width": "100px",
+          "render_type": "score_bar",
+          "ai_generated": true
+        },
+        {
+          "field": "client_status",
+          "label_key": "client_status",
+          "sortable": true,
+          "width": "100px",
+          "render_type": "status_badge"
+        },
+        {
+          "field": "actions",
+          "label_key": "actions",
+          "sortable": false,
+          "width": "120px",
+          "render_type": "action_menu",
+          "actions": [
+            {
+              "action": "view",
+              "label_key": "view",
+              "icon": "eye",
+              "route": "/clients/{id}"
+            },
+            {
+              "action": "edit",
+              "label_key": "edit",
+              "icon": "edit",
+              "route": "/clients/{id}/edit",
+              "permissions": ["edit_client"]
+            },
+            {
+              "action": "send_message",
+              "label_key": "send_message",
+              "icon": "message-circle",
+              "modal_action": "message_modal",
+              "permissions": ["send_communications"]
+            },
+            {
+              "action": "create_matter",
+              "label_key": "create_matter",
+              "icon": "briefcase",
+              "route": "/matters/new?client_id={id}",
+              "permissions": ["create_matter"]
+            }
+          ]
+        }
+      ],
+      "pagination": {
+        "page_size_options": [25, 50, 100],
+        "default_page_size": 25,
+        "show_total": true
+      },
+      "sorting": {
+        "default_sort": {
+          "field": "intake_date",
+          "direction": "desc"
+        },
+        "multi_sort": true
+      }
+    },
+    "ai_features": {
+      "lead_scoring_insights": {
+        "enabled": true,
+        "widget_position": "sidebar",
+        "title_key": "ai_lead_insights"
+      },
+      "client_health_score": {
+        "enabled": true,
+        "show_in_table": true,
+        "alert_thresholds": {
+          "low": 30,
+          "high": 80
+        }
+      },
+      "predictive_analytics": {
+        "enabled": true,
+        "features": ["churn_prediction", "value_prediction", "engagement_score"]
+      }
+    },
+    "bulk_actions": [
+      {
+        "action": "export_selected",
+        "label_key": "export_selected",
+        "icon": "download",
+        "permissions": ["export_data"]
+      },
+      {
+        "action": "send_bulk_message",
+        "label_key": "send_bulk_message",
+        "icon": "mail",
+        "permissions": ["send_communications"]
+      },
+      {
+        "action": "update_status",
+        "label_key": "update_status",
+        "icon": "edit",
+        "permissions": ["edit_client"]
+      },
+      {
+        "action": "assign_attorney",
+        "label_key": "assign_attorney",
+        "icon": "user",
+        "permissions": ["assign_attorney"]
+      }
+    ]
+  },
+  "responsive_config": {
+    "mobile": {
+      "hidden_columns": ["contact_phone", "total_billed_amount", "lead_score"],
+      "card_view": true,
+      "swipe_actions": ["call", "email", "view"]
+    },
+    "tablet": {
+      "hidden_columns": ["lead_score"],
+      "compact_view": true
+    }
+  },
+  "performance_config": {
+    "virtual_scrolling": true,
+    "lazy_loading": true,
+    "cache_duration": 300,
+    "auto_refresh": false
+  },
+  "security_config": {
+    "row_level_security": true,
+    "field_level_permissions": true,
+    "audit_trail": true
+  }
+}

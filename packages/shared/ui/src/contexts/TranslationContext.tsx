@@ -732,13 +732,30 @@ const PREFERENCES_STORAGE_KEY = "ui_language_preferences";
 const detectLanguageFromPath = (): Language | null => {
   const path = window.location.pathname;
   const pathLang = path.split("/")[1];
-  return pathLang === "el" || pathLang === "en" ? pathLang : null;
+  if (
+    pathLang === "el" ||
+    pathLang === "en" ||
+    pathLang === "en-US" ||
+    pathLang === "es-US"
+  ) {
+    return pathLang;
+  }
+  return null;
 };
 
 const detectLanguageFromNavigator = (): Language | null => {
   const browserLang = navigator.language || navigator.languages?.[0];
   if (browserLang?.startsWith("el")) return "el";
-  if (browserLang?.startsWith("en")) return "en";
+  if (browserLang?.startsWith("en")) {
+    // For legal app, use specific US English locale
+    if (browserLang === "en-US") return "en-US";
+    return "en";
+  }
+  if (browserLang?.startsWith("es")) {
+    // For legal app, use specific US Spanish locale
+    if (browserLang === "es-US") return "es-US";
+    return "es-US"; // Default Spanish to US Spanish for legal app
+  }
   return null;
 };
 
@@ -773,6 +790,7 @@ interface TranslationProviderProps {
   storageKey?: string;
   fallbackLanguage?: Language;
   tenantId?: string; // NEW: For metadata API
+  verticalContext?: string; // NEW: For vertical-specific translations (e.g., "legal", "admin")
 }
 
 export const TranslationProvider: React.FC<TranslationProviderProps> = ({
@@ -783,6 +801,7 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({
   storageKey = LANGUAGE_STORAGE_KEY,
   fallbackLanguage = "en",
   tenantId, // NEW: Tenant context for metadata
+  verticalContext, // NEW: Vertical context for targeted translations
 }) => {
   // Initialize language with stable SSR value
   const [language, setLanguageState] = useState<Language>(defaultLanguage);
@@ -801,45 +820,105 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({
       try {
         console.log(`🌐 Fetching translations for locale: ${locale}`);
 
-        const response = await fetch(
-          `http://localhost:8000/metadata/translations/${locale}?tenant_id=${tenantId || ""}`
+        // Build API URL with tenant and vertical context
+        const url = new URL(
+          `http://localhost:8000/metadata/translations/${locale}`
         );
+        if (tenantId) {
+          url.searchParams.set("tenant_id", tenantId);
+        }
+        if (verticalContext) {
+          url.searchParams.set("vertical", verticalContext);
+        }
+
+        const response = await fetch(url.toString());
 
         if (!response.ok) {
           throw new Error(`Failed to fetch translations: ${response.status}`);
         }
 
-        const translationsFlat = await response.json();
+        const translationsData = await response.json();
 
-        // Convert flat translations to nested structure
-        const nestedTranslations = convertFlatToNested(translationsFlat);
+        // INVESTIGATION: Log raw translation data
+        console.log("🔍 Translation Data Debug:", {
+          locale,
+          dataType: Array.isArray(translationsData) ? "array" : "object",
+          dataLength: Array.isArray(translationsData)
+            ? translationsData.length
+            : Object.keys(translationsData).length,
+          sampleData: Array.isArray(translationsData)
+            ? translationsData.slice(0, 3)
+            : Object.entries(translationsData).slice(0, 3),
+        });
+
+        // Handle both array format (from database) and flat object format
+        let translationsFlat: Record<string, string>;
+        if (Array.isArray(translationsData)) {
+          // Convert array of translation objects to flat key-value pairs
+          translationsFlat = translationsData.reduce(
+            (acc: Record<string, string>, item: any) => {
+              acc[item.key] = item.text;
+              return acc;
+            },
+            {}
+          );
+        } else {
+          // Already flat object format
+          translationsFlat = translationsData;
+        }
+
+        // INVESTIGATION: Log converted flat data
+        console.log("🔍 Translation Flat Debug:", {
+          locale,
+          flatKeys: Object.keys(translationsFlat).slice(0, 10),
+          sampleFlat: Object.entries(translationsFlat).slice(0, 5),
+        });
+
+        // FLAT KEYS: Store flat translations in 'common' namespace since that's what components expect
+        const flatResources = {
+          common: translationsFlat, // Store flat translations under 'common' namespace
+          flat: translationsFlat, // Also keep under 'flat' for backward compatibility
+        };
 
         // Update resources
         setTranslationResources((prev) => ({
           ...prev,
-          [locale]: nestedTranslations,
+          [locale]: flatResources,
         }));
 
-        console.log(
-          `✅ Loaded ${Object.keys(translationsFlat).length} translations for ${locale}`
-        );
+        if (Object.keys(translationsFlat).length > 0) {
+          console.log(
+            `✅ Loaded ${Object.keys(translationsFlat).length} translations for ${locale}`
+          );
+        } else {
+          console.warn(
+            `⚠️ API returned empty translations for ${locale}, using DEFAULT_RESOURCES fallback`
+          );
+          // Fallback to default resources if API returns empty
+          if (!resources && DEFAULT_RESOURCES[locale]) {
+            setTranslationResources((prev) => ({
+              ...prev,
+              [locale]: DEFAULT_RESOURCES[locale],
+            }));
+          }
+        }
       } catch (err) {
         console.error(`❌ Failed to load translations for ${locale}:`, err);
         setError(err instanceof Error ? err.message : "Unknown error");
 
         // Fallback to default resources if available
-        if (!resources) {
+        if (!resources && DEFAULT_RESOURCES[locale]) {
           console.log(`📦 Using fallback to DEFAULT_RESOURCES for ${locale}`);
           setTranslationResources((prev) => ({
             ...prev,
-            [locale]: DEFAULT_RESOURCES[locale] || {},
+            [locale]: DEFAULT_RESOURCES[locale],
           }));
         }
       } finally {
         setIsLoading(false);
       }
     },
-    [tenantId, resources]
+    [tenantId, verticalContext, resources]
   );
 
   // NEW: Convert flat key-value translations to nested structure
@@ -963,7 +1042,7 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({
     [storageKey]
   );
 
-  // Translation function
+  // Translation function with FLAT KEYS support
   const t = useCallback(
     (key: string, options?: TranslationOptions): string => {
       const {
@@ -973,13 +1052,44 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({
         count,
       } = options || {};
 
+      // INVESTIGATION: Log translation lookup
+      console.log("🔍 Translation Lookup Debug:", {
+        key,
+        language,
+        ns,
+        hasResources: !!translationResources[language],
+        availableLanguages: Object.keys(translationResources),
+      });
+
       try {
         // Get translation from current language
         const currentLangResources = translationResources[language];
         if (currentLangResources) {
+          // FLAT KEYS: First try to get value directly from flat namespace
+          const flatTranslations = currentLangResources["flat"];
+          if (flatTranslations && flatTranslations[key]) {
+            const value = flatTranslations[key];
+            console.log("🔍 FLAT Translation Found:", { key, value });
+            return interpolateString(String(value), variables);
+          }
+
+          // Fallback to nested namespace approach for compatibility
           const namespace = currentLangResources[ns];
           if (namespace) {
             const value = getNestedValue(namespace, key);
+
+            // INVESTIGATION: Log translation lookup details
+            console.log("🔍 Translation Value Debug:", {
+              key,
+              language,
+              ns,
+              hasNamespace: !!namespace,
+              value,
+              namespaceKeys: namespace
+                ? Object.keys(namespace).slice(0, 10)
+                : [],
+            });
+
             if (value) {
               // Handle pluralization
               if (count !== undefined && typeof count === "number") {
@@ -994,7 +1104,7 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({
                 }
               }
 
-              return interpolateString(value, variables);
+              return interpolateString(String(value), variables);
             }
           }
         }
@@ -1002,11 +1112,19 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({
         // Fallback to fallback language
         const fallbackLangResources = translationResources[fallbackLanguage];
         if (fallbackLangResources) {
+          // FLAT KEYS: Try flat translations first
+          const flatTranslations = fallbackLangResources["flat"];
+          if (flatTranslations && flatTranslations[key]) {
+            const value = flatTranslations[key];
+            return interpolateString(String(value), variables);
+          }
+
+          // Fallback to nested approach
           const namespace = fallbackLangResources[ns];
           if (namespace) {
             const value = getNestedValue(namespace, key);
             if (value) {
-              return interpolateString(value, variables);
+              return interpolateString(String(value), variables);
             }
           }
         }

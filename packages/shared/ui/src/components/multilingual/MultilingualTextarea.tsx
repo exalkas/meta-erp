@@ -126,7 +126,7 @@ export const MultilingualTextarea: React.FC<MultilingualTextareaProps> = ({
       el: "Ελληνικά",
       en: "English",
     };
-    return labels[lang] || lang.toUpperCase();
+    return labels[lang as keyof typeof labels] || lang.toUpperCase();
   };
 
   const getLanguageCompletionStatus = (
@@ -171,8 +171,8 @@ export const MultilingualTextarea: React.FC<MultilingualTextareaProps> = ({
               status === "complete"
                 ? "bg-green-500"
                 : status === "partial"
-                ? "bg-yellow-500"
-                : "bg-gray-300"
+                  ? "bg-yellow-500"
+                  : "bg-gray-300"
             }`}
           />
         )}
@@ -255,8 +255,8 @@ export const MultilingualTextarea: React.FC<MultilingualTextareaProps> = ({
                     status === "complete"
                       ? "bg-green-500"
                       : status === "partial"
-                      ? "bg-yellow-500"
-                      : "bg-gray-300"
+                        ? "bg-yellow-500"
+                        : "bg-gray-300"
                   }`}
                 />
                 {hasContent && (

@@ -138,7 +138,10 @@ export const GreekLocaleProvider: React.FC<GreekLocaleProviderProps> = ({
   const [settings, setSettingsState] = useState<GreekLocaleSettings>({
     ...DEFAULT_SETTINGS,
     ...initialSettings,
-    language: initialLanguage,
+    language:
+      initialLanguage === "el" || initialLanguage === "en"
+        ? initialLanguage
+        : "en",
   });
   const [referenceData, setReferenceData] = useState<GreekReferenceData | null>(
     null
@@ -414,7 +417,9 @@ export const GreekLocaleProvider: React.FC<GreekLocaleProviderProps> = ({
   // Update language when it changes
   useEffect(() => {
     if (language !== settings.language) {
-      updateSettings({ language });
+      updateSettings({
+        language: language === "el" || language === "en" ? language : "en",
+      });
     }
   }, [language, settings.language, updateSettings]);
 

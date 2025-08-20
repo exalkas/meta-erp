@@ -1,16 +1,18 @@
 # 🏢 **Axiologic Platform - SAP-Style Metadata-Driven System**
 
-A **production-ready**, **metadata-driven** business platform with **SAP-style architecture**, **multi-tenant support**, and **complete authentication system**.
+A **production-ready**, **metadata-driven** business platform with **SAP-style architecture**, **multi-tenant support**, and **enterprise-grade authentication system**.
+
+> **🎉 Latest Update (v1.11.0):** Admin application fully functional with robust RBAC system, comprehensive translation framework, and production-ready app-builder interface!
 
 ## 🎯 **Core Features**
 
-- 🔐 **SAP-Style Authentication** - Complete JWT-based auth with roles, permissions, and 2FA
-- 📊 **Metadata-Driven UI** - Pages, layouts, themes, and components from database
+- ✅ **Production-Ready Authentication** - Complete JWT-based auth with secure cookies, timeouts, and error recovery
+- 📊 **Metadata-Driven UI** - Pages, layouts, themes, and components dynamically generated from database
 - 🏢 **Multi-Tenant Architecture** - Complete tenant isolation with per-tenant databases
-- 🌐 **Internationalization** - English/Greek support with database translations
-- 🎨 **Dynamic Theming** - Real-time theme switching with CSS custom properties
-- 🛡️ **Enterprise Security** - Role-based access control with SAP authorization patterns
-- 📱 **Mobile-Ready** - Responsive design with mobile-first approach
+- 🌐 **Internationalization** - English/Greek support with database translations and fallback handling
+- 🎨 **Dynamic Theming** - Real-time theme switching with CSS custom properties and marketplace variants
+- 🛡️ **Enterprise Security** - Role-based access control with SAP authorization patterns and CSRF protection
+- 📱 **Mobile-Ready** - Responsive design with mobile-first approach and metadata-driven layouts
 
 ## 🏗️ **Architecture Overview**
 
@@ -31,6 +33,45 @@ A **production-ready**, **metadata-driven** business platform with **SAP-style a
                     └─────────────────┘
 ```
 
+## ✅ **Current Status**
+
+### **🎯 Production-Ready Components**
+
+- ✅ **Authentication System** - Complete JWT-based auth with secure session management
+- ✅ **Admin Application** - Metadata-driven admin interface working end-to-end
+- ✅ **RBAC System** - Enterprise-grade permission-based access control with 4-level hierarchy
+- ✅ **Translation Framework** - Comprehensive multilingual support with flat key structure
+- ✅ **Database Architecture** - Master + Tenant databases with metadata tables
+- ✅ **API Services** - Auth service (8001) and API service (8000) operational
+- ✅ **Security Implementation** - CSRF protection, secure cookies, token validation
+- ✅ **Error Handling** - Comprehensive error recovery and user feedback
+- ✅ **UI Components** - Navigation, forms, and dynamic components with translation support
+
+### **✅ Recent Achievements**
+
+- ✅ **Legal-App Created** - First dedicated vertical application working with metadata-driven architecture
+- ✅ **Authentication Flow** - Login/logout working perfectly with proper session management
+- ✅ **CORS Configuration** - All services properly configured for multi-app architecture
+- ✅ **Separate App Strategy** - Validated architecture for vertical-specific applications
+
+### **🔧 Current Development Focus**
+
+- 🎯 **Legal Pages** - Clients, Matters, Time Entry pages with CRM+ERP features
+- 🔄 **AI-Powered Features** - Smart lead qualification, case assessment, document intelligence
+- 🔄 **IOLTA Compliance** - US trust accounting with real-time reconciliation
+- 🔄 **Court System Integration** - Electronic filing and calendar synchronization
+- 🔄 **Mobile-First Interface** - 2025 modern UI with voice commands and accessibility
+
+### **📊 System Health**
+
+| Component    | Status             | Port | Description                                |
+| ------------ | ------------------ | ---- | ------------------------------------------ |
+| Admin App    | ✅ **Working**     | 3001 | Complete metadata-driven admin interface   |
+| Auth Service | ✅ **Working**     | 8001 | JWT authentication with session management |
+| API Service  | ✅ **Working**     | 8000 | Metadata and business logic APIs           |
+| Database     | ✅ **Working**     | 5432 | Master + Tenant PostgreSQL databases       |
+| Client App   | 🔄 **In Progress** | 3000 | Main business application interface        |
+
 ## 🚀 **Quick Start**
 
 ### **1. Prerequisites**
@@ -40,40 +81,61 @@ A **production-ready**, **metadata-driven** business platform with **SAP-style a
 - **Node.js 18+** with npm
 - **PowerShell** (Windows) or Bash (Linux/Mac)
 
-### **2. Start Services**
+### **2. Database Setup (First Time Only)**
+
+```powershell
+# Initialize database and seed metadata
+cd services/api
+poetry install
+$env:CREATE_TABLES_ON_STARTUP="true"
+poetry run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+# Wait for server to start, then Ctrl+C and run:
+poetry run python ../../data/seed-scripts/seed_all.py
+```
+
+### **3. Start Services**
 
 ```powershell
 # 1. Start Auth Service (Port 8001)
 cd services/auth
 poetry install
-poetry run python -m uvicorn main:app --reload --port 8001
+poetry run uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
 
-# 2. Start API Service with seeded data (Port 8000)
-./scripts/start-api-server.ps1 -SeedData
+# 2. Start API Service (Port 8000)
+cd services/api
+poetry run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
-# 3. Start Frontend (Port 3000)
+# 3. Start Admin Frontend (Port 3001)
+cd apps/admin
+npm install
+npm run dev
+
+# 4. Start Client Frontend (Port 3000)
 cd apps/client
 npm install
 npm run dev
 ```
 
-### **3. Test Complete Setup**
+### **4. Test Complete Setup**
 
 ```powershell
 # Test all services and endpoints
 ./scripts/test-complete-setup.ps1
 ```
 
-### **4. Access the Platform**
+### **5. Access the Platform**
 
-- 🌐 **Frontend**: http://localhost:3000
-- 🔐 **Auth API**: http://localhost:8001/docs
-- 📊 **Metadata API**: http://localhost:8000/docs
+- 🔧 **Admin App**: http://localhost:3001 (Application Builder Interface)
+- 🌐 **Client App**: http://localhost:3000 (Main Business Application)
+- 🔐 **Auth API**: http://localhost:8001/docs (Authentication Service)
+- 📊 **Metadata API**: http://localhost:8000/docs (Core API Service)
 
-**Default Login:**
+**Default Login Credentials:**
 
 - Email: `admin@demo-eshop-crm.local`
 - Password: ``
+
+**Note**: The admin app (`apps/admin`) is the Application Builder UI that loads pages from metadata and allows administrators to manage the platform.
 
 ## 📁 **Project Structure**
 

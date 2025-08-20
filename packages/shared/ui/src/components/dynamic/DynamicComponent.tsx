@@ -6,6 +6,7 @@
  */
 
 import React from "react";
+import { useTranslation } from "../../contexts/TranslationContext";
 import { Input } from "../ui/Input";
 import { Button } from "../ui/Button";
 import { Checkbox } from "../ui/Checkbox";
@@ -20,6 +21,8 @@ import { DashboardGrid } from "../layout/Grid";
 import { Sidebar } from "../ui/Sidebar";
 import { MetadataDataTable } from "./MetadataDataTable";
 import { DynamicForm } from "./DynamicForm";
+import { FormWizard } from "../forms/FormWizard";
+import { renderIcon } from "../../utils/iconMapper";
 
 // Generic UI Components
 import Filter from "../ui/Filter";
@@ -173,11 +176,8 @@ const KPICards: React.FC<{
               )}
             </div>
             {metric.icon && (
-              <div className="text-2xl">
-                {metric.icon === "dollar-sign" && "💰"}
-                {metric.icon === "shopping-cart" && "🛒"}
-                {metric.icon === "package" && "📦"}
-                {metric.icon === "users" && "👥"}
+              <div className="text-2xl text-gray-400">
+                {renderIcon(metric.icon, "w-8 h-8")}
               </div>
             )}
           </div>
@@ -199,9 +199,11 @@ const SidebarMenu: React.FC<{
   variant?: string;
   collapsible?: boolean;
   sections?: Array<{
-    title: string;
+    title?: string;
+    title_key?: string;
     items: Array<{
-      label: string;
+      label?: string;
+      label_key?: string;
       route?: string;
       icon?: string;
       id?: string;
@@ -214,24 +216,26 @@ const SidebarMenu: React.FC<{
   variant = "vertical",
   ...props
 }) => {
+  const { t } = useTranslation();
+
   // Transform sections into flat items array for Sidebar component
   const items = sections.flatMap((section, sectionIndex) => {
     const sectionItems = section.items.map((item, itemIndex) => ({
       id: item.id || `${sectionIndex}-${itemIndex}`,
-      label: item.label,
+      // Keep the full key as-is for proper translation lookup
+      label: item.label_key || item.label || `item-${itemIndex}`,
       href: item.route,
-      icon: item.icon
-        ? React.createElement("span", { children: item.icon })
-        : undefined,
+      icon: item.icon ? renderIcon(item.icon, "w-4 h-4") : undefined,
       active: false,
       disabled: false,
     }));
 
-    // Add section header as non-clickable item
+    // Add section header as non-clickable item (title should be translated)
     return [
       {
         id: `section-${sectionIndex}`,
-        label: section.title,
+        // Keep the full key as-is for proper translation lookup
+        label: section.title_key || section.title || `section-${sectionIndex}`,
         disabled: true,
         className:
           "text-xs font-semibold text-gray-500 uppercase tracking-wide px-3 py-2",
@@ -336,6 +340,7 @@ const COMPONENT_REGISTRY: Record<string, React.ComponentType<any>> = {
 
   // Complex Components
   Form: DynamicForm,
+  FormWizard: FormWizard,
 
   // Generic UI Components
   Filter: Filter,
@@ -366,6 +371,7 @@ interface DynamicComponentProps {
       rememberMe?: boolean;
     }) => Promise<void>;
     onLogout?: () => void;
+    onAction?: (action: string, item: any) => void;
     currentUser?: any;
     tenantId?: string;
     // NEW: Metadata-driven properties
@@ -448,10 +454,48 @@ export const DynamicComponent: React.FC<DynamicComponentProps> = ({
 
     // LEGACY: Fallback to hardcoded logic for other components not yet in metadata
     if (!contextProps.metadataCallbacks?.[type] && type !== "LoginForm") {
-      // Navigation requires logout function
+      // Navigation requires action handlers and route->href transformation
       if (type === "Navigation") {
+        // Transform sections to items and route -> href
+        if (enhancedProps.sections) {
+          // Convert sections array to flat items array for Navigation component
+          enhancedProps.items = enhancedProps.sections.flatMap(
+            (section: any) =>
+              section.items?.map((item: any) => {
+                const transformedItem = {
+                  id:
+                    item.id ||
+                    `${section.title}-${item.label}`
+                      .replace(/\s+/g, "-")
+                      .toLowerCase(),
+                  label: item.label,
+                  href: item.route, // Transform route to href
+                  icon: item.icon,
+                  active: false,
+                  disabled: false,
+                };
+                return transformedItem;
+              }) || []
+          );
+
+          // Remove sections prop since Navigation component expects items
+          delete enhancedProps.sections;
+        }
+
         enhancedProps = {
           ...enhancedProps,
+          onAction:
+            contextProps.onAction ||
+            ((action: string, item: any) => {
+              console.log("🎯 Navigation action:", action, item);
+              if (action === "logout") {
+                contextProps.onLogout?.() ||
+                  (() => {
+                    console.log("🚪 Logout clicked");
+                    alert("Logout! (Mock implementation)");
+                  })();
+              }
+            }),
           onLogout:
             contextProps.onLogout ||
             (() => {
@@ -459,6 +503,9 @@ export const DynamicComponent: React.FC<DynamicComponentProps> = ({
               alert("Logout! (Mock implementation)");
             }),
           currentUser: contextProps.currentUser,
+          // Ensure userMenu and user props are passed through from metadata
+          user: enhancedProps.user || contextProps.currentUser,
+          userMenu: enhancedProps.userMenu,
         };
       }
     }

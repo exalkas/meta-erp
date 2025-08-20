@@ -2,10 +2,10 @@
 
 ## Metadata-Driven No-Code/Low-Code Application Platform
 
-> **Version:** 1.8.0
-> **Last Updated:** January 30, 2025
+> **Version:** 1.11.0
+> **Last Updated:** August 15, 2025
 > **Target:** SAP-Style Vertical-First Industry Solutions Platform
-> **Status:** Phase 3 Complete ✅ - End-to-End Authentication Working | Production Ready Authentication System
+> **Status:** Admin Application Fully Functional ✅ - RBAC, translations, and app-builder interface operational
 
 ---
 
@@ -25,12 +25,13 @@
 
 ### **Applications**
 
-1. **client** - Main application interface (dynamically configured per tenant)
-2. **admin** - System administration (global platform management)
-3. **marketing** - Marketing website and public landing pages
-4. **setup** - Data migration tool for users migrating from other systems (e.g., Salesforce)
-5. **staff-support** - Internal support tools (admin-side support)
-6. **user-support** - Customer support portal (customer-facing support)
+**Platform Applications:**
+
+1. **admin** - System administration (global platform management)
+2. **marketing** - Marketing website and public landing pages
+3. **setup** - Data migration tool for users migrating from other systems
+
+**Vertical-Specific Applications:** 4. **legal-app** - Legal Practice Management (Legal-US pack) 5. **ecommerce-app** - E-commerce Platform (future) 6. **automotive-app** - Auto Service Management (future) 7. **fintech-app** - Financial Services Platform (future) 8. **agtech-app** - Agricultural Technology Platform (future) 9. **medtech-app** - Medical Technology Platform (future)
 
 ### **Services**
 

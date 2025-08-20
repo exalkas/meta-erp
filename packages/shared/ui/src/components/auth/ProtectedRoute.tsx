@@ -11,7 +11,7 @@ import { useAuthGuard } from "../../hooks/useAuthGuard";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRoles?: string[];
+  requiredPermissions?: string[]; // Permission-based access control
   fallback?: React.ReactNode;
   redirectToLogin?: boolean;
   showLoadingSpinner?: boolean;
@@ -80,20 +80,20 @@ const AccessDenied: React.FC<{
  * - Automatic login redirects
  *
  * @param children - The protected content to render
- * @param requiredRoles - Array of roles required to access this route
+ * @param requiredPermissions - Array of permissions required to access this route
  * @param fallback - Custom component to show while loading or if access denied
  * @param redirectToLogin - Whether to redirect to login if not authenticated
  * @param showLoadingSpinner - Whether to show loading spinner during auth check
  */
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
-  requiredRoles = [],
+  requiredPermissions = [],
   fallback,
   redirectToLogin = true,
   showLoadingSpinner = true,
 }) => {
   const { isAuthenticated, isLoading, user, error, checkAuthStatus, logout } =
-    useAuthGuard(redirectToLogin, requiredRoles);
+    useAuthGuard(redirectToLogin, requiredPermissions);
 
   // Show loading state during authentication check
   if (isLoading) {

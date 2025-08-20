@@ -1,0 +1,170 @@
+{
+  "process_code": "MATTER_LIFECYCLE",
+  "process_name": "Matter Lifecycle Management",
+  "process_category": "MATTER_MANAGEMENT",
+  "description": "AI-powered matter lifecycle management from creation to closure",
+  "process_steps": {
+    "steps": [
+      {
+        "step_id": "matter_creation",
+        "step_name": "Create Matter Record",
+        "step_type": "USER_TASK",
+        "step_order": 1,
+        "required": true,
+        "form_fields": [
+          "matter_name",
+          "client_id",
+          "practice_area",
+          "matter_type",
+          "responsible_attorney",
+          "billing_arrangement"
+        ],
+        "validation_rules": ["required_fields", "client_validation"],
+        "estimated_duration": 10
+      },
+      {
+        "step_id": "ai_case_assessment",
+        "step_name": "AI Case Assessment",
+        "step_type": "AI_ANALYSIS",
+        "step_order": 2,
+        "required": true,
+        "ai_model": "case_assessment_model",
+        "input_fields": [
+          "matter_name",
+          "practice_area",
+          "matter_type",
+          "case_description"
+        ],
+        "output_fields": [
+          "case_strength_score",
+          "outcome_prediction",
+          "estimated_completion_date",
+          "complexity_level"
+        ],
+        "automated": true,
+        "estimated_duration": 3
+      },
+      {
+        "step_id": "resource_planning",
+        "step_name": "AI Resource Planning",
+        "step_type": "AI_OPTIMIZATION",
+        "step_order": 3,
+        "required": true,
+        "ai_model": "resource_optimization_model",
+        "input_fields": [
+          "complexity_level",
+          "practice_area",
+          "estimated_hours",
+          "responsible_attorney"
+        ],
+        "output_fields": [
+          "attorney_assignments",
+          "estimated_timeline",
+          "budget_recommendations",
+          "milestone_schedule"
+        ],
+        "automated": true,
+        "estimated_duration": 2
+      },
+      {
+        "step_id": "budget_setup",
+        "step_name": "Budget and Timeline Setup",
+        "step_type": "USER_TASK",
+        "step_order": 4,
+        "required": true,
+        "form_fields": [
+          "budget_amount",
+          "estimated_hours",
+          "billing_rate",
+          "milestone_schedule",
+          "deadline_dates"
+        ],
+        "automated_suggestions": true,
+        "estimated_duration": 15
+      },
+      {
+        "step_id": "deadline_calculation",
+        "step_name": "AI Deadline Intelligence",
+        "step_type": "AI_CALCULATION",
+        "step_order": 5,
+        "required": true,
+        "ai_model": "deadline_intelligence_model",
+        "input_fields": [
+          "practice_area",
+          "matter_type",
+          "court_jurisdiction",
+          "case_type"
+        ],
+        "output_fields": [
+          "critical_deadlines",
+          "statute_of_limitations",
+          "filing_requirements",
+          "calendar_events"
+        ],
+        "automated": true,
+        "estimated_duration": 2
+      },
+      {
+        "step_id": "matter_activation",
+        "step_name": "Activate Matter",
+        "step_type": "AUTOMATED_TASK",
+        "step_order": 6,
+        "required": true,
+        "entity_action": "update_matter_status",
+        "status_value": "Active",
+        "automated": true,
+        "estimated_duration": 1
+      }
+    ],
+    "parallel_steps": [
+      {
+        "step_group": "setup_tasks",
+        "steps": ["budget_setup", "deadline_calculation"],
+        "can_run_parallel": true
+      }
+    ],
+    "decision_points": [
+      {
+        "step_id": "ai_case_assessment",
+        "decision_field": "case_strength_score",
+        "routes": {
+          "high_strength": "resource_planning",
+          "low_strength": "case_review_required"
+        }
+      }
+    ]
+  },
+  "trigger_conditions": {
+    "triggers": ["matter_created", "manual_start"],
+    "entities": ["Matter"],
+    "events": ["new_matter_request"]
+  },
+  "automation_level": "HIGHLY_AUTOMATED",
+  "approval_required": false,
+  "context_filters": {
+    "vertical": "LEGAL"
+  },
+  "ai_features": {
+    "case_assessment": {
+      "model": "legal_case_analyzer_v2",
+      "confidence_threshold": 0.85,
+      "fallback_to_human": true
+    },
+    "resource_optimization": {
+      "model": "attorney_workload_optimizer",
+      "considers_capacity": true,
+      "skill_matching": true
+    },
+    "deadline_intelligence": {
+      "model": "legal_deadline_calculator",
+      "jurisdiction_aware": true,
+      "rule_variations": true
+    }
+  },
+  "performance_metrics": {
+    "target_completion_time": 35,
+    "automation_rate": 0.75,
+    "accuracy_threshold": 0.9
+  },
+  "is_active": true
+}

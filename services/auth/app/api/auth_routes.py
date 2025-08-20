@@ -121,11 +121,47 @@ async def require_current_user(
         )
     return user_session
 
-def create_auth_response(user: User, session: AuthSession, session_token: str, refresh_token: str) -> AuthSuccessResponse:
-    """Create standardized authentication success response"""
+async def create_auth_response(user: User, session: AuthSession, session_token: str, refresh_token: str, db: AsyncSession) -> AuthSuccessResponse:
+    """Create standardized authentication success response with resolved permissions"""
     
     # Calculate token expiry
     expires_in = int((session.expires_at - datetime.utcnow()).total_seconds())
+    
+    # Resolve user permissions using the permission resolver
+    from ..engines.permission_resolver import PermissionResolver
+    permission_resolver = PermissionResolver(db)
+    
+    try:
+        # Get resolved permissions for the user
+        resolved_permissions = await permission_resolver.resolve_user_permissions(
+            user.user_id, 
+            user.tenant_id
+        )
+        
+        # Extract permission names and role names
+        user_permissions = [perm.permission_name for perm in resolved_permissions]
+        
+        # Get user role names (mock for now - would come from user.roles relationship)
+        user_roles = []
+        if hasattr(user, 'roles') and user.roles:
+            # This would be a relationship to roles table
+            user_roles = [role.role_name for role in user.roles]
+        else:
+            # Mock role names for system admin user
+            if str(user.user_id) == "01111111-1111-1111-1111-111111111111":
+                user_roles = ["SAP_SYSTEM_ADMIN", "SAP_TENANT_ADMIN"]
+            else:
+                user_roles = ["SAP_END_USER"]
+        
+        logger.info("User permissions resolved", 
+                   user_id=str(user.user_id), 
+                   role_count=len(user_roles),
+                   permission_count=len(user_permissions))
+                   
+    except Exception as e:
+        logger.error("Error resolving user permissions", error=str(e))
+        user_permissions = []
+        user_roles = []
     
     return AuthSuccessResponse(
         user=UserProfileResponse(
@@ -145,6 +181,8 @@ def create_auth_response(user: User, session: AuthSession, session_token: str, r
             two_factor_enabled=False,  # Not in our simplified model
             passkey_enabled=False,  # Not in our simplified model
             compliance_level=user.compliance_level.lower() if user.compliance_level else "basic",
+            roles=user_roles,  # New: actual role names
+            permissions=user_permissions,  # New: resolved permissions
             last_login=user.last_login_at,
             created_at=user.created_at
         ),
@@ -209,7 +247,7 @@ async def login_with_password(
                 session_id=str(session.session_id)
             )
             
-            return create_auth_response(user, session, session_token, refresh_token)
+            return await create_auth_response(user, session, session_token, refresh_token, db)
             
         except TwoFactorRequiredException as e:
             logger.warning("2FA required", details=e.details)
@@ -308,7 +346,7 @@ async def verify_magic_link(
                 session_id=str(session.session_id)
             )
             
-            return create_auth_response(user, session, session.access_token, session.refresh_token)
+            return await create_auth_response(user, session, session.access_token, session.refresh_token, db)
             
         except BaseAuthException as e:
             logger.warning("Magic link verification failed", error_code=e.error_code.value)
@@ -387,7 +425,7 @@ async def register_user(
                     session_id=str(session.session_id)
                 )
                 
-                return create_auth_response(user, session, session.access_token, session.refresh_token)
+                return await create_auth_response(user, session, session.access_token, session.refresh_token, db)
             
             else:
                 # Send verification email (magic link)

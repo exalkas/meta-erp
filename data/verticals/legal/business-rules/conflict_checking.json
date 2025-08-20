@@ -1,0 +1,42 @@
+{
+  "rule_name": "client_conflict_check",
+  "rule_category": "VALIDATION",
+  "entity_context": "Client",
+  "priority": 1,
+  "condition_logic": {
+    "type": "validation",
+    "triggers": ["before_create", "before_update"],
+    "conditions": [
+      {
+        "field": "client_name",
+        "operator": "conflicts_with",
+        "value": "existing_clients",
+        "check_type": "name_similarity"
+      },
+      {
+        "field": "contact_email",
+        "operator": "conflicts_with",
+        "value": "existing_clients",
+        "check_type": "email_exact"
+      }
+    ]
+  },
+  "action_definition": {
+    "on_conflict": {
+      "action": "require_approval",
+      "approver_role": "Managing Partner",
+      "notification": "Potential client conflict detected",
+      "block_creation": true
+    },
+    "no_conflict": {
+      "action": "proceed",
+      "log_check": true
+    }
+  },
+  "context_filters": {
+    "vertical": "LEGAL",
+    "tenant_type": "LAW_FIRM"
+  },
+  "rule_description": "Mandatory conflict checking for new clients before intake",
+  "is_active": true
+}

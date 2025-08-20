@@ -1,0 +1,66 @@
+{
+  "layout_id": "90000000-0000-0000-0000-000000000001",
+  "name": "legal-main-layout",
+  "display_name": "Legal Practice Main Layout",
+  "description": "Standard layout for legal practice management with header, sidebar, main content and footer",
+  "category": "legal-dashboard",
+  "sections_json": {
+    "header": {
+      "className": "bg-card shadow-sm border-b border-border h-16 fixed top-0 left-0 right-0 z-50",
+      "maxComponents": 1,
+      "allowedComponents": ["Navigation", "TopBar"]
+    },
+    "sidebar": {
+      "className": "bg-card shadow-sm border-r border-border w-64 min-h-screen fixed left-0 top-16 bottom-0 z-40 transition-transform duration-300",
+      "maxComponents": 5,
+      "allowedComponents": ["SidebarMenu", "Widget", "QuickActions"]
+    },
+    "main": {
+      "className": "flex-1 bg-background p-6 ml-64 mt-16 min-h-screen transition-colors duration-300",
+      "maxComponents": 10,
+      "allowedComponents": [
+        "DashboardGrid",
+        "Widget",
+        "DataTable",
+        "Chart",
+        "Form",
+        "MetadataDataTable"
+      ]
+    },
+    "footer": {
+      "className": "bg-card border-t border-border p-4 ml-64 mt-auto",
+      "maxComponents": 3,
+      "allowedComponents": ["StatusBar", "Footer", "Links"]
+    }
+  },
+  "css_classes_json": {
+    "header": "bg-card shadow-sm border-b border-border h-16 fixed top-0 left-0 right-0 z-50",
+    "sidebar": "bg-card shadow-sm border-r border-border w-64 min-h-screen fixed left-0 top-16 bottom-0 z-40 transition-transform duration-300",
+    "main": "flex-1 bg-background p-6 ml-64 mt-16 min-h-screen transition-colors duration-300",
+    "footer": "bg-card border-t border-border p-4 ml-64 mt-auto"
+  },
+  "container_classes": "min-h-screen bg-background flex flex-col transition-colors duration-300",
+  "responsive_classes": {
+    "mobile": "px-2 py-4",
+    "tablet": "px-4 py-6",
+    "desktop": "px-6 py-8"
+  },
+  "is_responsive": true,
+  "supports_theming": true,
+  "supports_dark_mode": true,
+  "is_system_layout": false,
+  "accessibility": {
+    "skipLinks": true,
+    "landmarks": true,
+    "screenReader": true
+  },
+  "metadata_json": {
+    "vertical": "legal",
+    "legalMode": true,
+    "primaryColor": "blue",
+    "accentColor": "amber"
+  },
+  "tenant_id": null,
+  "created_at": "2025-01-29T00:00:00Z",
+  "updated_at": "2025-01-29T00:00:00Z"
+}

@@ -1,18 +1,23 @@
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslation } from "../../contexts/TranslationContext";
 import { LanguageSelector } from "../multilingual/LanguageSelector";
+import { ThemeSelector } from "../multilingual/ThemeSelector";
+import { ThemeChooser } from "../multilingual/ThemeChooser";
 import { LocalizedText } from "../multilingual/LocalizedText";
 import { Button } from "../ui/Button";
 import { Language } from "../../types";
+import { renderIcon } from "../../utils/iconMapper";
 
 export interface NavigationItem {
   id: string;
-  label: Record<Language, string>;
+  label: Record<Language, string> | string;
   href?: string;
-  icon?: React.ReactNode;
+  icon?: React.ReactNode | string;
   children?: NavigationItem[];
   active?: boolean;
   disabled?: boolean;
+  action?: string; // For logout and other actions
   badge?: {
     text: string;
     variant?: "primary" | "secondary" | "success" | "warning" | "error";
@@ -26,8 +31,16 @@ export interface NavigationProps {
   logo?: React.ReactNode;
   /** Show language selector */
   showLanguageSelector?: boolean;
+  /** Show theme selector */
+  showThemeSelector?: boolean;
+  /** Show theme chooser (base theme selection) */
+  showThemeChooser?: boolean;
+  /** Show user menu */
+  showUserMenu?: boolean;
   /** User menu items */
   userMenu?: NavigationItem[];
+  /** User menu style - metadata-driven */
+  userMenuStyle?: "dropdown" | "inline" | "buttons";
   /** Current user info */
   user?: {
     name: string;
@@ -39,12 +52,14 @@ export interface NavigationProps {
   mobileBreakpoint?: "sm" | "md" | "lg";
   /** Variant */
   variant?: "horizontal" | "sidebar";
-  /** Background color */
+  /** Background color - DEPRECATED: Now uses theme CSS variables */
   background?: "white" | "gray" | "blue" | "professional";
   /** Sticky navigation */
   sticky?: boolean;
   /** Additional actions */
   actions?: React.ReactNode;
+  /** Action handlers */
+  onAction?: (action: string, item: NavigationItem) => void;
   className?: string;
 }
 
@@ -52,15 +67,21 @@ export const Navigation: React.FC<NavigationProps> = ({
   items,
   logo,
   showLanguageSelector = true,
+  showThemeSelector = true,
+  showThemeChooser = false,
+  showUserMenu = false,
   userMenu,
+  userMenuStyle = "dropdown",
   user,
   mobileBreakpoint = "md",
   variant = "horizontal",
   background = "professional",
   sticky = true,
   actions,
+  onAction,
   className = "",
 }) => {
+  const router = useRouter();
   const { t, language } = useTranslation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
@@ -79,47 +100,60 @@ export const Navigation: React.FC<NavigationProps> = ({
     setOpenDropdowns(newOpenDropdowns);
   };
 
-  const backgroundClasses = {
-    white: "bg-white border-b border-gray-200",
-    gray: "bg-gray-50 border-b border-gray-200",
-    blue: "bg-blue-600 text-white",
-    professional: "bg-[#0066CC] text-white",
+  const handleItemAction = (item: NavigationItem) => {
+    if (item.action && onAction) {
+      onAction(item.action, item);
+    } else if (item.href) {
+      router.push(item.href);
+    }
   };
 
-  const linkClasses = {
-    white: "text-gray-700 hover:text-gray-900 hover:bg-gray-100",
-    gray: "text-gray-700 hover:text-gray-900 hover:bg-white",
-    blue: "text-blue-100 hover:text-white hover:bg-blue-700",
-    professional: "text-blue-100 hover:text-white hover:bg-blue-700",
-  };
-
-  const activeClasses = {
-    white: "text-blue-600 bg-blue-50",
-    gray: "text-blue-600 bg-white",
-    blue: "text-white bg-blue-700",
-    professional: "text-white bg-blue-700",
+  // All colors now use CSS variables - no hardcoded values
+  const navigationClasses = {
+    background: "bg-card border-b border-border",
+    link: "text-foreground hover:text-foreground hover:bg-accent",
+    active: "text-primary-foreground bg-primary",
+    dropdown: "bg-card border border-border shadow-lg",
+    userMenu: "text-foreground hover:bg-accent",
   };
 
   const renderNavigationItem = (item: NavigationItem, level = 0) => {
     const hasChildren = item.children && item.children.length > 0;
     const isOpen = openDropdowns.has(item.id);
 
+    // Render icon - support both string and ReactNode
+    const renderItemIcon = (icon: React.ReactNode | string | undefined) => {
+      if (!icon) return null;
+      if (typeof icon === "string") {
+        return renderIcon(icon, "w-4 h-4 flex-shrink-0");
+      }
+      return <span className="flex-shrink-0">{icon}</span>;
+    };
+
+    // Render label - support both localized and simple string
+    const renderItemLabel = (label: Record<Language, string> | string) => {
+      if (typeof label === "string") {
+        return <span className="flex-1 text-left">{label}</span>;
+      }
+      return <LocalizedText text={label} className="flex-1 text-left" />;
+    };
+
     const itemContent = (
       <div className="flex items-center space-x-2 w-full">
-        {item.icon && <span className="flex-shrink-0">{item.icon}</span>}
-        <LocalizedText text={item.label} className="flex-1 text-left" />
+        {renderItemIcon(item.icon)}
+        {renderItemLabel(item.label)}
         {item.badge && (
           <span
             className={`
             px-2 py-1 text-xs rounded-full
             ${
               item.badge.variant === "error"
-                ? "bg-red-100 text-red-800"
+                ? "bg-destructive text-destructive-foreground"
                 : item.badge.variant === "warning"
-                  ? "bg-yellow-100 text-yellow-800"
+                  ? "bg-accent text-accent-foreground"
                   : item.badge.variant === "success"
-                    ? "bg-green-100 text-green-800"
-                    : "bg-gray-100 text-gray-800"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground"
             }
           `}
           >
@@ -155,11 +189,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             disabled={item.disabled}
             className={`
               flex items-center w-full px-3 py-2 rounded-md text-sm font-medium transition-colors
-              ${
-                item.active
-                  ? activeClasses[background]
-                  : linkClasses[background]
-              }
+              ${item.active ? navigationClasses.active : navigationClasses.link}
               ${
                 item.disabled
                   ? "opacity-50 cursor-not-allowed"
@@ -174,7 +204,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             <div
               className={`${
                 level === 0
-                  ? "absolute top-full left-0 mt-1 w-48 bg-white shadow-lg rounded-md z-50"
+                  ? `absolute top-full left-0 mt-1 w-48 ${navigationClasses.dropdown} rounded-md z-50`
                   : "ml-4 mt-1"
               }`}
             >
@@ -189,33 +219,34 @@ export const Navigation: React.FC<NavigationProps> = ({
       );
     }
 
-    const LinkComponent = item.href ? "a" : "button";
-
     return (
-      <LinkComponent
+      <button
         key={item.id}
-        href={item.href}
-        onClick={item.href ? undefined : () => {}}
+        onClick={() => handleItemAction(item)}
         disabled={item.disabled}
         className={`
           flex items-center w-full px-3 py-2 rounded-md text-sm font-medium transition-colors
-          ${item.active ? activeClasses[background] : linkClasses[background]}
+          ${item.active ? navigationClasses.active : navigationClasses.link}
           ${item.disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
         `}
       >
         {itemContent}
-      </LinkComponent>
+      </button>
     );
   };
 
   const UserMenu: React.FC = () => {
-    if (!user && !userMenu) return null;
+    if (!showUserMenu && !user && !userMenu) return null;
+
+    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+    const hasUserMenu = userMenu && userMenu.length > 0;
 
     return (
       <div className="relative">
         <button
           type="button"
-          className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm hover:bg-opacity-20 hover:bg-white transition-colors"
+          onClick={() => hasUserMenu && setIsUserMenuOpen(!isUserMenuOpen)}
+          className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-colors ${navigationClasses.userMenu}`}
         >
           {user?.avatar ? (
             <img
@@ -224,9 +255,9 @@ export const Navigation: React.FC<NavigationProps> = ({
               className="w-8 h-8 rounded-full"
             />
           ) : (
-            <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-              <span className="text-sm font-medium">
-                {user?.name?.[0]?.toUpperCase()}
+            <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
+              <span className="text-sm font-medium text-accent-foreground">
+                {user?.name?.[0]?.toUpperCase() || "U"}
               </span>
             </div>
           )}
@@ -238,7 +269,57 @@ export const Navigation: React.FC<NavigationProps> = ({
               )}
             </div>
           )}
+          {hasUserMenu && (
+            <svg
+              className={`w-4 h-4 transition-transform ${
+                isUserMenuOpen ? "rotate-180" : ""
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          )}
         </button>
+
+        {/* User Menu Dropdown */}
+        {hasUserMenu && isUserMenuOpen && (
+          <div
+            className={`absolute right-0 mt-2 w-48 ${navigationClasses.dropdown} rounded-md z-50`}
+          >
+            <div className="py-1">
+              {userMenu?.map((menuItem) => (
+                <button
+                  key={menuItem.id}
+                  onClick={() => {
+                    handleItemAction(menuItem);
+                    setIsUserMenuOpen(false);
+                  }}
+                  disabled={menuItem.disabled}
+                  className={`
+                    flex items-center w-full px-4 py-2 text-sm transition-colors
+                    ${navigationClasses.userMenu}
+                    disabled:opacity-50 disabled:cursor-not-allowed
+                  `}
+                >
+                  {typeof menuItem.icon === "string" &&
+                    renderIcon(menuItem.icon, "w-4 h-4 mr-3")}
+                  {typeof menuItem.label === "string" ? (
+                    menuItem.label
+                  ) : (
+                    <LocalizedText text={menuItem.label} />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -247,7 +328,7 @@ export const Navigation: React.FC<NavigationProps> = ({
     return (
       <nav
         className={`
-        ${backgroundClasses[background]}
+        ${navigationClasses.background}
         ${sticky ? "sticky top-0 z-40" : ""}
         ${className}
       `}
@@ -261,7 +342,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             <div
               className={`hidden ${mobileBreakpoint}:flex items-center space-x-1`}
             >
-              {items.map((item) => (
+              {items?.map((item) => (
                 <React.Fragment key={item.id}>
                   {renderNavigationItem(item)}
                 </React.Fragment>
@@ -272,6 +353,22 @@ export const Navigation: React.FC<NavigationProps> = ({
             <div className="flex items-center space-x-4">
               {actions}
 
+              {showThemeSelector && (
+                <ThemeSelector
+                  variant="toggle"
+                  size="sm"
+                  className="hidden sm:block"
+                />
+              )}
+
+              {showThemeChooser && (
+                <ThemeChooser
+                  variant="dropdown"
+                  size="sm"
+                  className="hidden sm:block"
+                />
+              )}
+
               {showLanguageSelector && (
                 <LanguageSelector
                   variant="dropdown"
@@ -280,13 +377,66 @@ export const Navigation: React.FC<NavigationProps> = ({
                 />
               )}
 
-              <UserMenu />
+              {/* Metadata-driven user menu rendering */}
+              {userMenuStyle === "buttons" &&
+                userMenu &&
+                userMenu.map((menuItem) => (
+                  <button
+                    key={menuItem.id}
+                    type="button"
+                    onClick={() => handleItemAction(menuItem)}
+                    className={`flex items-center space-x-1 px-2 py-1 rounded-md text-sm transition-colors ${navigationClasses.userMenu}`}
+                    title={
+                      typeof menuItem.label === "string"
+                        ? menuItem.label
+                        : menuItem.label.en || menuItem.label.el
+                    }
+                  >
+                    {typeof menuItem.icon === "string" &&
+                      renderIcon(menuItem.icon, "w-4 h-4")}
+                    <span className="hidden lg:inline">
+                      {typeof menuItem.label === "string" ? (
+                        menuItem.label
+                      ) : (
+                        <LocalizedText text={menuItem.label} />
+                      )}
+                    </span>
+                  </button>
+                ))}
+
+              {/* Show user info when using buttons style */}
+              {userMenuStyle === "buttons" && showUserMenu && user && (
+                <div className="flex items-center space-x-2 px-3 py-2">
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="w-8 h-8 rounded-full"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
+                      <span className="text-sm font-medium text-accent-foreground">
+                        {user.name?.[0]?.toUpperCase() || "U"}
+                      </span>
+                    </div>
+                  )}
+                  <div className="hidden md:block text-left">
+                    <div className="font-medium text-sm">{user.name}</div>
+                    {user.role && (
+                      <div className="text-xs opacity-75">{user.role}</div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Show dropdown user menu (default) */}
+              {userMenuStyle === "dropdown" && showUserMenu && <UserMenu />}
 
               {/* Mobile Menu Button */}
               <button
                 type="button"
                 onClick={toggleMobileMenu}
-                className={`${mobileBreakpoint}:hidden p-2 rounded-md hover:bg-opacity-20 hover:bg-white transition-colors`}
+                className={`${mobileBreakpoint}:hidden p-2 rounded-md transition-colors ${navigationClasses.userMenu}`}
               >
                 <svg
                   className="w-6 h-6"
@@ -313,7 +463,7 @@ export const Navigation: React.FC<NavigationProps> = ({
           {isMobileMenuOpen && (
             <div className={`${mobileBreakpoint}:hidden pb-4`}>
               <div className="space-y-1">
-                {items.map((item) => (
+                {items?.map((item) => (
                   <React.Fragment key={item.id}>
                     {renderNavigationItem(item)}
                   </React.Fragment>
@@ -321,7 +471,7 @@ export const Navigation: React.FC<NavigationProps> = ({
               </div>
 
               {showLanguageSelector && (
-                <div className="mt-4 pt-4 border-t border-white border-opacity-20">
+                <div className="mt-4 pt-4 border-t border-border">
                   <LanguageSelector variant="buttons" size="sm" />
                 </div>
               )}
@@ -352,23 +502,23 @@ export interface BreadcrumbProps {
 
 export const Breadcrumb: React.FC<BreadcrumbProps> = ({
   items,
-  separator = <span className="text-gray-400">/</span>,
+  separator = <span className="text-muted-foreground">/</span>,
   className = "",
 }) => {
   return (
     <nav className={`flex items-center space-x-2 text-sm ${className}`}>
-      {items.map((item, index) => (
+      {items?.map((item, index) => (
         <React.Fragment key={item.id}>
           {item.href ? (
             <a
               href={item.href}
-              className="flex items-center space-x-1 text-blue-600 hover:text-blue-800 transition-colors"
+              className="flex items-center space-x-1 text-primary hover:text-primary/80 transition-colors"
             >
               {item.icon && <span>{item.icon}</span>}
               <LocalizedText text={item.label} />
             </a>
           ) : (
-            <span className="flex items-center space-x-1 text-gray-500">
+            <span className="flex items-center space-x-1 text-muted-foreground">
               {item.icon && <span>{item.icon}</span>}
               <LocalizedText text={item.label} />
             </span>

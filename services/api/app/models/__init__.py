@@ -40,7 +40,27 @@ from app.models.platform import (
     TaxRate,
     TaxCalculationRule,
     MarketplaceItem,
+)
+
+from app.models.business_config import (
+    BusinessConfigMaster,
+    BusinessConfigEntry,
+    BusinessRuleDefinition,
+    BusinessRuleExecution,
+    FieldLocalizationConfig,
+    ProcessConfigMaster,
+    WorkflowStepDefinition,
+    WorkflowTrigger,
+)
+
+from app.models.vertical_config import (
+    VerticalDefinition,
+    VerticalTemplate,
+    VerticalMarketplace,
     MarketplaceReview,
+    VerticalDeployment,
+    DeploymentStep,
+    VerticalInstallation,
 )
 
 __all__ = [
@@ -76,5 +96,21 @@ __all__ = [
     "TaxRate",
     "TaxCalculationRule",
     "MarketplaceItem",
+    # Business Configuration Models
+    "BusinessConfigMaster",
+    "BusinessConfigEntry", 
+    "BusinessRuleDefinition",
+    "BusinessRuleExecution",
+    "FieldLocalizationConfig",
+    "ProcessConfigMaster",
+    "WorkflowStepDefinition",
+    "WorkflowTrigger",
+    # Vertical Configuration Models
+    "VerticalDefinition",
+    "VerticalTemplate",
+    "VerticalMarketplace",
     "MarketplaceReview",
+    "VerticalDeployment",
+    "DeploymentStep", 
+    "VerticalInstallation",
 ] 

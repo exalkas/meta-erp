@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronRight, Menu, X } from "lucide-react";
+import { useTranslation } from "../../contexts/TranslationContext";
 
 export interface SidebarItem {
   id: string;
@@ -53,6 +55,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isOpen = true,
   onClose,
 }) => {
+  const router = useRouter();
+  const { t } = useTranslation();
+
+  // INVESTIGATION: Log sidebar translation context
+  console.log("🔍 Sidebar Debug:", {
+    hasT: !!t,
+    tType: typeof t,
+    itemsCount: items.length,
+    sampleLabels: items.slice(0, 3).map((item) => item.label),
+  });
+
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -72,12 +85,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
     if (item.children && item.children.length > 0) {
       toggleItemExpansion(item.id);
     } else {
+      // Handle navigation with Next.js router
+      if (item.href) {
+        router.push(item.href);
+      }
+
       if (item.onClick) {
         item.onClick();
       }
+
       if (onItemClick) {
         onItemClick(item);
       }
+
       if (overlayOnMobile) {
         setIsMobileOpen(false);
       }
@@ -113,7 +133,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onClick={() => handleItemClick(item)}
           disabled={item.disabled}
           className={getItemClasses(item, depth)}
-          title={collapsed ? item.label : undefined}
+          title={collapsed ? t(item.label) : undefined}
         >
           <div
             className={`flex items-center ${
@@ -131,7 +151,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
 
             {!collapsed && item.label && (
-              <span className="truncate">{item.label}</span>
+              <span className="truncate">{t(item.label)}</span>
             )}
           </div>
 
@@ -179,7 +199,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             ? "transform -translate-x-full lg:translate-x-0"
             : ""
         }
-        h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300
+        h-full bg-card border-r border-border flex flex-col transition-all duration-300
         ${className}
       `}
     >

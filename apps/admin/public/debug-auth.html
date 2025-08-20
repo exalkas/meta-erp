@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Debug Auth Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+
+        button {
+            margin: 5px;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 Authentication Debug Tool</h1>
+    <div id="results"></div>
+
+    <script>
+        function debugAuth() {
+            const results = document.getElementById('results');
+
+            // Check localStorage
+            const authTokens = localStorage.getItem('auth_tokens');
+            const authUser = localStorage.getItem('auth_user');
+
+            let html = '<h2>LocalStorage Debug:</h2>';
+
+            if (authTokens) {
+                try {
+                    const tokens = JSON.parse(authTokens);
+                    html += '<h3 class="success">✅ auth_tokens found:</h3>';
+                    html += '<pre>' + JSON.stringify(tokens, null, 2) + '</pre>';
+
+                    // Check expiry
+                    const expiresAt = new Date(tokens.expiresAt);
+                    const now = new Date();
+                    const isExpired = now >= expiresAt;
+
+                    html += '<h3>🕒 Token Expiry Check:</h3>';
+                    html += '<p><strong>Current time:</strong> ' + now.toISOString() + '</p>';
+                    html += '<p><strong>Expires at:</strong> ' + expiresAt.toISOString() + '</p>';
+                    html += '<p><strong>Is expired:</strong> <span class="' + (isExpired ? 'error' : 'success') + '">' + (isExpired ? '❌ YES - EXPIRED' : '✅ NO - VALID') + '</span></p>';
+
+                    // Calculate time remaining
+                    const timeRemaining = expiresAt.getTime() - now.getTime();
+                    const minutesRemaining = Math.floor(timeRemaining / (1000 * 60));
+                    html += '<p><strong>Time remaining:</strong> ' + minutesRemaining + ' minutes</p>';
+
+                } catch (e) {
+                    html += '<h3 class="error">❌ auth_tokens found but INVALID JSON:</h3>';
+                    html += '<pre>' + authTokens + '</pre>';
+                    html += '<p class="error">Error: ' + e.message + '</p>';
+                }
+            } else {
+                html += '<h3 class="error">❌ auth_tokens NOT found</h3>';
+            }
+
+            if (authUser) {
+                try {
+                    const user = JSON.parse(authUser);
+                    html += '<h3 class="success">✅ auth_user found:</h3>';
+                    html += '<pre>' + JSON.stringify(user, null, 2) + '</pre>';
+
+                    // Check user properties
+                    html += '<h3>👤 User Details:</h3>';
+                    html += '<p><strong>Email:</strong> ' + (user.email || 'Not set') + '</p>';
+                    html += '<p><strong>Role:</strong> ' + (user.role || 'Not set') + '</p>';
+                    html += '<p><strong>Compliance Level:</strong> ' + (user.compliance_level || 'Not set') + '</p>';
+                    html += '<p><strong>Tenant ID:</strong> ' + (user.tenant_id || 'Not set') + '</p>';
+
+                } catch (e) {
+                    html += '<h3 class="error">❌ auth_user found but INVALID JSON:</h3>';
+                    html += '<pre>' + authUser + '</pre>';
+                    html += '<p class="error">Error: ' + e.message + '</p>';
+                }
+            } else {
+                html += '<h3 class="error">❌ auth_user NOT found</h3>';
+            }
+
+            // Overall status
+            const hasValidAuth = authTokens && authUser;
+            html += '<h2>🎯 Overall Status:</h2>';
+            html += '<p class="' + (hasValidAuth ? 'success' : 'error') + '">';
+            html += hasValidAuth ? '✅ Authentication data present' : '❌ Missing authentication data';
+            html += '</p>';
+
+            results.innerHTML = html;
+        }
+
+        function clearAuth() {
+            localStorage.removeItem('auth_tokens');
+            localStorage.removeItem('auth_user');
+            debugAuth();
+            alert('Authentication data cleared!');
+        }
+
+        function testLogin() {
+            // Create test data (what should be stored after successful login)
+            const testTokens = {
+                accessToken: "test_access_token",
+                refreshToken: "test_refresh_token",
+                expiresIn: 3600,
+                expiresAt: new Date(Date.now() + 3600 * 1000).toISOString()
+            };
+
+            const testUser = {
+                user_id: "01111111-1111-1111-1111-111111111111",
+                email: "admin@demo-eshop-crm.local",
+                role: "admin",
+                compliance_level: "critical",
+                tenant_id: "89f84fea-b5b9-413c-945b-002c7fd9555d"
+            };
+
+            localStorage.setItem('auth_tokens', JSON.stringify(testTokens));
+            localStorage.setItem('auth_user', JSON.stringify(testUser));
+
+            debugAuth();
+            alert('Test authentication data created!');
+        }
+
+        // Run debug on page load
+        debugAuth();
+    </script>
+
+    <br>
+    <button onclick="debugAuth()">🔄 Refresh Debug</button>
+    <button onclick="clearAuth()">🗑️ Clear Auth Data</button>
+    <button onclick="testLogin()">🧪 Create Test Auth</button>
+
+    <h2>📝 Instructions:</h2>
+    <ol>
+        <li><strong>Check current status</strong> - See if you have valid auth data</li>
+        <li><strong>Clear auth data</strong> - Start fresh if needed</li>
+        <li><strong>Create test auth</strong> - Simulate successful login</li>
+        <li><strong>Try visiting dashboard</strong> - Navigate to <a href="/dashboard" target="_blank">/dashboard</a>
+        </li>
+    </ol>
+</body>
+
+</html>

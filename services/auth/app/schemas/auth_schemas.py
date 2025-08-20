@@ -237,6 +237,8 @@ class UserProfileResponse(BaseModel):
     two_factor_enabled: bool
     passkey_enabled: bool
     compliance_level: ComplianceLevelSchema
+    roles: Optional[List[str]] = []  # Role names like ["SAP_SYSTEM_ADMIN", "SAP_TENANT_ADMIN"] 
+    permissions: Optional[List[str]] = []  # Resolved permissions like ["TENANT.APPLICATIONS.BUILDER.CREATE"]
     last_login: Optional[datetime]
     created_at: datetime
     
@@ -259,6 +261,8 @@ class UserProfileResponse(BaseModel):
                 "two_factor_enabled": False,
                 "passkey_enabled": False,
                 "compliance_level": "basic",
+                "roles": ["SAP_TENANT_ADMIN", "SAP_BUSINESS_ADMIN"],
+                "permissions": ["TENANT.APPLICATIONS.BUILDER.CREATE", "TENANT.USERS.MANAGEMENT.CREATE"],
                 "last_login": "2025-01-28T10:30:00Z",
                 "created_at": "2025-01-15T08:00:00Z"
             }

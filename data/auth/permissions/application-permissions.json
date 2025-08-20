@@ -1,0 +1,27 @@
+[
+  {
+    "permission_id": "51111111-1111-1111-1111-111111111111",
+    "permission_name": "TENANT.APPLICATIONS.BUILDER.*",
+    "display_name": "Application Builder - Full Access",
+    "description": "Complete access to application builder for creating custom business applications",
+    "scope": "TENANT",
+    "module": "APPLICATIONS",
+    "feature": "BUILDER",
+    "action": "*",
+    "is_wildcard": true,
+    "is_critical": true,
+    "requires_approval": true,
+    "customer_visible": true,
+    "billing_tier": "professional",
+    "includes_permissions": [
+      "TENANT.APPLICATIONS.BUILDER.ACCESS",
+      "TENANT.APPLICATIONS.BUILDER.CREATE",
+      "TENANT.APPLICATIONS.BUILDER.DEPLOY"
+    ],
+    "metadata_json": {
+      "business_description": "Build custom business applications",
+      "primary_feature": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  }
+]

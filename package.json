@@ -18,6 +18,7 @@
     "dev:client:turbo": "cd apps/client && npm run dev -- --turbo",
     "copy-assets": "node packages/shared-assets/copy-assets.js",
     "dev:admin": "cd apps/admin && npm run dev",
+    "dev:legal": "cd apps/legal-app && npm run dev",
     "dev:marketing": "cd apps/marketing && npm run dev",
     "dev:setup": "cd apps/setup && npm run dev",
     "dev:staff-support": "cd apps/staff-support && npm run dev",

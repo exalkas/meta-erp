@@ -19,7 +19,7 @@ from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.core.config import get_auth_settings
+
 from app.core.database import create_tables, check_db_connection
 from app.core.logging import setup_logging, get_logger
 from app.core.exceptions import (
@@ -27,7 +27,7 @@ from app.core.exceptions import (
     auth_exception_handler,
     general_exception_handler
 )
-from app.api.auth import router as auth_router
+from app.api.auth_routes import router as auth_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

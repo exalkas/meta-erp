@@ -1,7 +1,7 @@
 // Shared types and constants - server-safe
 
 // Core language types
-export type Language = "el" | "en";
+export type Language = "el" | "en" | string;
 export type TranslationKey = string;
 
 // Translation types

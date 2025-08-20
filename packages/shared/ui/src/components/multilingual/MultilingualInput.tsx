@@ -118,7 +118,7 @@ export const MultilingualInput: React.FC<MultilingualInputProps> = ({
       el: "Ελληνικά",
       en: "English",
     };
-    return labels[lang] || lang.toUpperCase();
+    return labels[lang as keyof typeof labels] || lang.toUpperCase();
   };
 
   const getLanguageCompletionStatus = (
@@ -166,8 +166,8 @@ export const MultilingualInput: React.FC<MultilingualInputProps> = ({
               status === "complete"
                 ? "bg-green-500"
                 : status === "partial"
-                ? "bg-yellow-500"
-                : "bg-gray-300"
+                  ? "bg-yellow-500"
+                  : "bg-gray-300"
             }`}
           />
         )}
@@ -227,8 +227,8 @@ export const MultilingualInput: React.FC<MultilingualInputProps> = ({
                     status === "complete"
                       ? "bg-green-500"
                       : status === "partial"
-                      ? "bg-yellow-500"
-                      : "bg-gray-300"
+                        ? "bg-yellow-500"
+                        : "bg-gray-300"
                   }`}
                 />
                 {hasContent && (

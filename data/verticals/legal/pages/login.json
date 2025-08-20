@@ -1,0 +1,94 @@
+{
+  "page_id": "10000000-0000-0000-0000-000000000001",
+  "page_name": "legal_login_page",
+  "route": "/login",
+  "title": "Legal Practice Management - Login",
+  "description": "Secure login for legal practice management with IOLTA compliance",
+  "page_type": "authentication",
+  "layout_id": "c0000000-0000-0000-0000-000000000001",
+  "sections_data_json": {
+    "header": [
+      {
+        "type": "Logo",
+        "props": {
+          "size": "md",
+          "variant": "legal"
+        }
+      }
+    ],
+    "main": [
+      {
+        "type": "LoginForm",
+        "props": {
+          "app": "legal",
+          "enableTwoFactor": true,
+          "enableMagicLink": false,
+          "legalMode": true,
+          "title": "Legal Practice Login",
+          "subtitle": "Secure access to your legal practice management system",
+          "iolcoCompliance": true,
+          "attorneyVerification": true
+        }
+      }
+    ],
+    "footer": [
+      {
+        "type": "LanguageSelector",
+        "props": {
+          "size": "sm",
+          "languages": ["en-US", "es-US"]
+        }
+      },
+      {
+        "type": "ThemeSelector",
+        "props": {
+          "size": "sm",
+          "themes": ["light", "dark", "legal-theme"]
+        }
+      }
+    ]
+  },
+  "components": [],
+  "initial_state": {
+    "isLoading": false,
+    "errorMessage": null,
+    "showTwoFactor": false,
+    "legalAccess": true,
+    "attorneyVerified": false
+  },
+  "state_bindings": {
+    "user.isAuthenticated": "auth.isLoggedIn",
+    "form.isSubmitting": "ui.loading.login",
+    "attorney.isVerified": "legal.attorneyStatus"
+  },
+  "api_endpoints": {
+    "login": "/auth/login/password",
+    "twoFactor": "/auth/login/totp",
+    "attorneyVerification": "/legal/verify-attorney"
+  },
+  "callbacks": {
+    "onLoginSuccess": "redirect:/dashboard",
+    "onLoginError": "state.errorMessage",
+    "onTwoFactorRequired": "state.showTwoFactor=true",
+    "onAttorneyVerification": "legal.verifyAttorney"
+  },
+  "real_time_updates": false,
+  "cache_strategy": "no-cache",
+  "websocket_events": null,
+  "metadata_json": {
+    "background": "legal-gradient",
+    "layout": "centered",
+    "theme": "legal",
+    "security": "enhanced",
+    "legalCompliance": true,
+    "seo": {
+      "title": "Legal Practice Login - Secure Access",
+      "description": "Secure login to your legal practice management system with IOLTA compliance"
+    }
+  },
+  "access_roles": [],
+  "is_public": true,
+  "tenant_id": null,
+  "created_at": "2025-01-31T00:00:00Z",
+  "updated_at": "2025-01-31T00:00:00Z"
+}
