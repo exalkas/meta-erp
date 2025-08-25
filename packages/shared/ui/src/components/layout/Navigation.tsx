@@ -27,8 +27,14 @@ export interface NavigationItem {
 export interface NavigationProps {
   /** Navigation items */
   items: NavigationItem[];
-  /** Logo component */
-  logo?: React.ReactNode;
+  /** Logo component or logo config */
+  logo?:
+    | React.ReactNode
+    | {
+        text: string;
+        subtitle?: string;
+        icon?: string;
+      };
   /** Show language selector */
   showLanguageSelector?: boolean;
   /** Show theme selector */
@@ -43,10 +49,12 @@ export interface NavigationProps {
   userMenuStyle?: "dropdown" | "inline" | "buttons";
   /** Current user info */
   user?: {
-    name: string;
+    name?: string;
     email?: string;
     avatar?: string;
     role?: string;
+    showProfile?: boolean;
+    showAvatar?: boolean;
   };
   /** Mobile breakpoint */
   mobileBreakpoint?: "sm" | "md" | "lg";
@@ -60,6 +68,21 @@ export interface NavigationProps {
   actions?: React.ReactNode;
   /** Action handlers */
   onAction?: (action: string, item: NavigationItem) => void;
+  /** Mobile menu toggle - for sidebar integration */
+  onMobileMenuToggle?: () => void;
+  mobileMenuOpen?: boolean;
+  /** Sidebar sections for mobile menu */
+  sidebarSections?: Array<{
+    title?: string;
+    title_key?: string;
+    items: Array<{
+      label?: string;
+      label_key?: string;
+      route?: string;
+      icon?: string;
+      id?: string;
+    }>;
+  }>;
   className?: string;
 }
 
@@ -79,6 +102,9 @@ export const Navigation: React.FC<NavigationProps> = ({
   sticky = true,
   actions,
   onAction,
+  onMobileMenuToggle,
+  mobileMenuOpen,
+  sidebarSections = [],
   className = "",
 }) => {
   const router = useRouter();
@@ -87,7 +113,13 @@ export const Navigation: React.FC<NavigationProps> = ({
   const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
 
   const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
+    if (onMobileMenuToggle) {
+      // Use external toggle for sidebar integration
+      onMobileMenuToggle();
+    } else {
+      // Use internal state for standalone navigation
+      setIsMobileMenuOpen(!isMobileMenuOpen);
+    }
   };
 
   const toggleDropdown = (itemId: string) => {
@@ -330,29 +362,55 @@ export const Navigation: React.FC<NavigationProps> = ({
     return (
       <nav
         className={`
+        w-full
         ${navigationClasses.background}
         ${sticky ? "sticky top-0 z-40" : ""}
         ${className}
       `}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            {logo && <div className="flex-shrink-0">{logo}</div>}
-
-            {/* Desktop Navigation */}
-            <div
-              className={`hidden ${mobileBreakpoint}:flex items-center space-x-1`}
-            >
-              {items?.map((item) => (
-                <React.Fragment key={item.id}>
-                  {renderNavigationItem(item)}
-                </React.Fragment>
-              ))}
+            {/* Left Side - Logo or Spacer */}
+            <div className="flex-shrink-0">
+              {logo ? (
+                React.isValidElement(logo) ? (
+                  logo
+                ) : typeof logo === "object" && "text" in logo ? (
+                  <div className="flex items-center">
+                    <div className="bg-blue-600 text-white p-2 rounded-lg mr-3 flex-shrink-0">
+                      {logo.icon ? (
+                        logo.icon.startsWith("/") ? (
+                          <img src={logo.icon} alt="Logo" className="w-6 h-6" />
+                        ) : (
+                          renderIcon(logo.icon, "w-6 h-6")
+                        )
+                      ) : (
+                        <div className="w-6 h-6 flex items-center justify-center font-bold text-sm">
+                          {logo.text.charAt(0)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 hidden sm:block">
+                      <h2 className="text-lg font-bold text-foreground truncate">
+                        {logo.text}
+                      </h2>
+                      {logo.subtitle && (
+                        <p className="text-xs text-muted-foreground truncate">
+                          {logo.subtitle}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  logo
+                )
+              ) : (
+                <div></div>
+              )}
             </div>
 
-            {/* Right Side Actions */}
-            <div className="flex items-center space-x-4">
+            {/* Right Side - All Actions Right-Aligned */}
+            <div className="flex items-center space-x-2">
               {actions}
 
               {showThemeSelector && (
@@ -379,15 +437,15 @@ export const Navigation: React.FC<NavigationProps> = ({
                 />
               )}
 
-              {/* Metadata-driven user menu rendering */}
-              {userMenuStyle === "buttons" &&
+              {/* Simple icon-only user menu */}
+              {showUserMenu &&
                 userMenu &&
                 userMenu.map((menuItem) => (
                   <button
                     key={menuItem.id}
                     type="button"
                     onClick={() => handleItemAction(menuItem)}
-                    className={`flex items-center space-x-1 px-2 py-1 rounded-md text-sm transition-colors ${navigationClasses.userMenu}`}
+                    className={`p-2 rounded-md transition-colors ${navigationClasses.userMenu}`}
                     title={
                       typeof menuItem.label === "string"
                         ? t(menuItem.label, { defaultValue: menuItem.label })
@@ -395,50 +453,15 @@ export const Navigation: React.FC<NavigationProps> = ({
                     }
                   >
                     {typeof menuItem.icon === "string" &&
-                      renderIcon(menuItem.icon, "w-4 h-4")}
-                    <span className="hidden lg:inline">
-                      {typeof menuItem.label === "string" ? (
-                        t(menuItem.label, { defaultValue: menuItem.label })
-                      ) : (
-                        <LocalizedText text={menuItem.label} />
-                      )}
-                    </span>
+                      renderIcon(menuItem.icon, "w-5 h-5")}
                   </button>
                 ))}
 
-              {/* Show user info when using buttons style */}
-              {userMenuStyle === "buttons" && showUserMenu && user && (
-                <div className="flex items-center space-x-2 px-3 py-2">
-                  {user.avatar ? (
-                    <img
-                      src={user.avatar}
-                      alt={user.name}
-                      className="w-8 h-8 rounded-full"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-accent-foreground">
-                        {user.name?.[0]?.toUpperCase() || "U"}
-                      </span>
-                    </div>
-                  )}
-                  <div className="hidden md:block text-left">
-                    <div className="font-medium text-sm">{user.name}</div>
-                    {user.role && (
-                      <div className="text-xs opacity-75">{user.role}</div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Show dropdown user menu (default) */}
-              {userMenuStyle === "dropdown" && showUserMenu && <UserMenu />}
-
-              {/* Mobile Menu Button */}
+              {/* Mobile Menu Button - Show based on mobileBreakpoint */}
               <button
                 type="button"
                 onClick={toggleMobileMenu}
-                className={`${mobileBreakpoint}:hidden p-2 rounded-md transition-colors ${navigationClasses.userMenu}`}
+                className="md:hidden p-2 rounded-md transition-colors hover:bg-accent order-last"
               >
                 <svg
                   className="w-6 h-6"
@@ -451,7 +474,11 @@ export const Navigation: React.FC<NavigationProps> = ({
                     strokeLinejoin="round"
                     strokeWidth={2}
                     d={
-                      isMobileMenuOpen
+                      (
+                        mobileMenuOpen !== undefined
+                          ? mobileMenuOpen
+                          : isMobileMenuOpen
+                      )
                         ? "M6 18L18 6M6 6l12 12"
                         : "M4 6h16M4 12h16M4 18h16"
                     }
@@ -461,22 +488,96 @@ export const Navigation: React.FC<NavigationProps> = ({
             </div>
           </div>
 
-          {/* Mobile Menu */}
-          {isMobileMenuOpen && (
-            <div className={`${mobileBreakpoint}:hidden pb-4`}>
-              <div className="space-y-1">
-                {items?.map((item) => (
-                  <React.Fragment key={item.id}>
-                    {renderNavigationItem(item)}
-                  </React.Fragment>
-                ))}
-              </div>
-
-              {showLanguageSelector && (
-                <div className="mt-4 pt-4 border-t border-border">
-                  <LanguageSelector variant="buttons" size="sm" />
+          {/* Mobile Menu - Show sidebar sections */}
+          {(mobileMenuOpen !== undefined
+            ? mobileMenuOpen
+            : isMobileMenuOpen) && (
+            <div className="md:hidden pb-4">
+              {/* Logo and branding at top */}
+              {logo && typeof logo === "object" && "text" in logo && (
+                <div className="px-4 py-4 border-b border-border">
+                  <div className="flex items-center">
+                    <div className="bg-blue-600 text-white p-2 rounded-lg mr-3 flex-shrink-0">
+                      {logo.icon ? (
+                        logo.icon.startsWith("/") ? (
+                          <img src={logo.icon} alt="Logo" className="w-6 h-6" />
+                        ) : (
+                          renderIcon(logo.icon, "w-6 h-6")
+                        )
+                      ) : (
+                        <div className="w-6 h-6 flex items-center justify-center font-bold text-sm">
+                          {logo.text.charAt(0)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <h2 className="text-lg font-bold text-foreground truncate">
+                        {logo.text}
+                      </h2>
+                      {logo.subtitle && (
+                        <p className="text-xs text-muted-foreground truncate">
+                          {logo.subtitle}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
+
+              {/* Controls at top of mobile menu */}
+              <div className="px-4 py-3 border-b border-border space-y-3">
+                {showLanguageSelector && (
+                  <LanguageSelector variant="buttons" size="sm" />
+                )}
+                {showThemeSelector && (
+                  <ThemeSelector variant="toggle" size="sm" />
+                )}
+              </div>
+
+              {/* Navigation menu items */}
+              <div className="space-y-1 px-2 py-2">
+                {/* Show sidebar sections in mobile menu */}
+                {sidebarSections && sidebarSections.length > 0 ? (
+                  sidebarSections.map((section, sectionIndex) => (
+                    <div key={`section-${sectionIndex}`}>
+                      {/* Section header */}
+                      {(section.title || section.title_key) && (
+                        <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                          {section.title_key
+                            ? t(section.title_key)
+                            : section.title}
+                        </div>
+                      )}
+                      {/* Section items */}
+                      {section.items.map((item, itemIndex) => (
+                        <a
+                          key={`${sectionIndex}-${itemIndex}`}
+                          href={item.route}
+                          className="flex items-center px-3 py-2 text-sm font-medium text-foreground hover:bg-accent rounded-md"
+                        >
+                          {item.icon && (
+                            <span className="mr-3">
+                              {renderIcon(item.icon, "w-4 h-4")}
+                            </span>
+                          )}
+                          {item.label_key ? t(item.label_key) : item.label}
+                        </a>
+                      ))}
+                    </div>
+                  ))
+                ) : items && items.length > 0 ? (
+                  /* Fallback to navigation items if no sidebar sections */
+                  items.map((item) => (
+                    <React.Fragment key={item.id}>
+                      {renderNavigationItem(item)}
+                    </React.Fragment>
+                  ))
+                ) : (
+                  <div className="text-sm text-muted-foreground px-3 py-2">
+                    No menu items available
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

@@ -1,6 +1,6 @@
 {
   "name": "metadata-erp",
-  "version": "1.0.0",
+  "version": "1.13.0",
   "description": "Vertical-first industry solutions platform with metadata-driven packs for E-commerce, Automotive, Oil & Gas, AgTech, FinTech, and Insurance/MedTech",
   "private": true,
   "workspaces": [
@@ -54,8 +54,11 @@
     "setup:laptop": "node -e \"const { execSync } = require('child_process'); const platform = process.platform; const script = platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File scripts/setup/laptop_setup.ps1' : 'bash scripts/setup/laptop_setup.sh'; execSync(script, { stdio: 'inherit' });\"",
     "verify:setup": "node -e \"const { execSync } = require('child_process'); const platform = process.platform; const script = platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File scripts/quick-verify.ps1' : 'bash scripts/quick-verify.sh'; execSync(script, { stdio: 'inherit' });\"",
     "db:seed": "cd services/api && poetry run python data/seed-scripts/seed_all.py",
-    "db:migrate": "cd services/api && poetry run alembic upgrade head",
-    "db:reset": "npm run db:migrate && npm run db:seed"
+    "db:reset": "npm run db:migrate && npm run db:seed",
+    "version:patch": "npm version patch --no-git-tag-version",
+    "version:minor": "npm version minor --no-git-tag-version",
+    "version:major": "npm version major --no-git-tag-version",
+    "version:show": "node -e \"console.log(require('./package.json').version)\""
   },
   "devDependencies": {
     "autoprefixer": "^10.4.19",

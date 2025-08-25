@@ -116,6 +116,9 @@ import {
   Calculator,
   Receipt,
   CreditCard as BankCard,
+
+  // Legal & Justice
+  Scale,
 } from "lucide-react";
 
 // Icon mapping object
@@ -230,6 +233,9 @@ const ICON_MAP = {
   Calculator: Calculator,
   Receipt: Receipt,
   BankCard: BankCard,
+
+  // Legal & Justice
+  Scale: Scale,
 
   // Legacy compatibility (lowercase variants)
   users: Users,

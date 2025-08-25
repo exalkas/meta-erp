@@ -627,7 +627,10 @@ class DataSeeder:
         layout_files = [
             # Admin layouts
             "metadata/apps/admin/layouts/centered-auth-layout.json",
-            "metadata/apps/admin/layouts/dashboard-layout.json"
+            "metadata/apps/admin/layouts/dashboard-layout.json",
+            # Legal vertical layouts
+            "verticals/legal/layouts/auth-layout.json",
+            "verticals/legal/layouts/main_layout.json"
         ]
         
         for file_path in layout_files:
@@ -637,27 +640,40 @@ class DataSeeder:
                 # Check if layout already exists
                 existing = await self.session.get(LayoutDefinition, layout_data["layout_id"])
                 if existing:
-                    logger.info(f"⏭️ Layout {layout_data['name']} already exists")
-                    continue
-                    
-                layout = LayoutDefinition(
-                    layout_id=layout_data["layout_id"],
-                    name=layout_data["name"],
-                    display_name=layout_data["display_name"],
-                    description=layout_data.get("description"),
-                    category=layout_data.get("category"),
-                    sections_json=layout_data.get("sections_json", {}),
-                    css_classes_json=layout_data.get("css_classes_json", {}),
-                    container_classes=layout_data.get("container_classes"),
-                    is_responsive=layout_data.get("is_responsive", True),
-                    supports_theming=layout_data.get("supports_theming", True),
-                    is_system_layout=layout_data.get("is_system_layout", True),
-                    tenant_id=layout_data.get("tenant_id"),
-                    created_at=datetime.fromisoformat(layout_data["created_at"].replace('Z', '+00:00')),
-                    updated_at=datetime.fromisoformat(layout_data["updated_at"].replace('Z', '+00:00'))
-                )
-                self.session.add(layout)
-                logger.info(f"✅ Added layout: {layout.display_name}")
+                    # Update existing layout
+                    existing.name = layout_data["name"]
+                    existing.display_name = layout_data["display_name"]
+                    existing.description = layout_data.get("description")
+                    existing.category = layout_data.get("category")
+                    existing.sections_json = layout_data.get("sections_json", {})
+                    existing.css_classes_json = layout_data.get("css_classes_json", {})
+                    existing.container_classes = layout_data.get("container_classes")
+                    existing.is_responsive = layout_data.get("is_responsive", True)
+                    existing.supports_theming = layout_data.get("supports_theming", True)
+                    existing.is_system_layout = layout_data.get("is_system_layout", True)
+                    existing.tenant_id = layout_data.get("tenant_id")
+                    existing.updated_at = datetime.fromisoformat(layout_data["updated_at"].replace('Z', '+00:00'))
+                    logger.info(f"🔄 Updated layout: {existing.display_name}")
+                else:
+                    # Create new layout
+                    layout = LayoutDefinition(
+                        layout_id=layout_data["layout_id"],
+                        name=layout_data["name"],
+                        display_name=layout_data["display_name"],
+                        description=layout_data.get("description"),
+                        category=layout_data.get("category"),
+                        sections_json=layout_data.get("sections_json", {}),
+                        css_classes_json=layout_data.get("css_classes_json", {}),
+                        container_classes=layout_data.get("container_classes"),
+                        is_responsive=layout_data.get("is_responsive", True),
+                        supports_theming=layout_data.get("supports_theming", True),
+                        is_system_layout=layout_data.get("is_system_layout", True),
+                        tenant_id=layout_data.get("tenant_id"),
+                        created_at=datetime.fromisoformat(layout_data["created_at"].replace('Z', '+00:00')),
+                        updated_at=datetime.fromisoformat(layout_data["updated_at"].replace('Z', '+00:00'))
+                    )
+                    self.session.add(layout)
+                    logger.info(f"✅ Added layout: {layout.display_name}")
     
     async def seed_theme_variants(self):
         """Seed theme variants (BaseTheme + ThemeVariant + ThemeVariantProperty)."""

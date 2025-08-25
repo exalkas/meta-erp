@@ -247,22 +247,108 @@ export const GridItem: React.FC<GridItemProps> = ({
   );
 };
 
-// Specialized grid layouts
-export const DashboardGrid: React.FC<Omit<GridProps, "cols" | "responsive">> = (
-  props
-) => (
-  <Grid
-    cols={1}
-    responsive={{
-      sm: 2,
-      md: 3,
-      lg: 4,
-      xl: 6,
-    }}
-    gap="lg"
-    {...props}
-  />
-);
+// ✅ PURE FLEXBOX: Dashboard widget container - no CSS Grid
+export const DashboardGrid: React.FC<{
+  widgets?: Array<{
+    type: string;
+    props: Record<string, any>;
+  }>;
+  columns?: number;
+  gap?: "none" | "xs" | "sm" | "md" | "lg" | "xl";
+  className?: string;
+  children?: React.ReactNode;
+}> = ({ widgets = [], columns = 3, gap = "lg", className = "", children }) => {
+  // Import DynamicComponent to render widgets
+  const DynamicComponent =
+    require("../dynamic/DynamicComponent").DynamicComponent;
+
+  const gapClasses = {
+    none: "gap-0",
+    xs: "gap-1",
+    sm: "gap-2",
+    md: "gap-4",
+    lg: "gap-6",
+    xl: "gap-8",
+  };
+
+  return (
+    <div className={`space-y-6 ${className}`}>
+      {/* KPI Row - Always flex row on desktop, stack on mobile */}
+      <div
+        className={`flex flex-col md:flex-row md:justify-center ${gapClasses[gap]}`}
+      >
+        {widgets
+          .filter((widget) => widget.type === "KPICard")
+          .map((widget, index) => (
+            <div key={`kpi-${index}`} className="flex-1 min-h-full">
+              <DynamicComponent
+                type={widget.type}
+                props={{
+                  ...widget.props,
+                  className: `h-full ${widget.props?.className || ""}`,
+                }}
+              />
+            </div>
+          ))}
+      </div>
+
+      {/* Content Row - Recent Matters and Alerts side by side on desktop */}
+      <div className="flex flex-col md:flex-row md:justify-center space-y-6 md:space-y-0 md:space-x-6">
+        {widgets
+          .filter(
+            (widget) =>
+              widget.type === "RecentMatters" ||
+              widget.type === "DeadlineAlerts"
+          )
+          .map((widget, index) => {
+            const isRecentMatters = widget.type === "RecentMatters";
+            return (
+              <div
+                key={`content-${index}`}
+                className={`${isRecentMatters ? "md:w-2/3" : "md:w-1/3"} min-h-full`}
+              >
+                <DynamicComponent
+                  type={widget.type}
+                  props={{
+                    ...widget.props,
+                    className: `h-full ${widget.props?.className || ""}`,
+                  }}
+                />
+              </div>
+            );
+          })}
+      </div>
+
+      {/* Full Width Row - ItemGrid and other full-width widgets */}
+      <div className="w-full">
+        {widgets
+          .filter(
+            (widget) =>
+              widget.type !== "KPICard" &&
+              widget.type !== "RecentMatters" &&
+              widget.type !== "DeadlineAlerts"
+          )
+          .map((widget, index) => (
+            <div
+              key={`full-${index}`}
+              className="w-full min-h-full mb-6 last:mb-0"
+            >
+              <DynamicComponent
+                type={widget.type}
+                props={{
+                  ...widget.props,
+                  className: `h-full ${widget.props?.className || ""}`,
+                }}
+              />
+            </div>
+          ))}
+      </div>
+
+      {/* Render any additional children */}
+      {children}
+    </div>
+  );
+};
 
 export const FormGrid: React.FC<Omit<GridProps, "cols" | "gap">> = (props) => (
   <Grid cols={1} responsive={{ md: 2 }} gap="md" {...props} />

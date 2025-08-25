@@ -37,6 +37,10 @@ import RoleTemplateCard from "../roles/RoleTemplateCard";
 import VerticalFilter from "../roles/VerticalFilter";
 import RoleList from "../roles/RoleList";
 
+// Legal/Vertical-specific placeholder components
+import RecentItemsWidget from "../ui/RecentItems";
+import AlertListWidget from "../ui/AlertList";
+
 // Simple PageHeader component
 const PageHeader: React.FC<{
   title?: string;
@@ -146,13 +150,13 @@ const RecentItems: React.FC<{
 
 // Simple KPICards component
 const KPICards: React.FC<{
-  metrics: Array<{
+  metrics?: Array<{
     title: string;
     value: string;
     change?: string;
     icon?: string;
   }>;
-}> = ({ metrics }) => {
+}> = ({ metrics = [] }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
       {metrics.map((metric, index) => (
@@ -187,17 +191,114 @@ const KPICards: React.FC<{
   );
 };
 
-// Simple StatusBar component
+// StatusBar component with version and legal compliance
 const StatusBar: React.FC<{
   text?: string;
-}> = ({ text = "System Status: All systems operational" }) => {
-  return <div className="text-center text-sm text-gray-500 py-2">{text}</div>;
+  showConnectionStatus?: boolean;
+  showLastUpdate?: boolean;
+  showVersion?: boolean;
+  version?: string;
+  legalMode?: boolean;
+  showTrustAccountStatus?: boolean;
+  showComplianceStatus?: boolean;
+}> = ({
+  text,
+  showConnectionStatus = false,
+  showLastUpdate = false,
+  showVersion = false,
+  version, // Remove default value, will be fetched from API
+  legalMode = false,
+  showTrustAccountStatus = false,
+  showComplianceStatus = false,
+}) => {
+  const [dynamicVersion, setDynamicVersion] = React.useState<string>(
+    version || "1.0.0"
+  );
+  const [isConnected, setIsConnected] = React.useState<boolean>(false);
+  const now = new Date();
+
+  // Fetch version from API
+  React.useEffect(() => {
+    if (showVersion && !version) {
+      const fetchVersion = async () => {
+        try {
+          const response = await fetch(
+            "http://localhost:8000/system/version/string"
+          );
+          if (response.ok) {
+            const data = await response.json();
+            setDynamicVersion(data.version || "1.0.0");
+            setIsConnected(true);
+          }
+        } catch (error) {
+          console.warn("Failed to fetch version:", error);
+          setDynamicVersion("1.0.0");
+        }
+      };
+      fetchVersion();
+    }
+  }, [showVersion, version]);
+
+  // Check connection status
+  React.useEffect(() => {
+    if (showConnectionStatus) {
+      const checkConnection = async () => {
+        try {
+          const response = await fetch("http://localhost:8000/system/health");
+          setIsConnected(response.ok);
+        } catch (error) {
+          setIsConnected(false);
+        }
+      };
+      checkConnection();
+      // Check every 30 seconds
+      const interval = setInterval(checkConnection, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [showConnectionStatus]);
+
+  const displayVersion = version || dynamicVersion;
+
+  return (
+    <div className="flex items-center justify-between text-xs text-muted-foreground py-2">
+      <div className="flex items-center space-x-4">
+        {showConnectionStatus && (
+          <span className="flex items-center space-x-1">
+            <div
+              className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-500" : "bg-red-500"}`}
+            ></div>
+            <span>{isConnected ? "Connected" : "Disconnected"}</span>
+          </span>
+        )}
+        {legalMode && showTrustAccountStatus && (
+          <span className="flex items-center space-x-1">
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <span>Trust Account: Active</span>
+          </span>
+        )}
+        {legalMode && showComplianceStatus && (
+          <span className="flex items-center space-x-1">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span>Compliance: Current</span>
+          </span>
+        )}
+        {text && <span>{text}</span>}
+      </div>
+
+      <div className="flex items-center space-x-4">
+        {showLastUpdate && <span>Last update: {now.toLocaleTimeString()}</span>}
+        {showVersion && <span className="font-medium">v{displayVersion}</span>}
+      </div>
+    </div>
+  );
 };
 
 // SidebarMenu component to handle sections structure
 const SidebarMenu: React.FC<{
   variant?: string;
   collapsible?: boolean;
+  showUserProfile?: boolean;
+  currentUser?: any;
   sections?: Array<{
     title?: string;
     title_key?: string;
@@ -214,6 +315,8 @@ const SidebarMenu: React.FC<{
   sections = [],
   collapsible = true,
   variant = "vertical",
+  showUserProfile = false,
+  currentUser,
   ...props
 }) => {
   const { t } = useTranslation();
@@ -237,8 +340,9 @@ const SidebarMenu: React.FC<{
         // Keep the full key as-is for proper translation lookup
         label: section.title_key || section.title || `section-${sectionIndex}`,
         disabled: true,
+        isSectionHeader: true, // Flag to identify section headers
         className:
-          "text-xs font-semibold text-gray-500 uppercase tracking-wide px-3 py-2",
+          "text-xs font-semibold text-gray-500 uppercase tracking-wide px-3 py-2 cursor-default",
       },
       ...sectionItems,
     ];
@@ -250,6 +354,8 @@ const SidebarMenu: React.FC<{
       collapsible={collapsible}
       variant="default"
       className="h-full"
+      showUserProfile={showUserProfile}
+      currentUser={currentUser}
       {...props}
     />
   );
@@ -337,6 +443,10 @@ const COMPONENT_REGISTRY: Record<string, React.ComponentType<any>> = {
   SidebarMenu: SidebarMenu, // Custom component for sections structure
   RecentActivity: RecentActivity,
   ChartWidget: ChartWidget,
+
+  // Legal/Vertical-specific components (shared, metadata-driven)
+  RecentMatters: RecentItemsWidget, // Alias for legal vertical
+  DeadlineAlerts: AlertListWidget, // Alias for legal vertical
 
   // Complex Components
   Form: DynamicForm,

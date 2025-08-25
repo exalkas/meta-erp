@@ -91,12 +91,14 @@ def create_app() -> FastAPI:
     from app.api.business_config import router as business_config_router
     from app.api.legal_dynamic import legal_router
     from app.api.application_builder import builder_router
+    from app.api.system import router as system_router
     
     app.include_router(metadata_router)
     app.include_router(roles_router)
     app.include_router(business_config_router)
     app.include_router(legal_router)
     app.include_router(builder_router)
+    app.include_router(system_router)
     
     # Add exception handlers
     app.add_exception_handler(MetadataERPException, metadata_exception_handler)

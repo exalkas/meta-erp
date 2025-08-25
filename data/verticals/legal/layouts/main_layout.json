@@ -1,22 +1,150 @@
 {
-  "layout_id": "90000000-0000-0000-0000-000000000001",
-  "name": "legal-main-layout",
-  "display_name": "Legal Practice Main Layout",
-  "description": "Standard layout for legal practice management with header, sidebar, main content and footer",
-  "category": "legal-dashboard",
+  "layout_id": "d0000000-0000-0000-0000-000000000001",
+  "name": "dashboard-layout",
+  "display_name": "Legal Dashboard Layout",
+  "description": "Responsive dashboard layout with collapsible sidebar, header navigation, and footer",
+  "category": "dashboard",
   "sections_json": {
     "header": {
-      "className": "bg-card shadow-sm border-b border-border h-16 fixed top-0 left-0 right-0 z-50",
+      "className": "bg-card shadow-sm border-b border-border h-16 flex items-center px-4 z-50",
       "maxComponents": 1,
-      "allowedComponents": ["Navigation", "TopBar"]
+      "allowedComponents": ["Navigation", "TopBar", "Header"],
+      "components": [
+        {
+          "type": "Navigation",
+          "props": {
+            "variant": "horizontal",
+            "showUserMenu": true,
+            "showThemeSelector": true,
+            "showLanguageSelector": true,
+            "userMenuStyle": "buttons",
+            "legalMode": true,
+            "logo": {
+              "text": "Axiologic",
+              "subtitle": "Practice Management",
+              "icon": "/axiologic_logo_64.png"
+            },
+
+            "userMenu": [
+              {
+                "id": "user-profile",
+                "label": "navigation.profile",
+                "action": "navigate:/profile",
+                "icon": "User"
+              },
+              {
+                "id": "user-settings",
+                "label": "navigation.settings",
+                "action": "navigate:/settings",
+                "icon": "Settings"
+              },
+              {
+                "id": "logout",
+                "label": "navigation.logout",
+                "action": "logout",
+                "icon": "LogOut"
+              }
+            ],
+            "items": []
+          }
+        }
+      ]
     },
     "sidebar": {
-      "className": "bg-card shadow-sm border-r border-border w-64 min-h-screen fixed left-0 top-16 bottom-0 z-40 transition-transform duration-300",
-      "maxComponents": 5,
-      "allowedComponents": ["SidebarMenu", "Widget", "QuickActions"]
+      "className": "bg-card border-r border-border flex flex-col",
+      "maxComponents": 1,
+      "allowedComponents": ["SidebarMenu", "Sidebar"],
+      "components": [
+        {
+          "type": "SidebarMenu",
+          "props": {
+            "variant": "vertical",
+            "collapsible": true,
+            "legalMode": true,
+            "showUserProfile": true,
+            "sections": [
+              {
+                "title_key": "sidebar_sections.practice_management",
+                "items": [
+                  {
+                    "label_key": "navigation.dashboard",
+                    "route": "/dashboard",
+                    "icon": "Home"
+                  },
+                  {
+                    "label_key": "navigation.clients",
+                    "route": "/clients",
+                    "icon": "Users"
+                  },
+                  {
+                    "label_key": "navigation.matters",
+                    "route": "/matters",
+                    "icon": "Briefcase"
+                  },
+                  {
+                    "label_key": "navigation.calendar",
+                    "route": "/calendar",
+                    "icon": "Calendar"
+                  }
+                ]
+              },
+              {
+                "title_key": "sidebar_sections.time_billing",
+                "items": [
+                  {
+                    "label_key": "navigation.time_entry",
+                    "route": "/time-entry",
+                    "icon": "Clock"
+                  },
+                  {
+                    "label_key": "navigation.time_reports",
+                    "route": "/time-reports",
+                    "icon": "BarChart3"
+                  },
+                  {
+                    "label_key": "navigation.invoices",
+                    "route": "/invoices",
+                    "icon": "CreditCard"
+                  },
+                  {
+                    "label_key": "navigation.trust_accounts",
+                    "route": "/trust-accounts",
+                    "icon": "Shield"
+                  }
+                ]
+              },
+              {
+                "title_key": "sidebar_sections.legal_tools",
+                "items": [
+                  {
+                    "label_key": "navigation.documents",
+                    "route": "/documents",
+                    "icon": "FileText"
+                  },
+                  {
+                    "label_key": "navigation.court_filings",
+                    "route": "/court-filings",
+                    "icon": "Scale"
+                  },
+                  {
+                    "label_key": "navigation.research",
+                    "route": "/research",
+                    "icon": "Search"
+                  },
+                  {
+                    "label_key": "navigation.conflicts",
+                    "route": "/conflicts",
+                    "icon": "AlertTriangle"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
     },
     "main": {
-      "className": "flex-1 bg-background p-6 ml-64 mt-16 min-h-screen transition-colors duration-300",
+      "className": "flex-1 bg-background p-6 min-h-0 overflow-auto",
       "maxComponents": 10,
       "allowedComponents": [
         "DashboardGrid",
@@ -24,43 +152,67 @@
         "DataTable",
         "Chart",
         "Form",
+        "KPICards",
+        "RecentActivity",
+        "ChartWidget",
         "MetadataDataTable"
       ]
     },
     "footer": {
-      "className": "bg-card border-t border-border p-4 ml-64 mt-auto",
-      "maxComponents": 3,
-      "allowedComponents": ["StatusBar", "Footer", "Links"]
+      "className": "bg-card border-t border-border p-4",
+      "maxComponents": 1,
+      "allowedComponents": ["Footer", "StatusBar"],
+      "components": [
+        {
+          "type": "StatusBar",
+          "props": {
+            "showConnectionStatus": true,
+            "showLastUpdate": true,
+            "showVersion": true,
+            "legalMode": true,
+            "showTrustAccountStatus": true,
+            "showComplianceStatus": true
+          }
+        }
+      ]
     }
   },
   "css_classes_json": {
-    "header": "bg-card shadow-sm border-b border-border h-16 fixed top-0 left-0 right-0 z-50",
-    "sidebar": "bg-card shadow-sm border-r border-border w-64 min-h-screen fixed left-0 top-16 bottom-0 z-40 transition-transform duration-300",
-    "main": "flex-1 bg-background p-6 ml-64 mt-16 min-h-screen transition-colors duration-300",
-    "footer": "bg-card border-t border-border p-4 ml-64 mt-auto"
+    "header": "bg-card shadow-sm border-b border-border h-16 flex items-center px-4 z-50",
+    "sidebar": "bg-card border-r border-border flex flex-col",
+    "main": "flex-1 bg-background p-2 min-h-0 overflow-auto",
+    "footer": "bg-card border-t border-border p-4"
   },
-  "container_classes": "min-h-screen bg-background flex flex-col transition-colors duration-300",
+  "container_classes": "min-h-screen bg-background transition-colors",
   "responsive_classes": {
-    "mobile": "px-2 py-4",
-    "tablet": "px-4 py-6",
-    "desktop": "px-6 py-8"
+    "mobile": "flex flex-col",
+    "tablet": "flex flex-col md:flex-row",
+    "desktop": "flex flex-col md:flex-row"
   },
   "is_responsive": true,
   "supports_theming": true,
   "supports_dark_mode": true,
-  "is_system_layout": false,
+  "max_sections": 4,
+  "is_system_layout": true,
   "accessibility": {
     "skipLinks": true,
     "landmarks": true,
     "screenReader": true
   },
   "metadata_json": {
+    "layout_type": "dashboard",
+    "sidebar_collapsible": true,
+    "sidebar_width": "w-64",
+    "sidebar_collapsed_width": "w-16",
+    "responsive_breakpoint": "lg",
+    "mobile_sidebar_overlay": true,
     "vertical": "legal",
     "legalMode": true,
     "primaryColor": "blue",
     "accentColor": "amber"
   },
   "tenant_id": null,
-  "created_at": "2025-01-29T00:00:00Z",
-  "updated_at": "2025-01-29T00:00:00Z"
+  "is_active": true,
+  "created_at": "2025-01-31T12:00:00Z",
+  "updated_at": "2025-01-31T12:00:00Z"
 }

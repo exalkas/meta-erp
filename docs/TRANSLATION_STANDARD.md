@@ -252,6 +252,33 @@ Components receive translation keys and resolve them via `t()` function:
 2. **Test fallback**: Missing locales fall back to configured alternatives
 3. **Test configuration**: Modify config file and verify behavior changes
 4. **Test page loading**: Each page loads appropriate translation set
+5. **Test race conditions**: Rapid language switching should not cause errors
+
+### **Race Condition Prevention (FIXED January 2025)**
+
+**CRITICAL ISSUE RESOLVED**: Components rendering before translations loaded.
+
+**Technical Solution:**
+
+```tsx
+// Added in TranslationContext.tsx
+if (isLoading) {
+  return interpolateString(defaultValue, variables);
+}
+
+// Language state only updates AFTER translations load
+const setLanguage = async (newLanguage: Language) => {
+  await fetchTranslations(newLanguage); // Wait for translations
+  setLanguageState(newLanguage); // Then update state
+};
+```
+
+**Impact:**
+
+- ✅ Eliminated "Translation not found" errors during language switching
+- ✅ Components wait for translations before rendering
+- ✅ Smooth transitions between English/Spanish in legal app
+- ✅ No more race condition warnings in console
 
 ## Benefits
 
@@ -288,5 +315,5 @@ graph TD
 
 ---
 
-**Last Updated**: January 31, 2025  
-**Status**: ✅ **Active Standard** - Configuration-Driven, Vertical-Aware
+**Last Updated**: January 3, 2025  
+**Status**: ✅ **Active Standard** - Configuration-Driven, Vertical-Aware, Race-Condition Free

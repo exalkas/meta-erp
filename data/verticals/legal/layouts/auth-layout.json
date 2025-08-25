@@ -1,0 +1,49 @@
+{
+  "layout_id": "a0000000-0000-0000-0000-000000000001",
+  "name": "auth-layout",
+  "display_name": "Authentication Layout",
+  "description": "Centered layout for login and authentication pages with theme and language selectors",
+  "category": "auth",
+  "sections_json": {
+    "selectors": {
+      "className": "absolute top-4 right-4 z-10 flex items-center space-x-2",
+      "maxComponents": 3,
+      "allowedComponents": ["ThemeSelector", "LanguageSelector"]
+    },
+    "main": {
+      "className": "w-full max-w-lg lg:max-w-xl xl:max-w-2xl",
+      "maxComponents": 1,
+      "allowedComponents": ["LoginForm", "AuthForm", "Card"]
+    },
+    "footer": {
+      "className": "text-center mt-6",
+      "maxComponents": 1,
+      "allowedComponents": ["Footer", "Copyright"]
+    }
+  },
+  "css_classes_json": {
+    "selectors": "absolute top-4 right-4 z-10 flex items-center space-x-2",
+    "main": "w-full max-w-lg lg:max-w-xl xl:max-w-2xl",
+    "footer": "text-center mt-6"
+  },
+  "container_classes": "min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-maritime-blue to-blue-900 dark:from-gray-900 dark:to-gray-800 transition-colors",
+  "is_responsive": true,
+  "supports_theming": true,
+  "supports_dark_mode": true,
+  "max_sections": 3,
+  "is_system_layout": true,
+  "accessibility": {
+    "skipLinks": true,
+    "landmarks": true,
+    "screenReader": true
+  },
+  "metadata_json": {
+    "layout_type": "auth",
+    "centered": true,
+    "gradient_background": true
+  },
+  "tenant_id": null,
+  "is_active": true,
+  "created_at": "2025-01-31T12:00:00Z",
+  "updated_at": "2025-01-31T12:00:00Z"
+}

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronRight, Menu, X } from "lucide-react";
+import { ChevronDown, ChevronRight, ChevronLeft, Menu, X } from "lucide-react";
 import { useTranslation } from "../../contexts/TranslationContext";
 
 export interface SidebarItem {
@@ -14,6 +14,8 @@ export interface SidebarItem {
   badge?: string | number;
   children?: SidebarItem[];
   expanded?: boolean;
+  isSectionHeader?: boolean; // Flag to identify section headers
+  className?: string; // Custom CSS classes
 }
 
 export interface SidebarProps {
@@ -23,6 +25,8 @@ export interface SidebarProps {
   collapsed?: boolean;
   onToggleCollapse?: () => void;
   showToggleButton?: boolean;
+  showUserProfile?: boolean;
+  currentUser?: any;
   className?: string;
   headerClassName?: string;
   itemClassName?: string;
@@ -43,6 +47,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   collapsed = false,
   onToggleCollapse,
   showToggleButton = true,
+  showUserProfile = false,
+  currentUser,
   className = "",
   headerClassName = "",
   itemClassName = "",
@@ -67,7 +73,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   });
 
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  // Use external isOpen state for mobile overlay, fallback to internal state
+  const isMobileOpen = overlayOnMobile ? isOpen : true;
 
   const toggleItemExpansion = (itemId: string) => {
     const newExpanded = new Set(expandedItems);
@@ -98,8 +105,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         onItemClick(item);
       }
 
-      if (overlayOnMobile) {
-        setIsMobileOpen(false);
+      if (overlayOnMobile && onClose) {
+        onClose();
       }
     }
   };
@@ -126,6 +133,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const renderItem = (item: SidebarItem, depth: number = 0) => {
     const isExpanded = expandedItems.has(item.id) || item.expanded;
     const hasChildren = item.children && item.children.length > 0;
+
+    // Handle section headers differently
+    if (item.isSectionHeader) {
+      if (collapsed) {
+        // Show visible separator when collapsed - centered in the narrow sidebar
+        return (
+          <div key={item.id} className="my-2 flex justify-center">
+            <div className="w-8 h-px bg-gray-400 dark:bg-gray-500"></div>
+          </div>
+        );
+      }
+
+      // Show section title when expanded
+      return (
+        <div
+          key={item.id}
+          className={`mb-2 mt-4 first:mt-0 ${item.className || ""}`}
+        >
+          <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide px-3 py-1 block cursor-default">
+            {t(item.label)}
+          </span>
+        </div>
+      );
+    }
 
     return (
       <div key={item.id} className="mb-1">
@@ -191,7 +222,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ${collapsed ? "w-16" : width}
         ${
           overlayOnMobile
-            ? "fixed inset-y-0 left-0 z-50 lg:static lg:inset-0"
+            ? "fixed inset-y-0 left-0 z-[150] lg:static lg:inset-0"
             : ""
         }
         ${
@@ -216,12 +247,69 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <button
               onClick={onToggleCollapse}
-              className="p-2 rounded-md hover:bg-gray-600 dark:hover:bg-gray-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-700 dark:bg-gray-600 text-white shadow-sm"
+              className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 border border-gray-300 dark:border-gray-600"
               aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
               title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
-              <Menu size={16} />
+              {collapsed ? (
+                <ChevronRight size={16} />
+              ) : (
+                <ChevronLeft size={16} />
+              )}
             </button>
+          </div>
+        )}
+
+        {/* User Profile Display */}
+        {showUserProfile && currentUser && (
+          <div className={`${collapsed ? "flex justify-center" : ""}`}>
+            {collapsed ? (
+              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium">
+                {currentUser.avatar_url ? (
+                  <img
+                    src={currentUser.avatar_url}
+                    alt="User"
+                    className="w-8 h-8 rounded-full"
+                  />
+                ) : (
+                  (
+                    currentUser.first_name?.[0] ||
+                    currentUser.email?.[0] ||
+                    "U"
+                  ).toUpperCase()
+                )}
+              </div>
+            ) : (
+              <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium">
+                    {currentUser.avatar_url ? (
+                      <img
+                        src={currentUser.avatar_url}
+                        alt="User"
+                        className="w-10 h-10 rounded-full"
+                      />
+                    ) : (
+                      (
+                        currentUser.first_name?.[0] ||
+                        currentUser.email?.[0] ||
+                        "U"
+                      ).toUpperCase()
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {currentUser.first_name && currentUser.last_name
+                        ? `${currentUser.first_name} ${currentUser.last_name}`
+                        : currentUser.email || "User"}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {currentUser.email || "No email"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -231,7 +319,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Mobile Close Button */}
         {overlayOnMobile && (
           <button
-            onClick={() => setIsMobileOpen(false)}
+            onClick={onClose}
             className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 absolute top-4 right-4"
             aria-label={t("close_sidebar", { defaultValue: "Close sidebar" })}
           >
@@ -257,22 +345,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   if (overlayOnMobile) {
     return (
       <>
-        {/* Mobile overlay */}
+        {/* Mobile overlay - only on mobile, not tablet */}
         {isMobileOpen && (
           <div
-            className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
-            onClick={() => setIsMobileOpen(false)}
+            className="fixed inset-0 z-[90] bg-black bg-opacity-50 md:hidden"
+            onClick={onClose}
           />
         )}
-
-        {/* Mobile toggle button */}
-        <button
-          onClick={() => setIsMobileOpen(true)}
-          className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2"
-          aria-label="Open sidebar"
-        >
-          <Menu size={20} />
-        </button>
 
         {sidebarContent}
       </>

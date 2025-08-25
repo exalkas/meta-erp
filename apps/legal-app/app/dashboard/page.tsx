@@ -9,8 +9,6 @@ import {
   ProtectedRoute,
   useAuth,
   useMetadataPage,
-  ThemeChooser,
-  ThemeSelector,
 } from "@erp/shared-ui";
 
 /**
@@ -89,8 +87,9 @@ function LegalDashboardPageContent({
     () => ({
       onLogout: handleLogout,
       onAction: handleAction,
+      currentUser: user,
     }),
-    [handleLogout, handleAction]
+    [handleLogout, handleAction, user]
   );
 
   if (loading) {
@@ -137,31 +136,6 @@ function LegalDashboardPageContent({
 
   return (
     <>
-      {/* TEMPORARY: Theme Testing Controls (Legal App Only) */}
-      {pageDefinition && (
-        <div className="p-4 bg-gray-50 dark:bg-gray-800 border-b">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-              🎨 Theme Testing (Legal App Only)
-            </h2>
-            <div className="flex flex-wrap gap-4 items-center">
-              <div className="flex items-center space-x-2">
-                <span className="text-xs text-gray-600 dark:text-gray-400">
-                  Base Theme:
-                </span>
-                <ThemeChooser variant="dropdown" size="sm" />
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-xs text-gray-600 dark:text-gray-400">
-                  Light/Dark:
-                </span>
-                <ThemeSelector variant="toggle" size="sm" />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Pure metadata-driven legal dashboard rendering */}
       {pageDefinition && (
         <DynamicPage
@@ -173,29 +147,13 @@ function LegalDashboardPageContent({
       )}
 
       {/* Development debug info for legal app - positioned below top navigation */}
-      {process.env.NODE_ENV === "development" && pageDefinition && (
-        <div className="fixed top-16 right-4 bg-black bg-opacity-75 text-white text-xs p-3 rounded z-40 max-w-sm">
-          <div className="font-bold mb-1">⚖️ Legal Practice App</div>
-          <div>Page: {pageDefinition.page_name || "unknown"}</div>
-          <div>Layout: {pageDefinition.layout_id || "legacy"}</div>
-          <div>
-            Sections:{" "}
-            {pageDefinition.sections_data_json
-              ? Object.keys(pageDefinition.sections_data_json).length
-              : 0}
-          </div>
-          <div>Real-time: {pageDefinition.real_time_updates ? "✅" : "❌"}</div>
-          <div className="text-yellow-300 mt-1">Legal Mode Active</div>
-        </div>
-      )}
     </>
   );
 }
 
 // Main exported component that sets up providers
 export default function LegalDashboardPage() {
-  const tenantId = "89f84fea-b5b9-413c-945b-002c7fd9555d"; // Demo tenant UUID - in real app, this would come from auth/context
-  const userId = "01111111-1111-1111-1111-111111111111"; // Demo user UUID - in real app, this would come from auth context
+  const { user } = useAuth(); // Get user from auth context
 
   return (
     <ProtectedRoute
@@ -203,12 +161,15 @@ export default function LegalDashboardPage() {
       redirectToLogin={true}
     >
       <TranslationProvider
-        tenantId={tenantId}
+        tenantId={user?.tenant_id}
         defaultLanguage="en_US"
         verticalContext="legal"
       >
-        <ThemeProvider tenantId={tenantId} userId={userId}>
-          <LegalDashboardPageContent tenantId={tenantId} userId={userId} />
+        <ThemeProvider tenantId={user?.tenant_id} userId={user?.user_id}>
+          <LegalDashboardPageContent
+            tenantId={user?.tenant_id || ""}
+            userId={user?.user_id || ""}
+          />
         </ThemeProvider>
       </TranslationProvider>
     </ProtectedRoute>
