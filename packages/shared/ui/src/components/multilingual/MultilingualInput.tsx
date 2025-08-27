@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Input, InputProps } from "../ui/Input";
 import { LanguageSelector } from "./LanguageSelector";
-import { useTranslation } from "../../contexts/TranslationContext";
+import { useTranslation, useLanguage } from "../../contexts/TranslationContext";
 import { Language } from "../../types";
 
 export interface MultilingualInputProps
@@ -39,7 +39,8 @@ export const MultilingualInput: React.FC<MultilingualInputProps> = ({
   helperText,
   ...inputProps
 }) => {
-  const { t, language: currentLanguage } = useTranslation();
+  const { t } = useTranslation();
+  const { language: currentLanguage } = useLanguage();
   const [activeLanguage, setActiveLanguage] = useState<Language>(
     supportedLanguages.includes(currentLanguage)
       ? currentLanguage
@@ -118,7 +119,7 @@ export const MultilingualInput: React.FC<MultilingualInputProps> = ({
       el: "Ελληνικά",
       en: "English",
     };
-    return labels[lang] || lang.toUpperCase();
+    return labels[lang as keyof typeof labels] || lang.toUpperCase();
   };
 
   const getLanguageCompletionStatus = (
@@ -166,8 +167,8 @@ export const MultilingualInput: React.FC<MultilingualInputProps> = ({
               status === "complete"
                 ? "bg-green-500"
                 : status === "partial"
-                ? "bg-yellow-500"
-                : "bg-gray-300"
+                  ? "bg-yellow-500"
+                  : "bg-gray-300"
             }`}
           />
         )}
@@ -227,8 +228,8 @@ export const MultilingualInput: React.FC<MultilingualInputProps> = ({
                     status === "complete"
                       ? "bg-green-500"
                       : status === "partial"
-                      ? "bg-yellow-500"
-                      : "bg-gray-300"
+                        ? "bg-yellow-500"
+                        : "bg-gray-300"
                   }`}
                 />
                 {hasContent && (

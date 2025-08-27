@@ -1,0 +1,154 @@
+{
+  "process_code": "CLIENT_INTAKE",
+  "process_name": "Client Intake Workflow",
+  "process_category": "CLIENT_MANAGEMENT",
+  "description": "Complete client onboarding process with conflict checking",
+  "process_steps": {
+    "steps": [
+      {
+        "step_id": "initial_contact",
+        "step_name": "Initial Contact",
+        "step_type": "USER_TASK",
+        "step_order": 1,
+        "required": true,
+        "form_fields": [
+          "client_name",
+          "contact_email",
+          "phone",
+          "matter_description"
+        ],
+        "validation_rules": ["required_fields", "email_format"],
+        "estimated_duration": 15
+      },
+      {
+        "step_id": "ai_lead_scoring",
+        "step_name": "AI Lead Qualification",
+        "step_type": "AI_ANALYSIS",
+        "step_order": 2,
+        "required": true,
+        "ai_model": "lead_qualification_model",
+        "input_fields": [
+          "client_name",
+          "matter_description",
+          "contact_email",
+          "phone"
+        ],
+        "output_fields": [
+          "lead_score",
+          "conversion_probability",
+          "estimated_value",
+          "practice_area_suggestion"
+        ],
+        "automated": true,
+        "estimated_duration": 1
+      },
+      {
+        "step_id": "conflict_check",
+        "step_name": "AI Conflict of Interest Check",
+        "step_type": "AUTOMATED_TASK",
+        "step_order": 3,
+        "required": true,
+        "business_rule": "ai_conflict_checking",
+        "ai_enhanced": true,
+        "automated": true,
+        "estimated_duration": 2
+      },
+      {
+        "step_id": "conflict_resolution",
+        "step_name": "Resolve Conflicts",
+        "step_type": "USER_TASK",
+        "step_order": 4,
+        "required": false,
+        "condition": "conflict_detected == true",
+        "assignee_role": "Managing Partner",
+        "form_fields": [
+          "conflict_details",
+          "resolution_action",
+          "approval_decision"
+        ],
+        "estimated_duration": 30
+      },
+      {
+        "step_id": "client_creation",
+        "step_name": "Create Client Record",
+        "step_type": "AUTOMATED_TASK",
+        "step_order": 5,
+        "required": true,
+        "condition": "conflict_approved == true OR no_conflict == true",
+        "entity_action": "create_client",
+        "automated": true,
+        "estimated_duration": 1
+      },
+      {
+        "step_id": "ai_engagement_generation",
+        "step_name": "AI Engagement Letter Generation",
+        "step_type": "AI_DOCUMENT_GENERATION",
+        "step_order": 6,
+        "required": true,
+        "ai_model": "legal_document_generator",
+        "template": "engagement_letter",
+        "input_fields": [
+          "client_name",
+          "practice_area_suggestion",
+          "estimated_value",
+          "billing_arrangement"
+        ],
+        "output_fields": [
+          "engagement_letter_draft",
+          "terms_suggestions",
+          "fee_structure_recommendations"
+        ],
+        "automated": true,
+        "estimated_duration": 3
+      },
+      {
+        "step_id": "engagement_review",
+        "step_name": "Review and Send Engagement Letter",
+        "step_type": "USER_TASK",
+        "step_order": 7,
+        "required": true,
+        "form_fields": [
+          "engagement_letter_draft",
+          "custom_terms",
+          "fee_structure"
+        ],
+        "document_generation": true,
+        "estimated_duration": 15
+      },
+      {
+        "step_id": "intake_complete",
+        "step_name": "Intake Complete",
+        "step_type": "AUTOMATED_TASK",
+        "step_order": 8,
+        "required": true,
+        "entity_action": "update_client_status",
+        "status_value": "Active",
+        "notification": ["responsible_attorney", "billing_manager"],
+        "automated": true,
+        "estimated_duration": 1
+      }
+    ],
+    "parallel_steps": [],
+    "decision_points": [
+      {
+        "step_id": "conflict_resolution",
+        "decision_field": "approval_decision",
+        "routes": {
+          "approved": "client_creation",
+          "denied": "workflow_end_rejected"
+        }
+      }
+    ]
+  },
+  "trigger_conditions": {
+    "triggers": ["manual_start", "form_submission"],
+    "entities": ["Client"],
+    "events": ["new_prospect_inquiry"]
+  },
+  "automation_level": "SEMI_AUTOMATED",
+  "approval_required": true,
+  "context_filters": {
+    "vertical": "LEGAL"
+  },
+  "is_active": true
+}

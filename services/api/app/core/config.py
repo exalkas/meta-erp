@@ -47,8 +47,8 @@ class Settings(BaseSettings):
     ai_support_service_url: str = Field(default="http://localhost:8005", env="AI_SUPPORT_SERVICE_URL")
     
     # CORS
-    allowed_origins: List[str] = Field(default=["http://localhost:3000"])
-    cors_origins: List[str] = Field(default=["http://localhost:3000"], env="CORS_ORIGINS")
+    allowed_origins: List[str] = Field(default=["http://localhost:3000", "http://localhost:3001", "http://localhost:3006"])
+    cors_origins: List[str] = Field(default=["http://localhost:3000", "http://localhost:3001", "http://localhost:3006"], env="CORS_ORIGINS")
     
     # SMTP Configuration
     smtp_host: str = Field(default="localhost", env="SMTP_HOST")

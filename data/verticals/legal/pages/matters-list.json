@@ -1,0 +1,406 @@
+{
+  "page_name": "matters_list",
+  "page_title_key": "matters_title",
+  "page_type": "LIST",
+  "route_path": "/matters",
+  "vertical": "LEGAL",
+  "supported_languages": ["en-US", "es-US"],
+  "theme_variants": ["light", "dark"],
+  "accessibility_level": "WCAG_2_1_AA",
+  "page_config": {
+    "entity": "Matter",
+    "layout": "legal_list_layout",
+    "permissions": ["view_matters"],
+    "features": {
+      "search": true,
+      "filter": true,
+      "sort": true,
+      "export": true,
+      "bulk_actions": true,
+      "ai_insights": true,
+      "kanban_view": true
+    },
+    "header": {
+      "title_key": "matters_title",
+      "description_key": "matters_description",
+      "actions": [
+        {
+          "action_id": "add_matter",
+          "label_key": "add_matter",
+          "type": "primary_button",
+          "icon": "briefcase",
+          "route": "/matters/new",
+          "permissions": ["create_matter"]
+        },
+        {
+          "action_id": "ai_case_assistant",
+          "label_key": "ai_case_assistant",
+          "type": "secondary_button",
+          "icon": "brain",
+          "action": "ai_assistant_modal",
+          "permissions": ["use_ai_features"]
+        }
+      ]
+    },
+    "view_options": [
+      {
+        "view_id": "table",
+        "label_key": "table_view",
+        "icon": "table",
+        "default": true
+      },
+      {
+        "view_id": "kanban",
+        "label_key": "kanban_view",
+        "icon": "columns",
+        "group_by": "matter_status"
+      },
+      {
+        "view_id": "calendar",
+        "label_key": "calendar_view",
+        "icon": "calendar",
+        "date_field": "next_deadline"
+      }
+    ],
+    "search_config": {
+      "placeholder_key": "search_matters",
+      "fields": [
+        "matter_name",
+        "matter_number",
+        "client_name",
+        "case_description"
+      ],
+      "search_suggestions": true,
+      "ai_enhanced": true
+    },
+    "filter_config": {
+      "filters": [
+        {
+          "field": "matter_status",
+          "label_key": "matter_status",
+          "type": "select",
+          "options_source": "field_options"
+        },
+        {
+          "field": "practice_area",
+          "label_key": "practice_area",
+          "type": "select",
+          "options_source": "field_options"
+        },
+        {
+          "field": "responsible_attorney",
+          "label_key": "responsible_attorney",
+          "type": "user_select",
+          "filter_role": "attorney"
+        },
+        {
+          "field": "case_strength_score",
+          "label_key": "case_strength",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "ai_generated": true
+        },
+        {
+          "field": "open_date",
+          "label_key": "open_date",
+          "type": "date_range"
+        },
+        {
+          "field": "next_deadline",
+          "label_key": "next_deadline",
+          "type": "date_range"
+        },
+        {
+          "field": "profitability_score",
+          "label_key": "profitability",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "ai_generated": true
+        }
+      ],
+      "advanced_filters": true,
+      "saved_filters": true
+    },
+    "table_config": {
+      "columns": [
+        {
+          "field": "matter_name",
+          "label_key": "matter_name",
+          "sortable": true,
+          "searchable": true,
+          "width": "250px",
+          "render_type": "link",
+          "link_route": "/matters/{id}",
+          "sticky": true
+        },
+        {
+          "field": "matter_number",
+          "label_key": "matter_number",
+          "sortable": true,
+          "searchable": true,
+          "width": "120px"
+        },
+        {
+          "field": "client_name",
+          "label_key": "client_name",
+          "sortable": true,
+          "searchable": true,
+          "width": "180px",
+          "render_type": "link",
+          "link_route": "/clients/{client_id}"
+        },
+        {
+          "field": "practice_area",
+          "label_key": "practice_area",
+          "sortable": true,
+          "width": "140px",
+          "render_type": "badge"
+        },
+        {
+          "field": "responsible_attorney",
+          "label_key": "responsible_attorney",
+          "sortable": true,
+          "width": "150px",
+          "render_type": "user_avatar"
+        },
+        {
+          "field": "matter_status",
+          "label_key": "matter_status",
+          "sortable": true,
+          "width": "120px",
+          "render_type": "status_badge"
+        },
+        {
+          "field": "open_date",
+          "label_key": "open_date",
+          "sortable": true,
+          "width": "120px",
+          "render_type": "date"
+        },
+        {
+          "field": "next_deadline",
+          "label_key": "next_deadline",
+          "sortable": true,
+          "width": "140px",
+          "render_type": "deadline_badge",
+          "urgency_levels": {
+            "critical": 7,
+            "warning": 30,
+            "normal": 90
+          }
+        },
+        {
+          "field": "case_strength_score",
+          "label_key": "case_strength",
+          "sortable": true,
+          "width": "120px",
+          "render_type": "score_bar",
+          "ai_generated": true,
+          "color_scale": "green_to_red"
+        },
+        {
+          "field": "profitability_score",
+          "label_key": "profitability",
+          "sortable": true,
+          "width": "120px",
+          "render_type": "score_bar",
+          "ai_generated": true,
+          "color_scale": "red_to_green"
+        },
+        {
+          "field": "total_time_spent",
+          "label_key": "total_hours",
+          "sortable": true,
+          "width": "100px",
+          "render_type": "decimal",
+          "suffix": "h"
+        },
+        {
+          "field": "total_billed",
+          "label_key": "total_billed",
+          "sortable": true,
+          "width": "120px",
+          "render_type": "currency"
+        },
+        {
+          "field": "actions",
+          "label_key": "actions",
+          "sortable": false,
+          "width": "120px",
+          "render_type": "action_menu",
+          "actions": [
+            {
+              "action": "view",
+              "label_key": "view",
+              "icon": "eye",
+              "route": "/matters/{id}"
+            },
+            {
+              "action": "edit",
+              "label_key": "edit",
+              "icon": "edit",
+              "route": "/matters/{id}/edit",
+              "permissions": ["edit_matter"]
+            },
+            {
+              "action": "ai_assessment",
+              "label_key": "ai_assessment",
+              "icon": "brain",
+              "modal_action": "ai_assessment_modal",
+              "permissions": ["use_ai_features"]
+            },
+            {
+              "action": "add_time",
+              "label_key": "add_time",
+              "icon": "clock",
+              "route": "/time-entry/new?matter_id={id}",
+              "permissions": ["create_time_entry"]
+            },
+            {
+              "action": "create_invoice",
+              "label_key": "create_invoice",
+              "icon": "file-text",
+              "route": "/invoices/new?matter_id={id}",
+              "permissions": ["create_invoice"]
+            }
+          ]
+        }
+      ],
+      "pagination": {
+        "page_size_options": [25, 50, 100],
+        "default_page_size": 25,
+        "show_total": true
+      },
+      "sorting": {
+        "default_sort": {
+          "field": "open_date",
+          "direction": "desc"
+        },
+        "multi_sort": true
+      }
+    },
+    "kanban_config": {
+      "group_by": "matter_status",
+      "card_fields": [
+        "matter_name",
+        "client_name",
+        "responsible_attorney",
+        "next_deadline",
+        "case_strength_score"
+      ],
+      "drag_drop_enabled": true,
+      "status_columns": [
+        {
+          "status": "Open",
+          "label_key": "status_open",
+          "color": "blue",
+          "max_items": null
+        },
+        {
+          "status": "Active",
+          "label_key": "status_active",
+          "color": "green",
+          "max_items": null
+        },
+        {
+          "status": "On Hold",
+          "label_key": "status_on_hold",
+          "color": "yellow",
+          "max_items": null
+        },
+        {
+          "status": "Closed",
+          "label_key": "status_closed",
+          "color": "gray",
+          "max_items": null
+        }
+      ]
+    },
+    "ai_features": {
+      "case_assessment_insights": {
+        "enabled": true,
+        "widget_position": "sidebar",
+        "title_key": "ai_case_insights"
+      },
+      "outcome_prediction": {
+        "enabled": true,
+        "show_in_table": true,
+        "confidence_threshold": 0.8
+      },
+      "deadline_intelligence": {
+        "enabled": true,
+        "proactive_alerts": true,
+        "statute_tracking": true
+      },
+      "resource_optimization": {
+        "enabled": true,
+        "workload_balancing": true,
+        "skill_matching": true
+      }
+    },
+    "bulk_actions": [
+      {
+        "action": "export_selected",
+        "label_key": "export_selected",
+        "icon": "download",
+        "permissions": ["export_data"]
+      },
+      {
+        "action": "bulk_status_update",
+        "label_key": "update_status",
+        "icon": "edit",
+        "permissions": ["edit_matter"]
+      },
+      {
+        "action": "assign_attorney",
+        "label_key": "assign_attorney",
+        "icon": "user",
+        "permissions": ["assign_attorney"]
+      },
+      {
+        "action": "generate_reports",
+        "label_key": "generate_reports",
+        "icon": "file-text",
+        "permissions": ["generate_reports"]
+      },
+      {
+        "action": "ai_bulk_assessment",
+        "label_key": "ai_bulk_assessment",
+        "icon": "brain",
+        "permissions": ["use_ai_features"]
+      }
+    ]
+  },
+  "responsive_config": {
+    "mobile": {
+      "hidden_columns": [
+        "matter_number",
+        "total_time_spent",
+        "total_billed",
+        "case_strength_score",
+        "profitability_score"
+      ],
+      "card_view": true,
+      "swipe_actions": ["view", "add_time", "edit"]
+    },
+    "tablet": {
+      "hidden_columns": ["total_time_spent", "profitability_score"],
+      "compact_view": true
+    }
+  },
+  "performance_config": {
+    "virtual_scrolling": true,
+    "lazy_loading": true,
+    "cache_duration": 300,
+    "auto_refresh": true,
+    "refresh_interval": 600
+  },
+  "security_config": {
+    "row_level_security": true,
+    "field_level_permissions": true,
+    "audit_trail": true,
+    "conflict_checking": true
+  }
+}

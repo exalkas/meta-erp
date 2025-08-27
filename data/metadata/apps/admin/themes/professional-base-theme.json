@@ -1,0 +1,269 @@
+[
+  {
+    "base_theme_id": "e0000000-0000-0000-0000-000000000001",
+    "name": "maritime",
+    "display_name": "Maritime Professional Theme",
+    "description": "Professional maritime business theme with ocean blue colors and modern design",
+    "category": "business",
+    "tags": ["professional", "blue", "maritime", "business", "ocean"],
+    "is_system_theme": true,
+    "is_active": true,
+    "is_featured": true,
+    "version": "1.0.0",
+    "tenant_id": null,
+    "created_at": "2025-01-29T00:00:00Z",
+    "updated_at": "2025-01-29T00:00:00Z",
+    "variants": [
+      {
+        "variant_id": "e0000000-0000-0000-0001-000000000001",
+        "variant_name": "light",
+        "display_name": "Light Mode",
+        "description": "Light variant of maritime theme with bright backgrounds",
+        "is_default": true,
+        "is_active": true,
+        "supports_auto_switch": true,
+        "css_class_prefix": null,
+        "media_query": "(prefers-color-scheme: light)",
+        "properties": [
+          {
+            "property_key": "--primary",
+            "property_value": "203 100% 45%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "primary",
+            "description": "Primary brand color"
+          },
+          {
+            "property_key": "--primary-foreground",
+            "property_value": "210 40% 98%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "primary",
+            "description": "Primary foreground color"
+          },
+          {
+            "property_key": "--secondary",
+            "property_value": "203 15% 90%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "secondary",
+            "description": "Secondary brand color"
+          },
+          {
+            "property_key": "--secondary-foreground",
+            "property_value": "222.2 84% 4.9%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "secondary",
+            "description": "Secondary foreground color"
+          },
+          {
+            "property_key": "--accent",
+            "property_value": "43 100% 50%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "accent",
+            "description": "Accent color"
+          },
+          {
+            "property_key": "--accent-foreground",
+            "property_value": "222.2 84% 4.9%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "accent",
+            "description": "Accent foreground color"
+          },
+          {
+            "property_key": "--background",
+            "property_value": "0 0% 100%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "background",
+            "description": "Main background color"
+          },
+          {
+            "property_key": "--foreground",
+            "property_value": "222.2 84% 4.9%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "foreground",
+            "description": "Main foreground color"
+          },
+          {
+            "property_key": "--card",
+            "property_value": "0 0% 100%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "surface",
+            "description": "Card background color"
+          },
+          {
+            "property_key": "--card-foreground",
+            "property_value": "222.2 84% 4.9%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "surface",
+            "description": "Card foreground color"
+          },
+          {
+            "property_key": "--border",
+            "property_value": "214.3 31.8% 91.4%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "border",
+            "description": "Border color"
+          },
+          {
+            "property_key": "--input",
+            "property_value": "214.3 31.8% 91.4%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "input",
+            "description": "Input border color"
+          },
+          {
+            "property_key": "--ring",
+            "property_value": "203 100% 45%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "focus",
+            "description": "Focus ring color"
+          },
+          {
+            "property_key": "--radius",
+            "property_value": "0.5rem",
+            "property_type": "size",
+            "category": "spacing",
+            "subcategory": "border",
+            "description": "Border radius"
+          }
+        ]
+      },
+      {
+        "variant_id": "e0000000-0000-0000-0001-000000000002",
+        "variant_name": "dark",
+        "display_name": "Dark Mode",
+        "description": "Dark variant of maritime theme with dark backgrounds",
+        "is_default": false,
+        "is_active": true,
+        "supports_auto_switch": true,
+        "css_class_prefix": "dark",
+        "media_query": "(prefers-color-scheme: dark)",
+        "properties": [
+          {
+            "property_key": "--primary",
+            "property_value": "203 100% 60%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "primary",
+            "description": "Primary brand color for dark mode"
+          },
+          {
+            "property_key": "--primary-foreground",
+            "property_value": "210 40% 98%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "primary",
+            "description": "Primary foreground color for dark mode"
+          },
+          {
+            "property_key": "--secondary",
+            "property_value": "217.2 32.6% 17.5%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "secondary",
+            "description": "Secondary brand color for dark mode"
+          },
+          {
+            "property_key": "--secondary-foreground",
+            "property_value": "210 40% 98%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "secondary",
+            "description": "Secondary foreground color for dark mode"
+          },
+          {
+            "property_key": "--accent",
+            "property_value": "217.2 32.6% 17.5%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "accent",
+            "description": "Accent color for dark mode"
+          },
+          {
+            "property_key": "--accent-foreground",
+            "property_value": "210 40% 98%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "accent",
+            "description": "Accent foreground color for dark mode"
+          },
+          {
+            "property_key": "--background",
+            "property_value": "222.2 84% 4.9%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "background",
+            "description": "Main background color for dark mode"
+          },
+          {
+            "property_key": "--foreground",
+            "property_value": "210 40% 98%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "foreground",
+            "description": "Main foreground color for dark mode"
+          },
+          {
+            "property_key": "--card",
+            "property_value": "222.2 84% 4.9%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "surface",
+            "description": "Card background color for dark mode"
+          },
+          {
+            "property_key": "--card-foreground",
+            "property_value": "210 40% 98%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "surface",
+            "description": "Card foreground color for dark mode"
+          },
+          {
+            "property_key": "--border",
+            "property_value": "217.2 32.6% 17.5%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "border",
+            "description": "Border color for dark mode"
+          },
+          {
+            "property_key": "--input",
+            "property_value": "217.2 32.6% 17.5%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "input",
+            "description": "Input border color for dark mode"
+          },
+          {
+            "property_key": "--ring",
+            "property_value": "203 100% 60%",
+            "property_type": "color",
+            "category": "colors",
+            "subcategory": "focus",
+            "description": "Focus ring color for dark mode"
+          },
+          {
+            "property_key": "--radius",
+            "property_value": "0.5rem",
+            "property_type": "size",
+            "category": "spacing",
+            "subcategory": "border",
+            "description": "Border radius"
+          }
+        ]
+      }
+    ]
+  }
+]

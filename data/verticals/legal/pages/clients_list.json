@@ -1,0 +1,135 @@
+{
+  "page_name": "clients_list",
+  "page_title": "Clients",
+  "page_type": "LIST",
+  "entity_name": "Client",
+  "route_path": "/clients",
+  "vertical": "LEGAL",
+  "page_config": {
+    "list_view": {
+      "columns": [
+        {
+          "field": "client_name",
+          "label": "Client Name",
+          "sortable": true,
+          "searchable": true,
+          "width": "200px"
+        },
+        {
+          "field": "client_type",
+          "label": "Type",
+          "sortable": true,
+          "filterable": true,
+          "width": "120px"
+        },
+        {
+          "field": "contact_email",
+          "label": "Email",
+          "sortable": true,
+          "searchable": true,
+          "width": "200px"
+        },
+        {
+          "field": "phone",
+          "label": "Phone",
+          "width": "140px"
+        },
+        {
+          "field": "client_status",
+          "label": "Status",
+          "sortable": true,
+          "filterable": true,
+          "width": "100px",
+          "render_type": "badge"
+        },
+        {
+          "field": "intake_date",
+          "label": "Intake Date",
+          "sortable": true,
+          "width": "120px",
+          "render_type": "date"
+        }
+      ],
+      "filters": [
+        {
+          "field": "client_status",
+          "type": "select",
+          "options": ["Prospect", "Active", "Inactive", "Archived"]
+        },
+        {
+          "field": "client_type",
+          "type": "select",
+          "options": [
+            "Individual",
+            "Corporation",
+            "Partnership",
+            "LLC",
+            "Trust",
+            "Government",
+            "Non-Profit"
+          ]
+        },
+        {
+          "field": "intake_date",
+          "type": "date_range"
+        }
+      ],
+      "actions": [
+        {
+          "name": "create",
+          "label": "New Client",
+          "icon": "plus",
+          "route": "/clients/new",
+          "permission": "client.create"
+        },
+        {
+          "name": "export",
+          "label": "Export",
+          "icon": "download",
+          "permission": "client.export"
+        }
+      ],
+      "row_actions": [
+        {
+          "name": "view",
+          "label": "View",
+          "icon": "eye",
+          "route": "/clients/{id}",
+          "permission": "client.read"
+        },
+        {
+          "name": "edit",
+          "label": "Edit",
+          "icon": "edit",
+          "route": "/clients/{id}/edit",
+          "permission": "client.update"
+        },
+        {
+          "name": "create_matter",
+          "label": "New Matter",
+          "icon": "briefcase",
+          "route": "/matters/new?client_id={id}",
+          "permission": "matter.create"
+        }
+      ],
+      "pagination": {
+        "page_size": 25,
+        "show_size_selector": true,
+        "size_options": [10, 25, 50, 100]
+      }
+    },
+    "search_config": {
+      "global_search": true,
+      "search_fields": ["client_name", "contact_email", "phone"],
+      "advanced_search": true
+    }
+  },
+  "permissions": ["client.read"],
+  "menu_config": {
+    "menu_group": "Client Management",
+    "menu_order": 1,
+    "icon": "users",
+    "show_in_nav": true
+  },
+  "is_published": true
+}

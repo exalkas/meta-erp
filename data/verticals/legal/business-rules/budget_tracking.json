@@ -1,0 +1,43 @@
+{
+  "rule_name": "matter_budget_tracking",
+  "rule_category": "MONITORING",
+  "entity_context": "Matter",
+  "priority": 2,
+  "condition_logic": {
+    "type": "monitoring",
+    "triggers": ["time_entry_created", "expense_added"],
+    "conditions": [
+      {
+        "field": "total_time_cost",
+        "operator": "greater_than",
+        "value": "budget_amount * 0.8",
+        "threshold": "80_percent"
+      },
+      {
+        "field": "total_time_cost",
+        "operator": "greater_than",
+        "value": "budget_amount",
+        "threshold": "100_percent"
+      }
+    ]
+  },
+  "action_definition": {
+    "80_percent": {
+      "action": "notify",
+      "recipients": ["responsible_attorney", "billing_manager"],
+      "message": "Matter approaching budget limit (80%)"
+    },
+    "100_percent": {
+      "action": "require_approval",
+      "approver_role": "Managing Partner",
+      "block_time_entry": true,
+      "message": "Matter budget exceeded - approval required"
+    }
+  },
+  "context_filters": {
+    "vertical": "LEGAL",
+    "billing_arrangement": ["Hourly", "Fixed Fee"]
+  },
+  "rule_description": "Monitor matter budget and alert when limits are approached",
+  "is_active": true
+}

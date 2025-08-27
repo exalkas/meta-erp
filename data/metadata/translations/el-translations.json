@@ -222,5 +222,166 @@
     "text": "Ναυτιλιακό",
     "namespace": "theme",
     "description": "Maritime theme option"
+  },
+  {
+    "locale": "el",
+    "key": "app_builder_title",
+    "text": "Δημιουργός Εφαρμογών",
+    "namespace": "app_builder",
+    "description": "Application Builder page title"
+  },
+  {
+    "locale": "el",
+    "key": "app_builder_subtitle",
+    "text": "Δημιουργήστε προσαρμοσμένες επιχειρηματικές εφαρμογές σε ημέρες, όχι μήνες",
+    "namespace": "app_builder",
+    "description": "Application Builder page subtitle"
+  },
+  {
+    "locale": "el",
+    "key": "app_builder_description",
+    "text": "Αυτή η σελίδα συλλέγει τις απαιτήσεις των πελατών και δημιουργεί σχέδια εφαρμογών χρησιμοποιώντας τη Μηχανή Δημιουργίας Εφαρμογών.",
+    "namespace": "app_builder",
+    "description": "Application Builder page description"
+  },
+  {
+    "locale": "el",
+    "key": "project_information",
+    "text": "Πληροφορίες Έργου",
+    "namespace": "app_builder",
+    "description": "FormWizard step 1 title"
+  },
+  {
+    "locale": "el",
+    "key": "project_information_description",
+    "text": "Παρέχετε βασικές λεπτομέρειες για την εφαρμογή σας.",
+    "namespace": "app_builder",
+    "description": "FormWizard step 1 description"
+  },
+  {
+    "locale": "el",
+    "key": "project_name",
+    "text": "Όνομα Έργου",
+    "namespace": "app_builder",
+    "description": "Project name field label"
+  },
+  {
+    "locale": "el",
+    "key": "application_type",
+    "text": "Τύπος Εφαρμογής",
+    "namespace": "app_builder",
+    "description": "Application type field label"
+  },
+  {
+    "locale": "el",
+    "key": "industry",
+    "text": "Κλάδος",
+    "namespace": "app_builder",
+    "description": "Industry field label"
+  },
+  {
+    "locale": "el",
+    "key": "description",
+    "text": "Περιγραφή",
+    "namespace": "app_builder",
+    "description": "Description field label"
+  },
+  {
+    "locale": "el",
+    "key": "requirements_features",
+    "text": "Απαιτήσεις & Χαρακτηριστικά",
+    "namespace": "app_builder",
+    "description": "FormWizard step 2 title"
+  },
+  {
+    "locale": "el",
+    "key": "requirements_features_description",
+    "text": "Καθορίστε τις βασικές λειτουργίες και τις ανάγκες των χρηστών.",
+    "namespace": "app_builder",
+    "description": "FormWizard step 2 description"
+  },
+  {
+    "locale": "el",
+    "key": "number_of_users",
+    "text": "Αριθμός Χρηστών",
+    "namespace": "app_builder",
+    "description": "User count field label"
+  },
+  {
+    "locale": "el",
+    "key": "required_features",
+    "text": "Απαιτούμενα Χαρακτηριστικά",
+    "namespace": "app_builder",
+    "description": "Required features field label"
+  },
+  {
+    "locale": "el",
+    "key": "custom_entities",
+    "text": "Προσαρμοσμένες Οντότητες (JSON)",
+    "namespace": "app_builder",
+    "description": "Custom entities field label"
+  },
+  {
+    "locale": "el",
+    "key": "integrations",
+    "text": "Ενσωματώσεις",
+    "namespace": "app_builder",
+    "description": "Integration requirements field label"
+  },
+  {
+    "locale": "el",
+    "key": "compliance",
+    "text": "Συμμόρφωση",
+    "namespace": "app_builder",
+    "description": "Compliance requirements field label"
+  },
+  {
+    "locale": "el",
+    "key": "desired_timeline_days",
+    "text": "Επιθυμητό Χρονοδιάγραμμα (ημέρες)",
+    "namespace": "app_builder",
+    "description": "Timeline requirements field label"
+  },
+  {
+    "locale": "el",
+    "key": "budget_preferences",
+    "text": "Προϋπολογισμός & Προτιμήσεις",
+    "namespace": "app_builder",
+    "description": "FormWizard step 3 title"
+  },
+  {
+    "locale": "el",
+    "key": "budget_preferences_description",
+    "text": "Καθορίστε τους περιορισμούς προϋπολογισμού και άλλες προτιμήσεις.",
+    "namespace": "app_builder",
+    "description": "FormWizard step 3 description"
+  },
+  {
+    "locale": "el",
+    "key": "min_budget",
+    "text": "Ελάχιστος Προϋπολογισμός",
+    "namespace": "app_builder",
+    "description": "Minimum budget field label"
+  },
+  {
+    "locale": "el",
+    "key": "max_budget",
+    "text": "Μέγιστος Προϋπολογισμός",
+    "namespace": "app_builder",
+    "description": "Maximum budget field label"
+  },
+  {
+    "locale": "el",
+    "key": "performance_needs",
+    "text": "Ανάγκες Απόδοσης (JSON)",
+    "namespace": "app_builder",
+    "description": "Performance requirements field label"
+  },
+  {
+    "locale": "el",
+    "key": "custom_business_rules",
+    "text": "Προσαρμοσμένοι Επιχειρηματικοί Κανόνες (JSON)",
+    "namespace": "app_builder",
+    "description": "Custom business rules field label"
   }
 ]

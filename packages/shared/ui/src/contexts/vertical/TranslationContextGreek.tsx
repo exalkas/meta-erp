@@ -10,8 +10,8 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import { Language, GreekLocaleSettings } from "../types";
-import { GreekReferenceData } from "../types/greek";
+import { Language, GreekLocaleSettings } from "../../types";
+import { GreekReferenceData } from "../../types/greek";
 
 // Greek locale context interface
 interface GreekLocaleContextValue {
@@ -138,7 +138,10 @@ export const GreekLocaleProvider: React.FC<GreekLocaleProviderProps> = ({
   const [settings, setSettingsState] = useState<GreekLocaleSettings>({
     ...DEFAULT_SETTINGS,
     ...initialSettings,
-    language: initialLanguage,
+    language:
+      initialLanguage === "el" || initialLanguage === "en"
+        ? initialLanguage
+        : "en",
   });
   const [referenceData, setReferenceData] = useState<GreekReferenceData | null>(
     null
@@ -149,7 +152,10 @@ export const GreekLocaleProvider: React.FC<GreekLocaleProviderProps> = ({
   // Update settings
   const updateSettings = useCallback(
     (updates: Partial<GreekLocaleSettings>) => {
-      setSettingsState((prev) => ({ ...prev, ...updates }));
+      setSettingsState((prev: GreekLocaleSettings) => ({
+        ...prev,
+        ...updates,
+      }));
     },
     []
   );
@@ -341,7 +347,7 @@ export const GreekLocaleProvider: React.FC<GreekLocaleProviderProps> = ({
     (regionId: string): string => {
       if (!referenceData) return regionId;
 
-      const region = referenceData.regions.find((r) => r.id === regionId);
+      const region = referenceData.regions.find((r: any) => r.id === regionId);
       return region
         ? language === "el"
           ? region.regionNameEl
@@ -355,7 +361,9 @@ export const GreekLocaleProvider: React.FC<GreekLocaleProviderProps> = ({
     (doyCode: string): string => {
       if (!referenceData) return doyCode;
 
-      const doy = referenceData.taxOffices.find((d) => d.doyCode === doyCode);
+      const doy = referenceData.taxOffices.find(
+        (d: any) => d.doyCode === doyCode
+      );
       return doy
         ? language === "el"
           ? doy.doyNameEl
@@ -369,7 +377,9 @@ export const GreekLocaleProvider: React.FC<GreekLocaleProviderProps> = ({
     (bankCode: string): string => {
       if (!referenceData) return bankCode;
 
-      const bank = referenceData.banks.find((b) => b.bankCode === bankCode);
+      const bank = referenceData.banks.find(
+        (b: any) => b.bankCode === bankCode
+      );
       return bank
         ? language === "el"
           ? bank.bankNameEl
@@ -384,7 +394,7 @@ export const GreekLocaleProvider: React.FC<GreekLocaleProviderProps> = ({
       if (!referenceData) return legalFormCode;
 
       const legalForm = referenceData.legalForms.find(
-        (l) => l.legalFormCode === legalFormCode
+        (l: any) => l.legalFormCode === legalFormCode
       );
       return legalForm
         ? language === "el"
@@ -400,7 +410,7 @@ export const GreekLocaleProvider: React.FC<GreekLocaleProviderProps> = ({
       if (!referenceData) return kadCode;
 
       const activity = referenceData.businessActivities.find(
-        (a) => a.kadCode === kadCode
+        (a: any) => a.kadCode === kadCode
       );
       return activity
         ? language === "el"
@@ -414,7 +424,9 @@ export const GreekLocaleProvider: React.FC<GreekLocaleProviderProps> = ({
   // Update language when it changes
   useEffect(() => {
     if (language !== settings.language) {
-      updateSettings({ language });
+      updateSettings({
+        language: language === "el" || language === "en" ? language : "en",
+      });
     }
   }, [language, settings.language, updateSettings]);
 

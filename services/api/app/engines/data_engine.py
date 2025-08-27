@@ -12,7 +12,6 @@ from sqlalchemy import select, and_, or_, text
 from app.core.logging import get_logger, MetadataLogger
 from app.core.exceptions import ValidationException, TenantNotFoundException
 from app.models.metadata import EntityDefinition, FieldDefinition, PicklistValue, EntityLayoutDefinition, ListViewDefinition
-from app.models.metadata import Tenant
 
 logger = get_logger("data_engine")
 
@@ -32,6 +31,48 @@ class DataEngine:
     def __init__(self, db_session: AsyncSession):
         self.db = db_session
         self.metadata_logger = MetadataLogger(logger)
+
+    def _validate_and_quote_identifier(self, identifier: str) -> str:
+        """
+        Validate and safely quote SQL identifiers to prevent injection.
+        
+        Args:
+            identifier: Table name, column name, etc.
+            
+        Returns:
+            Safely quoted identifier
+            
+        Raises:
+            ValidationException: If identifier is invalid
+        """
+        # Basic validation - only allow alphanumeric, underscore, and dollar sign
+        import re
+        if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_$]*$', identifier):
+            raise ValidationException(f"Invalid identifier: {identifier}")
+        
+        # Prevent SQL keywords and dangerous identifiers
+        dangerous_keywords = {
+            'drop', 'delete', 'insert', 'update', 'alter', 'create', 'truncate',
+            'exec', 'execute', 'union', 'select', 'from', 'where', 'join'
+        }
+        
+        if identifier.lower() in dangerous_keywords:
+            raise ValidationException(f"Identifier cannot be SQL keyword: {identifier}")
+            
+        # Return quoted identifier for PostgreSQL
+        return f'"{identifier}"'
+
+    def _validate_column_names(self, columns: List[str]) -> List[str]:
+        """
+        Validate and quote a list of column names.
+        
+        Args:
+            columns: List of column names
+            
+        Returns:
+            List of safely quoted column names
+        """
+        return [self._validate_and_quote_identifier(col) for col in columns]
 
     async def get_entity_definition(
         self,
@@ -417,7 +458,7 @@ class DataEngine:
     async def get_entity_list_views(
         self,
         entity_name: str,
-        tenant_id: Optional[str] = None,
+        tenant_id: Optional[UUID] = None,
         is_public: Optional[bool] = None
     ) -> List[Dict[str, Any]]:
         """Get all list view definitions for an entity."""
@@ -607,7 +648,7 @@ class DataEngine:
     async def get_entity_data(
         self,
         entity_name: str,
-        tenant_id: Optional[str] = None,
+        tenant_id: Optional[UUID] = None,
         view_name: Optional[str] = None,
         page: int = 1,
         page_size: int = 25,
@@ -627,12 +668,12 @@ class DataEngine:
             if not entity_data:
                 raise Exception(f"Entity '{entity_name}' not found")
             
-            # For now, we'll use a simplified approach assuming data is in a table
-            # named after the entity (this would be extended for dynamic table creation)
-            table_name = entity_name.lower() + "s"  # Simple pluralization
+            # Get table name from entity definition (consistent with other methods)
+            table_name = entity_data.get("table_name", entity_name.lower())
+            safe_table_name = self._validate_and_quote_identifier(table_name)
             
             # Build base query
-            query_parts = [f"SELECT * FROM {table_name}"]
+            query_parts = [f"SELECT * FROM {safe_table_name}"]
             query_params = {}
             where_conditions = []
             
@@ -645,7 +686,8 @@ class DataEngine:
             if search and search_fields:
                 search_conditions = []
                 for field in search_fields:
-                    search_conditions.append(f"LOWER({field}::text) LIKE LOWER(:search)")
+                    safe_field = self._validate_and_quote_identifier(field)
+                    search_conditions.append(f"LOWER({safe_field}::text) LIKE LOWER(:search)")
                 if search_conditions:
                     where_conditions.append(f"({' OR '.join(search_conditions)})")
                     query_params["search"] = f"%{search}%"
@@ -654,8 +696,9 @@ class DataEngine:
             if filters:
                 for field, value in filters.items():
                     if value is not None:
+                        safe_field = self._validate_and_quote_identifier(field)
                         param_name = f"filter_{field}"
-                        where_conditions.append(f"{field} = :{param_name}")
+                        where_conditions.append(f"{safe_field} = :{param_name}")
                         query_params[param_name] = value
             
             # Add WHERE clause if we have conditions
@@ -664,11 +707,15 @@ class DataEngine:
             
             # Add sorting
             if sort_field:
-                order_clause = f"ORDER BY {sort_field} {sort_order}"
+                safe_sort_field = self._validate_and_quote_identifier(sort_field)
+                # Validate sort order
+                if sort_order.upper() not in ("ASC", "DESC"):
+                    sort_order = "ASC"
+                order_clause = f"ORDER BY {safe_sort_field} {sort_order}"
                 query_parts.append(order_clause)
             
             # Build count query for pagination
-            count_query = f"SELECT COUNT(*) as total FROM {table_name}"
+            count_query = f"SELECT COUNT(*) as total FROM {safe_table_name}"
             if where_conditions:
                 count_query += f" WHERE {' AND '.join(where_conditions)}"
             
@@ -719,4 +766,441 @@ class DataEngine:
             
         except Exception as e:
             logger.error(f"Error getting data for entity {entity_name}: {str(e)}")
-            raise 
+            raise
+
+    async def create_entity(
+        self,
+        entity_name: str,
+        data: Dict[str, Any],
+        user_id: Optional[UUID] = None
+    ) -> Dict[str, Any]:
+        """
+        Create a new entity record.
+        
+        Args:
+            entity_name: Name of the entity to create
+            data: Entity data to create
+            user_id: ID of user creating the entity
+            
+        Returns:
+            Created entity data with ID
+        """
+        
+        try:
+            # Get entity definition for table name and validation
+            entity_def = await self.get_entity_definition(entity_name)
+            if not entity_def:
+                raise ValidationException(f"Entity definition not found: {entity_name}")
+            
+            table_name = entity_def.get("table_name", entity_name.lower())
+            safe_table_name = self._validate_and_quote_identifier(table_name)
+            
+            # Add standard fields
+            from uuid import uuid4
+            from datetime import datetime
+            data["id"] = str(uuid4()) if "id" not in data else data["id"]
+            data["created_at"] = datetime.utcnow()
+            data["updated_at"] = datetime.utcnow()
+            if user_id:
+                data["created_by"] = str(user_id)
+                data["updated_by"] = str(user_id)
+            
+            # Build INSERT query with safe identifiers
+            columns = list(data.keys())
+            safe_columns = self._validate_column_names(columns)
+            placeholders = [f":{col}" for col in columns]
+            
+            insert_sql = f"""
+                INSERT INTO {safe_table_name} ({', '.join(safe_columns)})
+                VALUES ({', '.join(placeholders)})
+                RETURNING *
+            """
+            
+            # Execute insert
+            result = await self.db.execute(text(insert_sql), data)
+            created_record = result.fetchone()
+            
+            if created_record:
+                return dict(created_record._mapping)
+            else:
+                raise ValidationException("Failed to create entity")
+                
+        except Exception as e:
+            logger.error(f"Error creating {entity_name}: {str(e)}")
+            raise
+
+    async def list_entities(
+        self,
+        entity_name: str,
+        query_config: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        """
+        List entities with filtering and pagination.
+        
+        Args:
+            entity_name: Name of the entity to list
+            query_config: Query configuration with filters, sorting, pagination
+            
+        Returns:
+            List of entity records
+        """
+        
+        try:
+            # Get entity definition
+            entity_def = await self.get_entity_definition(entity_name)
+            if not entity_def:
+                raise ValidationException(f"Entity definition not found: {entity_name}")
+            
+            table_name = entity_def.get("table_name", entity_name.lower())
+            safe_table_name = self._validate_and_quote_identifier(table_name)
+            
+            # Build base query
+            query = f"SELECT * FROM {safe_table_name}"
+            params = {}
+            conditions = []
+            
+            # Add filters
+            filters = query_config.get("filters", {})
+            for field, value in filters.items():
+                if value is not None:
+                    safe_field = self._validate_and_quote_identifier(field)
+                    conditions.append(f"{safe_field} = :{field}")
+                    params[field] = value
+            
+            # Add WHERE clause
+            if conditions:
+                query += f" WHERE {' AND '.join(conditions)}"
+            
+            # Add sorting
+            sort_by = query_config.get("sort_by", "created_at")
+            sort_order = query_config.get("sort_order", "DESC")
+            safe_sort_by = self._validate_and_quote_identifier(sort_by)
+            # Validate sort order
+            if sort_order.upper() not in ("ASC", "DESC"):
+                sort_order = "DESC"
+            query += f" ORDER BY {safe_sort_by} {sort_order}"
+            
+            # Add pagination
+            page = query_config.get("page", 1)
+            limit = query_config.get("limit", 25)
+            offset = (page - 1) * limit
+            query += f" LIMIT {limit} OFFSET {offset}"
+            
+            # Execute query
+            result = await self.db.execute(text(query), params)
+            records = result.fetchall()
+            
+            return [dict(record._mapping) for record in records]
+            
+        except Exception as e:
+            logger.error(f"Error listing {entity_name}: {str(e)}")
+            raise
+
+    async def count_entities(
+        self,
+        entity_name: str,
+        filters: Dict[str, Any] = None
+    ) -> int:
+        """
+        Count entities with optional filtering.
+        
+        Args:
+            entity_name: Name of the entity to count
+            filters: Optional filters to apply
+            
+        Returns:
+            Total count of matching entities
+        """
+        
+        try:
+            # Get entity definition
+            entity_def = await self.get_entity_definition(entity_name)
+            if not entity_def:
+                raise ValidationException(f"Entity definition not found: {entity_name}")
+            
+            table_name = entity_def.get("table_name", entity_name.lower())
+            safe_table_name = self._validate_and_quote_identifier(table_name)
+            
+            # Build count query
+            query = f"SELECT COUNT(*) as count FROM {safe_table_name}"
+            params = {}
+            conditions = []
+            
+            # Add filters
+            if filters:
+                for field, value in filters.items():
+                    if value is not None:
+                        safe_field = self._validate_and_quote_identifier(field)
+                        conditions.append(f"{safe_field} = :{field}")
+                        params[field] = value
+            
+            # Add WHERE clause
+            if conditions:
+                query += f" WHERE {' AND '.join(conditions)}"
+            
+            # Execute query
+            result = await self.db.execute(text(query), params)
+            
+            return result.scalar() or 0
+            
+        except Exception as e:
+            logger.error(f"Error counting {entity_name}: {str(e)}")
+            raise
+
+    async def get_entity(
+        self,
+        entity_name: str,
+        entity_id: UUID,
+        tenant_id: Optional[UUID] = None
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Get a single entity by ID.
+        
+        Args:
+            entity_name: Name of the entity to get
+            entity_id: ID of the entity
+            tenant_id: Optional tenant filter
+            
+        Returns:
+            Entity data or None if not found
+        """
+        
+        try:
+            # Get entity definition
+            entity_def = await self.get_entity_definition(entity_name)
+            if not entity_def:
+                raise ValidationException(f"Entity definition not found: {entity_name}")
+            
+            table_name = entity_def.get("table_name", entity_name.lower())
+            safe_table_name = self._validate_and_quote_identifier(table_name)
+            
+            # Build query
+            query = f"SELECT * FROM {safe_table_name} WHERE id = :entity_id"
+            params = {"entity_id": str(entity_id)}
+            
+            # Add tenant filter if provided
+            if tenant_id:
+                query += " AND tenant_id = :tenant_id"
+                params["tenant_id"] = str(tenant_id)
+            
+            # Execute query
+            result = await self.db.execute(text(query), params)
+            record = result.fetchone()
+            
+            return dict(record._mapping) if record else None
+            
+        except Exception as e:
+            logger.error(f"Error getting {entity_name} {entity_id}: {str(e)}")
+            raise
+
+    async def update_entity(
+        self,
+        entity_name: str,
+        entity_id: UUID,
+        data: Dict[str, Any],
+        user_id: Optional[UUID] = None
+    ) -> Dict[str, Any]:
+        """
+        Update an existing entity.
+        
+        Args:
+            entity_name: Name of the entity to update
+            entity_id: ID of the entity to update
+            data: Updated entity data
+            user_id: ID of user updating the entity
+            
+        Returns:
+            Updated entity data
+        """
+        
+        try:
+            # Get entity definition
+            entity_def = await self.get_entity_definition(entity_name)
+            if not entity_def:
+                raise ValidationException(f"Entity definition not found: {entity_name}")
+            
+            table_name = entity_def.get("table_name", entity_name.lower())
+            safe_table_name = self._validate_and_quote_identifier(table_name)
+            
+            # Add standard fields
+            from datetime import datetime
+            data["updated_at"] = datetime.utcnow()
+            if user_id:
+                data["updated_by"] = str(user_id)
+            
+            # Remove id from update data if present
+            data.pop("id", None)
+            data.pop("created_at", None)
+            data.pop("created_by", None)
+            
+            # Build UPDATE query with safe identifiers
+            set_clauses = []
+            for col in data.keys():
+                safe_col = self._validate_and_quote_identifier(col)
+                set_clauses.append(f"{safe_col} = :{col}")
+            
+            update_sql = f"""
+                UPDATE {safe_table_name}
+                SET {', '.join(set_clauses)}
+                WHERE id = :entity_id
+                RETURNING *
+            """
+            
+            # Add entity_id to params
+            params = data.copy()
+            params["entity_id"] = str(entity_id)
+            
+            # Execute update
+            result = await self.db.execute(text(update_sql), params)
+            updated_record = result.fetchone()
+            
+            if updated_record:
+                return dict(updated_record._mapping)
+            else:
+                raise ValidationException(f"Entity not found: {entity_id}")
+                
+        except Exception as e:
+            logger.error(f"Error updating {entity_name} {entity_id}: {str(e)}")
+            raise
+
+    async def delete_entity(
+        self,
+        entity_name: str,
+        entity_id: UUID,
+        soft_delete: bool = True,
+        user_id: Optional[UUID] = None
+    ) -> bool:
+        """
+        Delete an entity (soft or hard delete).
+        
+        Args:
+            entity_name: Name of the entity to delete
+            entity_id: ID of the entity to delete
+            soft_delete: Whether to perform soft delete (default True)
+            user_id: ID of user deleting the entity
+            
+        Returns:
+            True if deletion was successful
+        """
+        
+        try:
+            # Get entity definition
+            entity_def = await self.get_entity_definition(entity_name)
+            if not entity_def:
+                raise ValidationException(f"Entity definition not found: {entity_name}")
+            
+            table_name = entity_def.get("table_name", entity_name.lower())
+            safe_table_name = self._validate_and_quote_identifier(table_name)
+            
+            if soft_delete:
+                # Soft delete - mark as deleted
+                from datetime import datetime
+                update_sql = f"""
+                    UPDATE {safe_table_name}
+                    SET deleted_at = :deleted_at, 
+                        deleted_by = :user_id,
+                        is_deleted = true
+                    WHERE id = :entity_id
+                """
+                
+                params = {
+                    "entity_id": str(entity_id),
+                    "user_id": str(user_id) if user_id else None,
+                    "deleted_at": datetime.utcnow()
+                }
+                
+                result = await self.db.execute(text(update_sql), params)
+                return result.rowcount > 0
+            else:
+                # Hard delete - remove from database
+                delete_sql = f"DELETE FROM {safe_table_name} WHERE id = :entity_id"
+                params = {"entity_id": str(entity_id)}
+                
+                result = await self.db.execute(text(delete_sql), params)
+                return result.rowcount > 0
+                
+        except Exception as e:
+            logger.error(f"Error deleting {entity_name} {entity_id}: {str(e)}")
+            raise
+
+    async def generate_report(
+        self,
+        report_type: str,
+        filters: Dict[str, Any] = None,
+        tenant_id: Optional[UUID] = None
+    ) -> Dict[str, Any]:
+        """
+        Generate reports based on entity data.
+        
+        Args:
+            report_type: Type of report to generate
+            filters: Optional filters to apply
+            tenant_id: Optional tenant filter
+            
+        Returns:
+            Report data
+        """
+        
+        try:
+            # This is a placeholder implementation
+            # In production, this would have specific report logic
+            
+            if report_type == "billing_summary":
+                # Example billing summary report
+                query = """
+                    SELECT 
+                        DATE_TRUNC('month', created_at) as month,
+                        COUNT(*) as total_entries,
+                        SUM(hours * rate) as total_revenue
+                    FROM timeentry
+                    WHERE 1=1
+                """
+                
+                params = {}
+                
+                # Add tenant filter
+                if tenant_id:
+                    query += " AND tenant_id = :tenant_id"
+                    params["tenant_id"] = str(tenant_id)
+                
+                # Add date filters if provided
+                if filters and "start_date" in filters:
+                    query += " AND created_at >= :start_date"
+                    params["start_date"] = filters["start_date"]
+                
+                if filters and "end_date" in filters:
+                    query += " AND created_at <= :end_date"
+                    params["end_date"] = filters["end_date"]
+                
+                query += " GROUP BY DATE_TRUNC('month', created_at) ORDER BY month DESC"
+                
+                result = await self.db.execute(text(query), params)
+                records = result.fetchall()
+                
+                return {
+                    "report_type": report_type,
+                    "data": [dict(record._mapping) for record in records],
+                    "generated_at": "NOW()",
+                    "filters": filters or {}
+                }
+            else:
+                return {
+                    "report_type": report_type,
+                    "data": [],
+                    "message": f"Report type {report_type} not implemented",
+                    "generated_at": "NOW()"
+                }
+                
+        except Exception as e:
+            logger.error(f"Error generating report {report_type}: {str(e)}")
+            raise
+
+    async def _cache_metadata(self, *args, **kwargs):
+        """
+        Placeholder for metadata caching.
+        
+        This method is called by list view methods but not implemented.
+        In production, this would implement Redis or in-memory caching.
+        """
+        # For now, this is a no-op
+        pass 

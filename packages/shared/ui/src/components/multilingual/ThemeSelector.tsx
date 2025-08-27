@@ -8,7 +8,7 @@ export interface ThemeSelectorProps {
   size?: "sm" | "md" | "lg";
   className?: string;
   showLabels?: boolean;
-  onThemeChange?: (theme: "light" | "dark") => void;
+  onThemeChange?: (variant: "light" | "dark") => void;
 }
 
 export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
@@ -18,7 +18,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
   showLabels = false,
   onThemeChange,
 }) => {
-  const { theme, setTheme, toggleTheme } = useTheme();
+  const { theme, themeData, toggleTheme } = useTheme();
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -28,9 +28,19 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
     setIsClient(true);
   }, []);
 
-  const handleThemeChange = (newTheme: "light" | "dark") => {
-    setTheme(newTheme);
-    onThemeChange?.(newTheme);
+  const handleToggle = () => {
+    const currentVariant = themeData?.variant_name || "light";
+    const newVariant = currentVariant === "light" ? "dark" : "light";
+
+    console.log("🌙 ThemeSelector: Toggle clicked", {
+      currentVariant,
+      newVariant,
+      currentThemeData: themeData,
+      currentTheme: theme,
+    });
+
+    toggleTheme();
+    onThemeChange?.(newVariant);
     setIsOpen(false);
   };
 
@@ -51,21 +61,24 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
     ? t("select_theme", { ns: "auth" })
     : "Select theme";
 
-  // Use stable theme during SSR
-  const displayTheme = isClient ? theme : "light";
+  // Get current variant from theme metadata
+  const currentVariant = themeData?.variant_name || "light";
+
+  // Use stable variant during SSR
+  const displayVariant = isClient ? currentVariant : "light";
 
   if (variant === "toggle") {
     return (
       <button
         type="button"
-        onClick={toggleTheme}
+        onClick={handleToggle}
         className={`
           flex items-center justify-center border rounded-md
           transition-colors cursor-pointer focus:outline-none 
           focus:ring-2 focus:ring-blue-500 focus:border-blue-500
           ${sizeClasses[size]}
           ${
-            displayTheme === "dark"
+            displayVariant === "dark"
               ? "bg-gray-800 text-yellow-400 border-gray-600 hover:bg-gray-700"
               : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
           }
@@ -74,7 +87,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
         aria-label={ariaLabel}
       >
         {isClient ? (
-          displayTheme === "dark" ? (
+          displayVariant === "dark" ? (
             <Sun className={iconSizes[size]} />
           ) : (
             <Moon className={iconSizes[size]} />
@@ -102,7 +115,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
         )}
         {showLabels && (
           <span className="ml-2">
-            {displayTheme === "dark" ? "Light" : "Dark"}
+            {displayVariant === "dark" ? "Light" : "Dark"}
           </span>
         )}
       </button>
@@ -121,20 +134,20 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
             focus:border-blue-500 transition-colors cursor-pointer
             ${sizeClasses[size]}
             ${
-              displayTheme === "dark"
+              displayVariant === "dark"
                 ? "bg-gray-800 text-white border-gray-600 hover:bg-gray-700"
                 : "bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
             }
           `}
           aria-label={ariaLabel}
         >
-          {displayTheme === "dark" ? (
+          {displayVariant === "dark" ? (
             <Moon className={iconSizes[size]} />
           ) : (
             <Sun className={iconSizes[size]} />
           )}
           {showLabels && (
-            <span>{displayTheme === "dark" ? "Dark" : "Light"}</span>
+            <span>{displayVariant === "dark" ? "Dark" : "Light"}</span>
           )}
           <svg
             className={`w-4 h-4 transition-transform ${
@@ -158,7 +171,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
             className={`
             absolute top-full left-0 mt-1 w-full rounded-md shadow-lg z-50
             ${
-              displayTheme === "dark"
+              displayVariant === "dark"
                 ? "bg-gray-800 border-gray-600"
                 : "bg-white border-gray-300"
             }
@@ -166,12 +179,12 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
           >
             <button
               type="button"
-              onClick={() => handleThemeChange("light")}
+              onClick={handleToggle}
               className={`
                 w-full flex items-center space-x-2 px-3 py-2 text-left
                 focus:outline-none transition-colors cursor-pointer rounded-t-md
                 ${
-                  displayTheme === "light"
+                  displayVariant === "light"
                     ? "bg-blue-50 text-blue-700 font-medium"
                     : "text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-gray-700"
                 }
@@ -179,7 +192,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
             >
               <Sun className={iconSizes[size]} />
               <span>Light</span>
-              {displayTheme === "light" && (
+              {displayVariant === "light" && (
                 <svg
                   className="w-4 h-4 text-blue-500 ml-auto"
                   fill="none"
@@ -197,12 +210,12 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => handleThemeChange("dark")}
+              onClick={handleToggle}
               className={`
                 w-full flex items-center space-x-2 px-3 py-2 text-left
                 focus:outline-none transition-colors cursor-pointer rounded-b-md
                 ${
-                  displayTheme === "dark"
+                  displayVariant === "dark"
                     ? "bg-blue-50 text-blue-700 font-medium"
                     : "text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-gray-700"
                 }
@@ -210,7 +223,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
             >
               <Moon className={iconSizes[size]} />
               <span>Dark</span>
-              {displayTheme === "dark" && (
+              {displayVariant === "dark" && (
                 <svg
                   className="w-4 h-4 text-blue-500 ml-auto"
                   fill="none"
@@ -237,12 +250,12 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
       <div className={`flex space-x-1 ${className}`}>
         <button
           type="button"
-          onClick={() => handleThemeChange("light")}
+          onClick={handleToggle}
           className={`
             flex items-center space-x-1 border rounded-md font-medium
             transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer
             ${
-              displayTheme === "light"
+              displayVariant === "light"
                 ? "bg-blue-600 text-white border-blue-600"
                 : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
             }
@@ -254,12 +267,12 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
         </button>
         <button
           type="button"
-          onClick={() => handleThemeChange("dark")}
+          onClick={handleToggle}
           className={`
             flex items-center space-x-1 border rounded-md font-medium
             transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer
             ${
-              displayTheme === "dark"
+              displayVariant === "dark"
                 ? "bg-blue-600 text-white border-blue-600"
                 : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
             }

@@ -1,0 +1,169 @@
+[
+  {
+    "permission_id": "21111111-1111-1111-1111-111111111111",
+    "permission_name": "TENANT.*.*.*",
+    "display_name": "Tenant Super Admin",
+    "description": "Complete tenant administration - for customer admins",
+    "scope": "TENANT",
+    "module": "*",
+    "feature": "*",
+    "action": "*",
+    "is_wildcard": true,
+    "is_critical": true,
+    "requires_approval": true,
+    "customer_visible": true,
+    "billing_tier": "enterprise",
+    "includes_permissions": [
+      "TENANT.APPLICATIONS.*.*",
+      "TENANT.USERS.*.*",
+      "TENANT.INTEGRATIONS.*.*",
+      "TENANT.BRANDING.*.*"
+    ],
+    "metadata_json": {
+      "tenant_admin": true,
+      "customer_role": true,
+      "audit_required": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  },
+  {
+    "permission_id": "22222222-2222-2222-2222-222222222222",
+    "permission_name": "TENANT.APPLICATIONS.BUILDER.ACCESS",
+    "display_name": "Access Application Builder",
+    "description": "Access the application builder to create custom business applications",
+    "scope": "TENANT",
+    "module": "APPLICATIONS",
+    "feature": "BUILDER",
+    "action": "ACCESS",
+    "is_wildcard": false,
+    "is_critical": false,
+    "requires_approval": false,
+    "customer_visible": true,
+    "billing_tier": "professional",
+    "metadata_json": {
+      "app_builder": true,
+      "user_friendly": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  },
+  {
+    "permission_id": "23333333-3333-3333-3333-333333333333",
+    "permission_name": "TENANT.APPLICATIONS.BUILDER.CREATE",
+    "display_name": "Create Applications",
+    "description": "Create new applications using templates and requirements gathering",
+    "scope": "TENANT",
+    "module": "APPLICATIONS",
+    "feature": "BUILDER",
+    "action": "CREATE",
+    "is_wildcard": false,
+    "is_critical": false,
+    "requires_approval": false,
+    "customer_visible": true,
+    "billing_tier": "professional",
+    "metadata_json": {
+      "app_creation": true,
+      "business_user": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  },
+  {
+    "permission_id": "24444444-4444-4444-4444-444444444444",
+    "permission_name": "TENANT.APPLICATIONS.BUILDER.DEPLOY",
+    "display_name": "Deploy Applications",
+    "description": "Deploy approved applications to production environment",
+    "scope": "TENANT",
+    "module": "APPLICATIONS",
+    "feature": "BUILDER",
+    "action": "DEPLOY",
+    "is_wildcard": false,
+    "is_critical": true,
+    "requires_approval": true,
+    "customer_visible": true,
+    "billing_tier": "enterprise",
+    "metadata_json": {
+      "production_access": true,
+      "audit_required": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  },
+  {
+    "permission_id": "25555555-5555-5555-5555-555555555555",
+    "permission_name": "TENANT.USERS.MANAGEMENT.CREATE",
+    "display_name": "Create Users",
+    "description": "Create new users within the tenant and assign basic roles",
+    "scope": "TENANT",
+    "module": "USERS",
+    "feature": "MANAGEMENT",
+    "action": "CREATE",
+    "is_wildcard": false,
+    "is_critical": false,
+    "requires_approval": false,
+    "customer_visible": true,
+    "billing_tier": "basic",
+    "metadata_json": {
+      "user_management": true,
+      "hr_function": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  },
+  {
+    "permission_id": "26666666-6666-6666-6666-666666666666",
+    "permission_name": "TENANT.USERS.PERMISSIONS.ASSIGN",
+    "display_name": "Assign User Permissions",
+    "description": "Assign permissions and roles to users within the tenant",
+    "scope": "TENANT",
+    "module": "USERS",
+    "feature": "PERMISSIONS",
+    "action": "ASSIGN",
+    "is_wildcard": false,
+    "is_critical": true,
+    "requires_approval": true,
+    "customer_visible": true,
+    "billing_tier": "professional",
+    "metadata_json": {
+      "permission_admin": true,
+      "audit_required": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  },
+  {
+    "permission_id": "27777777-7777-7777-7777-777777777777",
+    "permission_name": "TENANT.INTEGRATIONS.EXTERNAL.CONFIGURE",
+    "display_name": "Configure External Integrations",
+    "description": "Set up integrations with external systems and APIs",
+    "scope": "TENANT",
+    "module": "INTEGRATIONS",
+    "feature": "EXTERNAL",
+    "action": "CONFIGURE",
+    "is_wildcard": false,
+    "is_critical": true,
+    "requires_approval": true,
+    "customer_visible": true,
+    "billing_tier": "professional",
+    "metadata_json": {
+      "integration_admin": true,
+      "technical_user": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  },
+  {
+    "permission_id": "28888888-8888-8888-8888-888888888888",
+    "permission_name": "TENANT.BRANDING.CUSTOMIZATION.MODIFY",
+    "display_name": "Customize Branding",
+    "description": "Modify tenant branding, logos, colors, and white-label settings",
+    "scope": "TENANT",
+    "module": "BRANDING",
+    "feature": "CUSTOMIZATION",
+    "action": "MODIFY",
+    "is_wildcard": false,
+    "is_critical": false,
+    "requires_approval": false,
+    "customer_visible": true,
+    "billing_tier": "professional",
+    "metadata_json": {
+      "white_label": true,
+      "marketing_admin": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  }
+]

@@ -1,7 +1,7 @@
 // Shared types and constants - server-safe
 
 // Core language types
-export type Language = "el" | "en";
+export type Language = "el" | "en" | string;
 export type TranslationKey = string;
 
 // Translation types
@@ -44,8 +44,8 @@ export interface LanguageResources {
 
 // User language preferences
 export interface UserLanguagePreferences {
-  primaryLanguage: Language;
-  fallbackLanguage: Language;
+  primaryLanguage: Language | null;
+  fallbackLanguage: Language | null;
   dateFormat: "dd/MM/yyyy" | "MM/dd/yyyy" | "yyyy-MM-dd";
   numberFormat: "european" | "american";
   currency: "EUR" | "USD";
@@ -54,7 +54,7 @@ export interface UserLanguagePreferences {
 
 // Translation context types
 export interface TranslationContextValue {
-  language: Language;
+  language: Language | null;
   setLanguage: (language: Language) => void;
   t: (key: string, options?: TranslationOptions) => string;
   resources: LanguageResources;

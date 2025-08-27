@@ -1239,10 +1239,13 @@ export const FieldBuilder: React.FC<FieldBuilderProps> = ({
               ? `${t("configuring", {
                   ns: "fields",
                   defaultValue: "Configuring",
-                })} ${getFieldTypeLabel(selectedType, language)} ${t("field", {
-                  ns: "fields",
-                  defaultValue: "field",
-                })}`
+                })} ${getFieldTypeLabel(selectedType, language as "el" | "en")} ${t(
+                  "field",
+                  {
+                    ns: "fields",
+                    defaultValue: "field",
+                  }
+                )}`
               : t("field_builder_description", {
                   ns: "fields",
                   defaultValue:

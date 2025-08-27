@@ -1,0 +1,380 @@
+{
+  "page_name": "time_entry",
+  "page_title_key": "time_entry_title",
+  "page_type": "FORM",
+  "route_path": "/time-entry",
+  "vertical": "LEGAL",
+  "supported_languages": ["en-US", "es-US"],
+  "theme_variants": ["light", "dark"],
+  "accessibility_level": "WCAG_2_1_AA",
+  "page_config": {
+    "entity": "TimeEntry",
+    "layout": "legal_form_layout",
+    "permissions": ["create_time_entry"],
+    "form_config": {
+      "form_type": "create_edit",
+      "validation_mode": "real_time",
+      "auto_save": true,
+      "auto_save_interval": 30,
+      "ai_assistance": true
+    },
+    "header": {
+      "title_key": "time_entry_title",
+      "subtitle_key": "time_entry_subtitle",
+      "actions": [
+        {
+          "action_id": "timer_toggle",
+          "label_key": "start_timer",
+          "type": "timer_button",
+          "icon": "play",
+          "toggle_states": {
+            "start": {
+              "label_key": "start_timer",
+              "icon": "play",
+              "color": "green"
+            },
+            "stop": {
+              "label_key": "stop_timer",
+              "icon": "pause",
+              "color": "red"
+            }
+          }
+        },
+        {
+          "action_id": "ai_suggestions",
+          "label_key": "ai_suggestions",
+          "type": "secondary_button",
+          "icon": "brain",
+          "action": "show_ai_suggestions"
+        }
+      ]
+    },
+    "form_sections": [
+      {
+        "section_id": "matter_selection",
+        "title_key": "matter_selection",
+        "order": 1,
+        "collapsible": false,
+        "fields": [
+          {
+            "field_name": "matter_id",
+            "label_key": "matter_selection",
+            "field_type": "entity_select",
+            "entity": "Matter",
+            "required": true,
+            "search_enabled": true,
+            "display_field": "matter_name",
+            "additional_fields": ["client_name", "practice_area"],
+            "filter": {
+              "matter_status": ["Open", "Active"]
+            },
+            "validation": ["required"],
+            "col_span": 12,
+            "ai_suggestions": {
+              "enabled": true,
+              "based_on": [
+                "recent_matters",
+                "attorney_assignment",
+                "practice_area"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "section_id": "time_details",
+        "title_key": "time_details",
+        "order": 2,
+        "collapsible": false,
+        "fields": [
+          {
+            "field_name": "entry_date",
+            "label_key": "entry_date",
+            "field_type": "date",
+            "required": true,
+            "default_value": "today",
+            "validation": ["required", "not_future"],
+            "col_span": 4
+          },
+          {
+            "field_name": "start_time",
+            "label_key": "start_time",
+            "field_type": "time",
+            "required": false,
+            "help_text_key": "start_time_help",
+            "col_span": 4,
+            "timer_integration": true
+          },
+          {
+            "field_name": "end_time",
+            "label_key": "end_time",
+            "field_type": "time",
+            "required": false,
+            "help_text_key": "end_time_help",
+            "validation": ["after:start_time"],
+            "col_span": 4,
+            "timer_integration": true
+          },
+          {
+            "field_name": "hours_worked",
+            "label_key": "hours_worked",
+            "field_type": "decimal",
+            "required": true,
+            "precision": 2,
+            "min_value": 0.1,
+            "max_value": 24,
+            "validation": ["required", "numeric", "min:0.1", "max:24"],
+            "col_span": 6,
+            "calculated_field": {
+              "formula": "TIME_DIFF(start_time, end_time)",
+              "auto_calculate": true
+            }
+          },
+          {
+            "field_name": "billing_rate",
+            "label_key": "billing_rate",
+            "field_type": "currency",
+            "required": false,
+            "help_text_key": "billing_rate_help",
+            "col_span": 6,
+            "calculated_field": {
+              "source": "attorney_default_rate",
+              "auto_populate": true
+            }
+          }
+        ]
+      },
+      {
+        "section_id": "activity_details",
+        "title_key": "activity_details",
+        "order": 3,
+        "collapsible": false,
+        "fields": [
+          {
+            "field_name": "activity_type",
+            "label_key": "activity_type",
+            "field_type": "select",
+            "required": true,
+            "options_source": "field_options",
+            "validation": ["required"],
+            "col_span": 6,
+            "ai_suggestions": {
+              "enabled": true,
+              "based_on": [
+                "description_analysis",
+                "matter_context",
+                "time_patterns"
+              ]
+            }
+          },
+          {
+            "field_name": "billing_status",
+            "label_key": "billing_status",
+            "field_type": "select",
+            "required": true,
+            "options_source": "field_options",
+            "default_value": "Billable",
+            "validation": ["required"],
+            "col_span": 6,
+            "ai_suggestions": {
+              "enabled": true,
+              "based_on": [
+                "activity_type",
+                "matter_billing_arrangement",
+                "client_agreement"
+              ]
+            }
+          },
+          {
+            "field_name": "description",
+            "label_key": "description",
+            "field_type": "textarea",
+            "required": true,
+            "min_length": 10,
+            "max_length": 1000,
+            "validation": ["required", "min_length:10", "max_length:1000"],
+            "col_span": 12,
+            "ai_assistance": {
+              "enabled": true,
+              "features": [
+                "auto_complete",
+                "grammar_check",
+                "professional_tone",
+                "activity_suggestions"
+              ]
+            },
+            "templates": {
+              "enabled": true,
+              "source": "user_templates"
+            }
+          }
+        ]
+      },
+      {
+        "section_id": "additional_details",
+        "title_key": "additional_details",
+        "order": 4,
+        "collapsible": true,
+        "collapsed_by_default": true,
+        "fields": [
+          {
+            "field_name": "location",
+            "label_key": "location",
+            "field_type": "select",
+            "required": false,
+            "options_source": "field_options",
+            "default_value": "Office",
+            "col_span": 6
+          },
+          {
+            "field_name": "task_code",
+            "label_key": "task_code",
+            "field_type": "text",
+            "required": false,
+            "help_text_key": "utbms_task_code_help",
+            "col_span": 6,
+            "ai_suggestions": {
+              "enabled": true,
+              "based_on": ["activity_type", "description_analysis"]
+            }
+          },
+          {
+            "field_name": "notes",
+            "label_key": "notes",
+            "field_type": "textarea",
+            "required": false,
+            "max_length": 2000,
+            "col_span": 12,
+            "help_text_key": "internal_notes_help"
+          }
+        ]
+      }
+    ],
+    "form_actions": [
+      {
+        "action": "save",
+        "label_key": "save_entry",
+        "type": "primary",
+        "icon": "save",
+        "keyboard_shortcut": "Ctrl+S"
+      },
+      {
+        "action": "save_and_new",
+        "label_key": "save_and_new",
+        "type": "secondary",
+        "icon": "plus",
+        "keyboard_shortcut": "Ctrl+Shift+S"
+      },
+      {
+        "action": "save_and_approve",
+        "label_key": "save_and_approve",
+        "type": "success",
+        "icon": "check",
+        "permissions": ["approve_time_entries"]
+      },
+      {
+        "action": "cancel",
+        "label_key": "cancel",
+        "type": "outline",
+        "icon": "x"
+      }
+    ],
+    "ai_features": {
+      "smart_categorization": {
+        "enabled": true,
+        "auto_suggest_activity": true,
+        "auto_suggest_billing_status": true,
+        "confidence_threshold": 0.8
+      },
+      "description_enhancement": {
+        "enabled": true,
+        "grammar_correction": true,
+        "professional_tone": true,
+        "template_suggestions": true
+      },
+      "productivity_insights": {
+        "enabled": true,
+        "time_pattern_analysis": true,
+        "efficiency_suggestions": true,
+        "burnout_detection": true
+      },
+      "duplicate_detection": {
+        "enabled": true,
+        "check_same_day": true,
+        "check_overlapping_times": true,
+        "similarity_threshold": 0.9
+      }
+    },
+    "timer_features": {
+      "background_tracking": true,
+      "idle_detection": true,
+      "idle_threshold_minutes": 5,
+      "activity_detection": true,
+      "application_tracking": true,
+      "reminder_intervals": [30, 60, 120],
+      "auto_save_on_stop": true
+    },
+    "validation_rules": {
+      "real_time_validation": true,
+      "conflict_checking": true,
+      "reasonable_hours_check": true,
+      "overlapping_time_check": true,
+      "matter_budget_check": true
+    }
+  },
+  "sidebar_config": {
+    "enabled": true,
+    "widgets": [
+      {
+        "widget_id": "recent_entries",
+        "title_key": "recent_entries",
+        "type": "time_entry_list",
+        "limit": 5,
+        "filter": {
+          "attorney_id": "current_user",
+          "entry_date": "last_7_days"
+        }
+      },
+      {
+        "widget_id": "ai_suggestions",
+        "title_key": "ai_suggestions",
+        "type": "ai_suggestions_widget",
+        "suggestions": [
+          "activity_suggestions",
+          "time_optimization",
+          "billing_recommendations"
+        ]
+      },
+      {
+        "widget_id": "time_summary",
+        "title_key": "time_summary",
+        "type": "time_summary_widget",
+        "periods": ["today", "week", "month"]
+      }
+    ]
+  },
+  "responsive_config": {
+    "mobile": {
+      "single_column": true,
+      "collapsed_sections": ["additional_details"],
+      "sticky_actions": true,
+      "swipe_gestures": true
+    },
+    "tablet": {
+      "two_column": true,
+      "compact_spacing": true
+    }
+  },
+  "performance_config": {
+    "auto_save": true,
+    "auto_save_interval": 30,
+    "lazy_load_suggestions": true,
+    "debounce_ai_calls": 500
+  },
+  "security_config": {
+    "field_level_permissions": true,
+    "audit_trail": true,
+    "encryption_fields": ["notes"],
+    "conflict_checking": true
+  }
+}

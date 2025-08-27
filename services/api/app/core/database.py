@@ -40,8 +40,15 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 async def create_tables():
     """Create all database tables."""
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+    except Exception as e:
+        # Log the error but don't fail startup if tables already exist
+        if "already exists" in str(e):
+            print(f"Tables/indexes already exist: {e}")
+        else:
+            raise e
 
 
 async def drop_tables():

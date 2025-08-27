@@ -1,0 +1,346 @@
+{
+  "entity_name": "Invoice",
+  "display_label": "Invoice",
+  "plural_label": "Invoices",
+  "description": "Legal billing invoices with IOLTA compliance and payment processing",
+  "category": "BILLING",
+  "is_system_entity": false,
+  "vertical": "LEGAL",
+  "business_rules": [
+    "iolta_compliance",
+    "payment_terms_validation",
+    "trust_account_handling",
+    "aging_calculation",
+    "payment_processing"
+  ],
+  "validation_rules": [
+    "required_fields",
+    "valid_amounts",
+    "client_matter_validation"
+  ],
+  "workflow_triggers": [
+    "invoice_generated",
+    "payment_received",
+    "overdue_alert"
+  ],
+  "audit_enabled": true,
+  "soft_delete": true,
+  "fields": [
+    {
+      "field_name": "invoice_number",
+      "label_key": "invoice.invoice_number",
+      "data_type": "string",
+      "is_required": true,
+      "max_length": 50,
+      "validation_rules": ["required", "unique", "max_length:50"],
+      "auto_generate": true,
+      "display_order": 1
+    },
+    {
+      "field_name": "client_id",
+      "label_key": "invoice.client_id",
+      "data_type": "foreign_key",
+      "is_required": true,
+      "related_entity": "Client",
+      "validation_rules": ["required", "exists:Client,id"],
+      "display_order": 2
+    },
+    {
+      "field_name": "matter_id",
+      "label_key": "invoice.matter_id",
+      "data_type": "foreign_key",
+      "is_required": false,
+      "related_entity": "Matter",
+      "validation_rules": ["exists:Matter,id"],
+      "help_text": "Primary matter (can include multiple matters)",
+      "display_order": 3
+    },
+    {
+      "field_name": "invoice_date",
+      "label_key": "invoice.invoice_date",
+      "data_type": "date",
+      "is_required": true,
+      "default_value": "today",
+      "validation_rules": ["required", "date"],
+      "display_order": 4
+    },
+    {
+      "field_name": "due_date",
+      "label_key": "invoice.due_date",
+      "data_type": "date",
+      "is_required": true,
+      "validation_rules": ["required", "date", "after:invoice_date"],
+      "help_text": "Payment due date based on client payment terms",
+      "display_order": 5,
+      "is_calculated": true
+    },
+    {
+      "field_name": "billing_period_start",
+      "label_key": "invoice.billing_period_start",
+      "data_type": "date",
+      "is_required": false,
+      "validation_rules": ["date"],
+      "display_order": 6
+    },
+    {
+      "field_name": "billing_period_end",
+      "label_key": "invoice.billing_period_end",
+      "data_type": "date",
+      "is_required": false,
+      "validation_rules": ["date", "after:billing_period_start"],
+      "display_order": 7
+    },
+    {
+      "field_name": "subtotal_fees",
+      "label_key": "invoice.subtotal_fees",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 12,
+      "scale": 2,
+      "validation_rules": ["numeric", "min:0"],
+      "help_text": "Total fees before taxes and expenses",
+      "display_order": 8,
+      "is_calculated": true
+    },
+    {
+      "field_name": "subtotal_expenses",
+      "label_key": "invoice.subtotal_expenses",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 12,
+      "scale": 2,
+      "validation_rules": ["numeric", "min:0"],
+      "help_text": "Total expenses before taxes",
+      "display_order": 9,
+      "is_calculated": true
+    },
+    {
+      "field_name": "tax_amount",
+      "label_key": "invoice.tax_amount",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 12,
+      "scale": 2,
+      "validation_rules": ["numeric", "min:0"],
+      "help_text": "Sales tax or VAT amount",
+      "display_order": 10,
+      "is_calculated": true
+    },
+    {
+      "field_name": "total_amount",
+      "label_key": "invoice.total_amount",
+      "data_type": "decimal",
+      "is_required": true,
+      "precision": 12,
+      "scale": 2,
+      "validation_rules": ["required", "numeric", "min:0"],
+      "help_text": "Total invoice amount including taxes",
+      "display_order": 11,
+      "is_calculated": true
+    },
+    {
+      "field_name": "invoice_status",
+      "label_key": "invoice.invoice_status",
+      "data_type": "select",
+      "is_required": true,
+      "options": [
+        "Draft",
+        "Sent",
+        "Paid",
+        "Partial",
+        "Overdue",
+        "Cancelled",
+        "Void"
+      ],
+      "default_value": "Draft",
+      "validation_rules": ["required"],
+      "display_order": 12
+    },
+    {
+      "field_name": "payment_status",
+      "label_key": "invoice.payment_status",
+      "data_type": "select",
+      "is_required": false,
+      "options": ["Unpaid", "Partial", "Paid", "Overpaid", "Refunded"],
+      "default_value": "Unpaid",
+      "display_order": 13
+    },
+    {
+      "field_name": "amount_paid",
+      "label_key": "invoice.amount_paid",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 12,
+      "scale": 2,
+      "validation_rules": ["numeric", "min:0"],
+      "help_text": "Total amount paid against this invoice",
+      "display_order": 14,
+      "is_calculated": true
+    },
+    {
+      "field_name": "amount_due",
+      "label_key": "invoice.amount_due",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 12,
+      "scale": 2,
+      "validation_rules": ["numeric", "min:0"],
+      "help_text": "Remaining amount due",
+      "display_order": 15,
+      "is_calculated": true
+    },
+    {
+      "field_name": "payment_terms",
+      "label_key": "invoice.payment_terms",
+      "data_type": "select",
+      "is_required": false,
+      "options": ["Net 15", "Net 30", "Net 60", "Due on Receipt", "COD"],
+      "default_value": "Net 30",
+      "display_order": 16
+    },
+    {
+      "field_name": "late_fee_rate",
+      "label_key": "invoice.late_fee_rate",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 5,
+      "scale": 2,
+      "validation_rules": ["numeric", "min:0", "max:100"],
+      "help_text": "Late fee percentage per month",
+      "display_order": 17
+    },
+    {
+      "field_name": "currency_code",
+      "label_key": "invoice.currency_code",
+      "data_type": "string",
+      "is_required": false,
+      "max_length": 3,
+      "default_value": "USD",
+      "validation_rules": ["max_length:3"],
+      "display_order": 18
+    },
+    {
+      "field_name": "trust_account_id",
+      "label_key": "invoice.trust_account_id",
+      "data_type": "foreign_key",
+      "is_required": false,
+      "related_entity": "TrustAccount",
+      "validation_rules": ["exists:TrustAccount,id"],
+      "help_text": "IOLTA trust account for advance payments",
+      "display_order": 19
+    },
+    {
+      "field_name": "retainer_applied",
+      "label_key": "invoice.retainer_applied",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 12,
+      "scale": 2,
+      "validation_rules": ["numeric", "min:0"],
+      "help_text": "Amount applied from client retainer",
+      "display_order": 20
+    },
+    {
+      "field_name": "discount_amount",
+      "label_key": "invoice.discount_amount",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 12,
+      "scale": 2,
+      "validation_rules": ["numeric", "min:0"],
+      "help_text": "Discount amount applied to invoice",
+      "display_order": 21
+    },
+    {
+      "field_name": "discount_reason",
+      "label_key": "invoice.discount_reason",
+      "data_type": "string",
+      "is_required": false,
+      "max_length": 255,
+      "help_text": "Reason for discount application",
+      "display_order": 22
+    },
+    {
+      "field_name": "sent_date",
+      "label_key": "invoice.sent_date",
+      "data_type": "datetime",
+      "is_required": false,
+      "validation_rules": ["datetime"],
+      "help_text": "Date invoice was sent to client",
+      "display_order": 23
+    },
+    {
+      "field_name": "first_payment_date",
+      "label_key": "invoice.first_payment_date",
+      "data_type": "datetime",
+      "is_required": false,
+      "validation_rules": ["datetime"],
+      "display_order": 24,
+      "is_calculated": true
+    },
+    {
+      "field_name": "last_payment_date",
+      "label_key": "invoice.last_payment_date",
+      "data_type": "datetime",
+      "is_required": false,
+      "validation_rules": ["datetime"],
+      "display_order": 25,
+      "is_calculated": true
+    },
+    {
+      "field_name": "days_outstanding",
+      "label_key": "invoice.days_outstanding",
+      "data_type": "integer",
+      "is_required": false,
+      "validation_rules": ["integer", "min:0"],
+      "help_text": "Number of days since invoice due date",
+      "display_order": 26,
+      "is_calculated": true
+    },
+    {
+      "field_name": "collection_status",
+      "label_key": "invoice.collection_status",
+      "data_type": "select",
+      "is_required": false,
+      "options": [
+        "Current",
+        "30_Days",
+        "60_Days",
+        "90_Days",
+        "120_Days_Plus",
+        "Collection_Agency",
+        "Write_Off"
+      ],
+      "default_value": "Current",
+      "display_order": 27
+    },
+    {
+      "field_name": "invoice_template",
+      "label_key": "invoice.invoice_template",
+      "data_type": "string",
+      "is_required": false,
+      "max_length": 100,
+      "default_value": "standard",
+      "help_text": "Invoice template used for generation",
+      "display_order": 28
+    },
+    {
+      "field_name": "notes",
+      "label_key": "invoice.notes",
+      "data_type": "text",
+      "is_required": false,
+      "max_length": 2000,
+      "help_text": "Internal notes about this invoice",
+      "display_order": 29
+    },
+    {
+      "field_name": "client_memo",
+      "label_key": "invoice.client_memo",
+      "data_type": "text",
+      "is_required": false,
+      "max_length": 1000,
+      "help_text": "Memo visible to client on invoice",
+      "display_order": 30
+    }
+  ]
+}

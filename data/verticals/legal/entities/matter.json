@@ -1,0 +1,316 @@
+{
+  "entity_name": "Matter",
+  "display_label": "Matter",
+  "plural_label": "Matters",
+  "description": "Legal matters and cases",
+  "category": "CORE",
+  "is_system_entity": false,
+  "vertical": "LEGAL",
+  "business_rules": [
+    "matter_conflict_check",
+    "budget_tracking",
+    "statute_monitoring",
+    "billing_validation",
+    "ai_case_assessment",
+    "resource_optimization",
+    "deadline_intelligence",
+    "profitability_tracking"
+  ],
+  "validation_rules": [
+    "unique_matter_number",
+    "required_fields",
+    "valid_dates"
+  ],
+  "workflow_triggers": [
+    "matter_opened",
+    "status_changed",
+    "attorney_assigned",
+    "budget_exceeded"
+  ],
+  "audit_enabled": true,
+  "soft_delete": true,
+  "fields": [
+    {
+      "field_name": "matter_name",
+      "label_key": "matter.matter_name",
+      "data_type": "string",
+      "is_required": true,
+      "max_length": 255,
+      "validation_rules": ["required", "max_length:255"],
+      "display_order": 1
+    },
+    {
+      "field_name": "matter_number",
+      "label_key": "matter.matter_number",
+      "data_type": "string",
+      "is_required": true,
+      "max_length": 50,
+      "validation_rules": ["required", "unique", "max_length:50"],
+      "auto_generate": true,
+      "display_order": 2
+    },
+    {
+      "field_name": "client_id",
+      "label_key": "matter.client_id",
+      "data_type": "foreign_key",
+      "is_required": true,
+      "related_entity": "Client",
+      "validation_rules": ["required", "exists:Client,id"],
+      "display_order": 3
+    },
+    {
+      "field_name": "practice_area",
+      "label_key": "matter.practice_area",
+      "data_type": "select",
+      "is_required": true,
+      "options": [
+        "Corporate Law",
+        "Litigation",
+        "Real Estate",
+        "Family Law",
+        "Criminal Law",
+        "Immigration",
+        "Intellectual Property",
+        "Employment Law",
+        "Tax Law",
+        "Estate Planning"
+      ],
+      "validation_rules": ["required"],
+      "display_order": 4
+    },
+    {
+      "field_name": "matter_type",
+      "label_key": "matter.matter_type",
+      "data_type": "select",
+      "is_required": true,
+      "options": ["Case", "Transaction", "Advisory", "Compliance", "Other"],
+      "default_value": "Case",
+      "validation_rules": ["required"],
+      "display_order": 5
+    },
+    {
+      "field_name": "responsible_attorney",
+      "label_key": "matter.responsible_attorney",
+      "data_type": "foreign_key",
+      "is_required": true,
+      "related_entity": "User",
+      "validation_rules": ["required", "exists:User,id"],
+      "display_order": 6
+    },
+    {
+      "field_name": "matter_status",
+      "label_key": "matter.matter_status",
+      "data_type": "select",
+      "is_required": true,
+      "options": ["Open", "Active", "On Hold", "Closed", "Archived"],
+      "default_value": "Open",
+      "validation_rules": ["required"],
+      "display_order": 7
+    },
+    {
+      "field_name": "billing_arrangement",
+      "label_key": "matter.billing_arrangement",
+      "data_type": "select",
+      "is_required": true,
+      "options": ["Hourly", "Fixed Fee", "Contingency", "Retainer", "Pro Bono"],
+      "default_value": "Hourly",
+      "validation_rules": ["required"],
+      "display_order": 8
+    },
+    {
+      "field_name": "billing_rate",
+      "label_key": "matter.billing_rate",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 10,
+      "scale": 2,
+      "validation_rules": ["numeric", "min:0"],
+      "display_order": 9
+    },
+    {
+      "field_name": "estimated_hours",
+      "label_key": "matter.estimated_hours",
+      "data_type": "integer",
+      "is_required": false,
+      "validation_rules": ["integer", "min:0"],
+      "display_order": 10
+    },
+    {
+      "field_name": "budget_amount",
+      "label_key": "matter.budget_amount",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 12,
+      "scale": 2,
+      "validation_rules": ["numeric", "min:0"],
+      "display_order": 11
+    },
+    {
+      "field_name": "open_date",
+      "label_key": "matter.open_date",
+      "data_type": "date",
+      "is_required": true,
+      "default_value": "today",
+      "validation_rules": ["required", "date"],
+      "display_order": 12
+    },
+    {
+      "field_name": "statute_of_limitations",
+      "label_key": "matter.statute_of_limitations",
+      "data_type": "date",
+      "is_required": false,
+      "validation_rules": ["date", "after:open_date"],
+      "display_order": 13
+    },
+    {
+      "field_name": "case_strength_score",
+      "label_key": "matter.case_strength_score",
+      "data_type": "integer",
+      "is_required": false,
+      "validation_rules": ["integer", "min:0", "max:100"],
+      "help_text": "AI-generated case strength assessment (0-100)",
+      "display_order": 14,
+      "is_calculated": true
+    },
+    {
+      "field_name": "outcome_prediction",
+      "label_key": "matter.outcome_prediction",
+      "data_type": "select",
+      "is_required": false,
+      "options": [
+        "Favorable",
+        "Likely Favorable",
+        "Uncertain",
+        "Likely Unfavorable",
+        "Unfavorable"
+      ],
+      "help_text": "AI-predicted case outcome",
+      "display_order": 15,
+      "is_calculated": true
+    },
+    {
+      "field_name": "estimated_completion_date",
+      "label_key": "matter.estimated_completion_date",
+      "data_type": "date",
+      "is_required": false,
+      "validation_rules": ["date", "after:open_date"],
+      "help_text": "AI-predicted completion date",
+      "display_order": 16,
+      "is_calculated": true
+    },
+    {
+      "field_name": "total_time_spent",
+      "label_key": "matter.total_time_spent",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 10,
+      "scale": 2,
+      "validation_rules": ["numeric", "min:0"],
+      "help_text": "Total hours worked on this matter",
+      "display_order": 17,
+      "is_calculated": true
+    },
+    {
+      "field_name": "total_expenses",
+      "label_key": "matter.total_expenses",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 12,
+      "scale": 2,
+      "validation_rules": ["numeric", "min:0"],
+      "help_text": "Total expenses incurred for this matter",
+      "display_order": 18,
+      "is_calculated": true
+    },
+    {
+      "field_name": "total_billed",
+      "label_key": "matter.total_billed",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 12,
+      "scale": 2,
+      "validation_rules": ["numeric", "min:0"],
+      "help_text": "Total amount billed for this matter",
+      "display_order": 19,
+      "is_calculated": true
+    },
+    {
+      "field_name": "profitability_score",
+      "label_key": "matter.profitability_score",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 5,
+      "scale": 2,
+      "validation_rules": ["numeric"],
+      "help_text": "Matter profitability percentage",
+      "display_order": 20,
+      "is_calculated": true
+    },
+    {
+      "field_name": "priority_level",
+      "label_key": "matter.priority_level",
+      "data_type": "select",
+      "is_required": false,
+      "options": ["Low", "Normal", "High", "Urgent"],
+      "default_value": "Normal",
+      "display_order": 21
+    },
+    {
+      "field_name": "complexity_level",
+      "label_key": "matter.complexity_level",
+      "data_type": "select",
+      "is_required": false,
+      "options": ["Simple", "Moderate", "Complex", "Highly Complex"],
+      "default_value": "Moderate",
+      "display_order": 22
+    },
+    {
+      "field_name": "court_jurisdiction",
+      "label_key": "matter.court_jurisdiction",
+      "data_type": "string",
+      "is_required": false,
+      "max_length": 255,
+      "help_text": "Court or jurisdiction where matter is filed",
+      "display_order": 23
+    },
+    {
+      "field_name": "opposing_counsel",
+      "label_key": "matter.opposing_counsel",
+      "data_type": "string",
+      "is_required": false,
+      "max_length": 255,
+      "display_order": 24
+    },
+    {
+      "field_name": "next_deadline",
+      "label_key": "matter.next_deadline",
+      "data_type": "date",
+      "is_required": false,
+      "validation_rules": ["date"],
+      "help_text": "Next upcoming deadline for this matter",
+      "display_order": 25,
+      "is_calculated": true
+    },
+    {
+      "field_name": "settlement_target",
+      "label_key": "matter.settlement_target",
+      "data_type": "decimal",
+      "is_required": false,
+      "precision": 12,
+      "scale": 2,
+      "validation_rules": ["numeric", "min:0"],
+      "help_text": "Target settlement amount",
+      "display_order": 26
+    },
+    {
+      "field_name": "risk_assessment",
+      "label_key": "matter.risk_assessment",
+      "data_type": "select",
+      "is_required": false,
+      "options": ["Low Risk", "Medium Risk", "High Risk", "Critical Risk"],
+      "default_value": "Medium Risk",
+      "help_text": "Overall risk assessment for this matter",
+      "display_order": 27
+    }
+  ]
+}

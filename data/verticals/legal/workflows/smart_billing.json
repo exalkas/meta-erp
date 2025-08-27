@@ -1,0 +1,272 @@
+{
+  "process_code": "SMART_BILLING",
+  "process_name": "AI-Powered Billing Workflow",
+  "process_category": "BILLING_MANAGEMENT",
+  "description": "Intelligent time-to-bill workflow with AI optimization and IOLTA compliance",
+  "process_steps": {
+    "steps": [
+      {
+        "step_id": "time_entry_validation",
+        "step_name": "AI Time Entry Validation",
+        "step_type": "AI_VALIDATION",
+        "step_order": 1,
+        "required": true,
+        "ai_model": "time_validation_model",
+        "input_fields": [
+          "hours_worked",
+          "description",
+          "activity_type",
+          "attorney_id",
+          "matter_id"
+        ],
+        "output_fields": [
+          "validation_score",
+          "anomaly_flags",
+          "productivity_score",
+          "billing_recommendations"
+        ],
+        "business_rules": [
+          "reasonable_hours_check",
+          "duplicate_prevention",
+          "matter_active_validation"
+        ],
+        "automated": true,
+        "estimated_duration": 1
+      },
+      {
+        "step_id": "ai_categorization",
+        "step_name": "AI Activity Categorization",
+        "step_type": "AI_CLASSIFICATION",
+        "step_order": 2,
+        "required": true,
+        "ai_model": "activity_classifier_v3",
+        "input_fields": [
+          "description",
+          "activity_type",
+          "duration",
+          "matter_context"
+        ],
+        "output_fields": [
+          "suggested_category",
+          "confidence_score",
+          "utbms_codes",
+          "billing_status_recommendation"
+        ],
+        "automated": true,
+        "estimated_duration": 1
+      },
+      {
+        "step_id": "rate_optimization",
+        "step_name": "Dynamic Rate Optimization",
+        "step_type": "AI_OPTIMIZATION",
+        "step_order": 3,
+        "required": true,
+        "ai_model": "billing_rate_optimizer",
+        "input_fields": [
+          "attorney_id",
+          "client_id",
+          "practice_area",
+          "complexity_level",
+          "market_rates"
+        ],
+        "output_fields": [
+          "optimized_rate",
+          "discount_recommendations",
+          "premium_justification",
+          "competitive_analysis"
+        ],
+        "automated": true,
+        "estimated_duration": 2
+      },
+      {
+        "step_id": "approval_routing",
+        "step_name": "Intelligent Approval Routing",
+        "step_type": "CONDITIONAL_ROUTING",
+        "step_order": 4,
+        "required": true,
+        "routing_logic": {
+          "high_value_entries": "partner_approval",
+          "anomaly_detected": "supervisor_review",
+          "standard_entries": "auto_approve"
+        },
+        "conditions": [
+          {
+            "condition": "total_amount > 5000 OR anomaly_flags.length > 0",
+            "route_to": "manual_review"
+          },
+          {
+            "condition": "validation_score < 0.8",
+            "route_to": "supervisor_review"
+          },
+          {
+            "condition": "validation_score >= 0.8 AND total_amount <= 5000",
+            "route_to": "auto_approve"
+          }
+        ],
+        "estimated_duration": 1
+      },
+      {
+        "step_id": "manual_review",
+        "step_name": "Manual Review Required",
+        "step_type": "USER_TASK",
+        "step_order": 5,
+        "required": false,
+        "condition": "requires_manual_review == true",
+        "assignee_role": "Billing Manager",
+        "form_fields": [
+          "time_entry_details",
+          "validation_results",
+          "approval_decision",
+          "adjustment_notes"
+        ],
+        "estimated_duration": 10
+      },
+      {
+        "step_id": "iolta_compliance_check",
+        "step_name": "IOLTA Compliance Validation",
+        "step_type": "COMPLIANCE_CHECK",
+        "step_order": 6,
+        "required": true,
+        "compliance_rules": [
+          "trust_account_balance_validation",
+          "client_funds_segregation",
+          "advance_payment_handling"
+        ],
+        "automated": true,
+        "estimated_duration": 1
+      },
+      {
+        "step_id": "invoice_preparation",
+        "step_name": "AI Invoice Preparation",
+        "step_type": "AI_DOCUMENT_GENERATION",
+        "step_order": 7,
+        "required": true,
+        "ai_model": "invoice_generator_v2",
+        "input_fields": [
+          "approved_time_entries",
+          "client_payment_terms",
+          "billing_preferences"
+        ],
+        "output_fields": [
+          "invoice_draft",
+          "payment_terms",
+          "late_fee_calculations",
+          "discount_applications"
+        ],
+        "automated": true,
+        "estimated_duration": 3
+      },
+      {
+        "step_id": "quality_assurance",
+        "step_name": "Invoice Quality Check",
+        "step_type": "AI_QUALITY_CHECK",
+        "step_order": 8,
+        "required": true,
+        "ai_model": "invoice_qa_model",
+        "quality_checks": [
+          "mathematical_accuracy",
+          "client_billing_preferences",
+          "regulatory_compliance",
+          "professional_standards"
+        ],
+        "automated": true,
+        "estimated_duration": 2
+      },
+      {
+        "step_id": "invoice_finalization",
+        "step_name": "Finalize and Send Invoice",
+        "step_type": "AUTOMATED_TASK",
+        "step_order": 9,
+        "required": true,
+        "entity_action": "create_invoice",
+        "automated_actions": [
+          "generate_pdf",
+          "send_to_client",
+          "update_accounting_system",
+          "schedule_follow_up"
+        ],
+        "automated": true,
+        "estimated_duration": 2
+      }
+    ],
+    "parallel_steps": [
+      {
+        "step_group": "validation_checks",
+        "steps": ["ai_categorization", "rate_optimization"],
+        "can_run_parallel": true
+      }
+    ],
+    "decision_points": [
+      {
+        "step_id": "approval_routing",
+        "decision_field": "requires_manual_review",
+        "routes": {
+          "true": "manual_review",
+          "false": "iolta_compliance_check"
+        }
+      },
+      {
+        "step_id": "quality_assurance",
+        "decision_field": "qa_passed",
+        "routes": {
+          "true": "invoice_finalization",
+          "false": "invoice_preparation"
+        }
+      }
+    ]
+  },
+  "trigger_conditions": {
+    "triggers": [
+      "time_entry_approved",
+      "billing_cycle_due",
+      "manual_invoice_request"
+    ],
+    "entities": ["TimeEntry", "Invoice"],
+    "events": ["billing_period_end", "client_invoice_request"]
+  },
+  "automation_level": "HIGHLY_AUTOMATED",
+  "approval_required": true,
+  "context_filters": {
+    "vertical": "LEGAL"
+  },
+  "ai_features": {
+    "time_validation": {
+      "model": "legal_time_validator_v2",
+      "anomaly_detection": true,
+      "pattern_recognition": true
+    },
+    "activity_classification": {
+      "model": "legal_activity_classifier",
+      "utbms_compliant": true,
+      "confidence_threshold": 0.85
+    },
+    "rate_optimization": {
+      "model": "billing_rate_optimizer",
+      "market_data_integration": true,
+      "client_specific_optimization": true
+    },
+    "invoice_generation": {
+      "model": "legal_invoice_generator",
+      "template_engine": "advanced",
+      "compliance_aware": true
+    }
+  },
+  "compliance_features": {
+    "iolta_integration": true,
+    "trust_accounting": true,
+    "state_reporting": true,
+    "professional_standards": true
+  },
+  "performance_metrics": {
+    "target_processing_time": 25,
+    "automation_rate": 0.85,
+    "accuracy_threshold": 0.95,
+    "client_satisfaction_target": 4.5
+  },
+  "error_handling": {
+    "validation_failures": "route_to_manual_review",
+    "ai_model_errors": "fallback_to_standard_workflow",
+    "compliance_violations": "block_and_notify"
+  },
+  "is_active": true
+}

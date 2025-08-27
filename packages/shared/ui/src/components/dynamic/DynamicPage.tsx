@@ -433,84 +433,21 @@ export const DynamicPage: React.FC<DynamicPageProps> = ({
     );
   }
 
-  // LEGACY: Components approach (for backward compatibility)
-  const pageTheme = pageDefinition.metadata_json?.theme || theme;
-  const layoutStyle = pageDefinition.metadata_json?.layout || "default";
-  const backgroundStyle = pageDefinition.metadata_json?.background || "default";
-
-  // Build page container classes
-  const containerClasses = ["min-h-screen", "relative", className];
-
-  // Apply background styles
-  if (backgroundStyle === "gradient") {
-    containerClasses.push(
-      pageTheme === "dark"
-        ? "bg-gradient-to-br from-gray-900 to-gray-800"
-        : "bg-gradient-to-br from-blue-600 to-blue-900"
-    );
-  } else {
-    containerClasses.push(pageTheme === "dark" ? "bg-gray-900" : "bg-gray-50");
-  }
-
-  // Apply layout styles
-  if (layoutStyle === "centered") {
-    containerClasses.push("flex items-center justify-center p-4");
-  }
-
+  // ERROR: Page must use layout + sections approach
   return (
-    <div className={containerClasses.join(" ")}>
-      {/* Render page components */}
-      {pageDefinition.components.map((component, index) => {
-        // Handle positioned components (like ThemeSelector, LanguageSelector)
-        if (component.position) {
-          return (
-            <div
-              key={`${component.type}-${index}`}
-              className={`absolute z-10 ${component.position.x} ${component.position.y}`}
-            >
-              <DynamicComponent
-                type={component.type}
-                props={component.props}
-                onComponentError={(error: Error) =>
-                  onComponentError?.(error, component.type)
-                }
-                contextProps={{
-                  ...contextProps,
-                  tenantId,
-                }}
-              />
-            </div>
-          );
-        }
-
-        // Handle regular flow components
-        return (
-          <div key={`${component.type}-${index}`} className="w-full">
-            <DynamicComponent
-              type={component.type}
-              props={component.props}
-              onComponentError={(error: Error) =>
-                onComponentError?.(error, component.type)
-              }
-              contextProps={{
-                ...contextProps,
-                tenantId,
-              }}
-            />
-          </div>
-        );
-      })}
-
-      {/* Development info (only in debug mode) */}
-      {process.env.NODE_ENV === "development" && (
-        <div className="fixed bottom-4 left-4 bg-black bg-opacity-75 text-white text-xs p-2 rounded">
-          <div>Page: {pageDefinition.page_name}</div>
-          <div>Route: {pageDefinition.route}</div>
-          <div>Layout: {pageDefinition.layout_id || "Legacy"}</div>
-          <div>Components: {pageDefinition.components.length}</div>
-          <div>Tenant: {tenantId || "global"}</div>
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md w-full">
+        <h2 className="text-lg font-semibold text-red-800 mb-2">
+          Configuration Error
+        </h2>
+        <p className="text-red-600">
+          Page "{pageDefinition.page_name}" must use layout + sections approach.
+          Legacy component approach is no longer supported.
+        </p>
+        <div className="mt-4 text-sm text-red-500">
+          Required: layout_id and sections_data_json
         </div>
-      )}
+      </div>
     </div>
   );
 };

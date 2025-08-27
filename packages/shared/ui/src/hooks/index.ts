@@ -3,6 +3,7 @@ export * from "./useGreekValidation";
 export * from "./useGreekLocalization";
 export * from "./useLanguageDetection";
 export * from "./useTranslationWithFallback";
+export * from "./useMetadataPage";
 
 // Core hooks
 export * from "./useQuery";

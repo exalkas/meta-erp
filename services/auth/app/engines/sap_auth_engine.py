@@ -876,7 +876,8 @@ class SAPStyleAuthEngine:
             is_active=True,
             expires_at=datetime.utcnow() + timedelta(hours=max_duration_hours),
             created_at=datetime.utcnow(),
-            metadata_json=session_metadata
+            # Note: session_metadata stored separately if needed
+            risk_score=risk_assessment.db_score
         )
         
         logger.info("Session Step 5: Adding session to database")

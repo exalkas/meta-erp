@@ -764,7 +764,7 @@ class MarketplaceItem(Base):
     
     # Relationships
     creator = relationship("User")
-    reviews = relationship("MarketplaceReview", back_populates="item", cascade="all, delete-orphan")
+    # reviews relationship moved to vertical_config.py with MarketplaceReview
     
     # Constraints
     __table_args__ = (
@@ -777,41 +777,4 @@ class MarketplaceItem(Base):
     )
 
 
-class MarketplaceReview(Base):
-    """Reviews for marketplace items."""
-    
-    __tablename__ = "marketplace_reviews"
-    
-    review_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    item_id = Column(UUID(as_uuid=True), ForeignKey("marketplace_items.item_id"), nullable=False)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=False)
-    
-    # Review content
-    rating = Column(Integer, nullable=False)  # 1-5 stars
-    title = Column(String(255), nullable=True)
-    review_text = Column(Text, nullable=True)
-    
-    # Review metadata
-    is_verified_purchase = Column(Boolean, default=False)
-    helpful_count = Column(Integer, default=0)
-    
-    # Status
-    is_approved = Column(Boolean, default=True)
-    is_flagged = Column(Boolean, default=False)
-    
-    # Metadata
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-    
-    # Relationships
-    item = relationship("MarketplaceItem", back_populates="reviews")
-    user = relationship("User")
-    
-    # Constraints
-    __table_args__ = (
-        UniqueConstraint("item_id", "user_id", name="uq_review_item_user"),
-        Index("idx_review_item", "item_id"),
-        Index("idx_review_user", "user_id"),
-        Index("idx_review_rating", "rating"),
-        Index("idx_review_approved", "is_approved"),
-    ) 
+# MarketplaceReview moved to vertical_config.py to avoid duplication 

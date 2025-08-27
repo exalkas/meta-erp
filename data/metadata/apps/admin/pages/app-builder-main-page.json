@@ -1,0 +1,336 @@
+{
+  "page_id": "a0000000-0000-0000-0000-000000000003",
+  "page_name": "app_builder_main",
+  "route": "/app-builder",
+  "title": "Application Builder - Requirements Form",
+  "description": "Capture client requirements for custom application building",
+  "page_type": "admin-form",
+  "layout_id": "d0000000-0000-0000-0000-000000000001",
+  "sections_data_json": {
+    "header": [
+      {
+        "type": "Navigation",
+        "props": {
+          "variant": "horizontal",
+          "showUserMenu": true,
+          "showThemeSelector": true,
+          "showNotifications": true,
+          "userMenuStyle": "buttons",
+          "adminMode": true,
+          "user": {
+            "name": "Admin User",
+            "email": "admin@example.com",
+            "role": "Platform Administrator"
+          },
+          "userMenu": [
+            {
+              "id": "user-profile",
+              "label": "Profile",
+              "action": "navigate:/profile",
+              "icon": "User"
+            },
+            {
+              "id": "user-settings",
+              "label": "Settings",
+              "action": "navigate:/settings",
+              "icon": "Settings"
+            },
+            {
+              "id": "logout",
+              "label": "Logout",
+              "action": "logout",
+              "icon": "LogOut"
+            }
+          ],
+          "items": [
+            {
+              "id": "nav-dashboard",
+              "label": "Dashboard",
+              "route": "/dashboard",
+              "icon": "LayoutDashboard"
+            },
+            {
+              "id": "nav-app-builder",
+              "label": "App Builder",
+              "route": "/app-builder",
+              "icon": "Wrench",
+              "active": true
+            },
+            {
+              "id": "nav-platform",
+              "label": "Platform",
+              "route": "/platform",
+              "icon": "Settings"
+            },
+            {
+              "id": "nav-users",
+              "label": "Users",
+              "route": "/users",
+              "icon": "Users"
+            }
+          ]
+        }
+      }
+    ],
+    "sidebar": [
+      {
+        "type": "SidebarMenu",
+        "props": {
+          "variant": "vertical",
+          "collapsible": true,
+          "adminMode": true,
+          "sections": [
+            {
+              "title": "application_builder_section",
+              "items": [
+                { "label": "overview", "route": "/dashboard", "icon": "Home" },
+                {
+                  "label": "new_application",
+                  "route": "/app-builder",
+                  "icon": "Plus",
+                  "active": true
+                },
+                {
+                  "label": "templates",
+                  "route": "/app-builder/templates",
+                  "icon": "Layout"
+                },
+                {
+                  "label": "components",
+                  "route": "/app-builder/components",
+                  "icon": "Puzzle"
+                }
+              ]
+            },
+            {
+              "title": "platform_management_section",
+              "items": [
+                {
+                  "label": "tenants",
+                  "route": "/platform/tenants",
+                  "icon": "Building"
+                },
+                {
+                  "label": "users",
+                  "route": "/platform/users",
+                  "icon": "Users"
+                },
+                {
+                  "label": "permissions",
+                  "route": "/platform/permissions",
+                  "icon": "Shield"
+                },
+                {
+                  "label": "monitoring",
+                  "route": "/platform/monitoring",
+                  "icon": "Activity"
+                }
+              ]
+            },
+            {
+              "title": "system_section",
+              "items": [
+                {
+                  "label": "logs",
+                  "route": "/system/logs",
+                  "icon": "FileText"
+                },
+                {
+                  "label": "health",
+                  "route": "/system/health",
+                  "icon": "Heart"
+                },
+                {
+                  "label": "settings",
+                  "route": "/system/settings",
+                  "icon": "Settings"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "main": [
+      {
+        "type": "PageHeader",
+        "props": {
+          "title": "app_builder_title",
+          "subtitle": "app_builder_subtitle",
+          "adminMode": true
+        }
+      },
+      {
+        "type": "Alert",
+        "props": {
+          "type": "info",
+          "title": "Requirements Form",
+          "message": "app_builder_description",
+          "adminMode": true
+        }
+      },
+      {
+        "type": "FormWizard",
+        "props": {
+          "steps": [
+            {
+              "id": "projectInfo",
+              "title": "project_information",
+              "description": "project_information_description",
+              "form": {
+                "fields": [
+                  {
+                    "name": "projectName",
+                    "label": "project_name",
+                    "type": "text",
+                    "required": true
+                  },
+                  {
+                    "name": "appType",
+                    "label": "application_type",
+                    "type": "select",
+                    "options": [
+                      "CRM",
+                      "ERP",
+                      "PROJECT_TRACKER",
+                      "REAL_ESTATE",
+                      "AUTOMOTIVE",
+                      "CUSTOM"
+                    ],
+                    "required": true
+                  },
+                  {
+                    "name": "industry",
+                    "label": "industry",
+                    "type": "text"
+                  },
+                  {
+                    "name": "description",
+                    "label": "description",
+                    "type": "textarea",
+                    "required": true
+                  }
+                ]
+              }
+            },
+            {
+              "id": "requirements",
+              "title": "requirements_features",
+              "description": "requirements_features_description",
+              "form": {
+                "fields": [
+                  {
+                    "name": "userCount",
+                    "label": "number_of_users",
+                    "type": "number",
+                    "required": true
+                  },
+                  {
+                    "name": "requiredFeatures",
+                    "label": "required_features",
+                    "type": "multiselect",
+                    "options": [
+                      "Contact Management",
+                      "Lead Tracking",
+                      "Inventory",
+                      "Billing",
+                      "Reporting",
+                      "Document Management",
+                      "Workflow Automation",
+                      "AI Integration"
+                    ]
+                  },
+                  {
+                    "name": "customEntities",
+                    "label": "custom_entities",
+                    "type": "textarea"
+                  },
+                  {
+                    "name": "integrationRequirements",
+                    "label": "integrations",
+                    "type": "multiselect",
+                    "options": [
+                      "Shopify",
+                      "QuickBooks",
+                      "Salesforce",
+                      "Stripe",
+                      "DocuSign"
+                    ]
+                  },
+                  {
+                    "name": "complianceRequirements",
+                    "label": "compliance",
+                    "type": "multiselect",
+                    "options": ["GDPR", "HIPAA", "SOX", "PCI DSS"]
+                  },
+                  {
+                    "name": "timelineRequirements",
+                    "label": "desired_timeline_days",
+                    "type": "number",
+                    "required": true
+                  }
+                ]
+              }
+            },
+            {
+              "id": "budgetAndPreferences",
+              "title": "budget_preferences",
+              "description": "budget_preferences_description",
+              "form": {
+                "fields": [
+                  {
+                    "name": "budgetRangeMin",
+                    "label": "min_budget",
+                    "type": "number"
+                  },
+                  {
+                    "name": "budgetRangeMax",
+                    "label": "max_budget",
+                    "type": "number"
+                  },
+                  {
+                    "name": "performanceRequirements",
+                    "label": "performance_needs",
+                    "type": "textarea"
+                  },
+                  {
+                    "name": "customBusinessRules",
+                    "label": "custom_business_rules",
+                    "type": "textarea"
+                  }
+                ]
+              }
+            }
+          ],
+          "onComplete": "handleGenerateBlueprint"
+        }
+      }
+    ]
+  },
+  "api_endpoints": {
+    "analyze_requirements": "http://localhost:8000/api/v1/app-builder/analyze-requirements"
+  },
+  "callbacks": {
+    "onRequirementsSubmit": {
+      "action": "api_call",
+      "target": "analyze_requirements",
+      "method": "POST"
+    }
+  },
+  "metadata_json": {
+    "layout": "admin-form",
+    "theme": "admin",
+    "autoRefresh": false,
+    "adminMode": true,
+    "formType": "multi-step",
+    "seo": {
+      "title": "Application Builder - Axiologic Platform",
+      "description": "Build custom business applications rapidly through metadata-driven interface"
+    }
+  },
+  "access_roles": ["admin", "platform_manager"],
+  "is_public": false,
+  "tenant_id": null,
+  "created_at": "2025-01-31T00:00:00Z",
+  "updated_at": "2025-01-31T00:00:00Z"
+}

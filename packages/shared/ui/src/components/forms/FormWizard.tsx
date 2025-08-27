@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "../../contexts/TranslationContext";
+import { useTranslation, useLanguage } from "../../contexts/TranslationContext";
 import { Button } from "../ui/Button";
 import { Card, CardHeader, CardContent } from "../ui/Card";
 import { Language } from "../../types";
@@ -7,8 +7,8 @@ import { DynamicForm, DynamicFormSchema } from "./DynamicForm";
 
 export interface WizardStep {
   id: string;
-  title: Record<Language, string>;
-  description?: Record<Language, string>;
+  title: string | Record<Language, string>; // Support both translation keys and language objects
+  description?: string | Record<Language, string>; // Support both translation keys and language objects
   form: DynamicFormSchema;
   validation?: (values: Record<string, any>) => Record<string, string>;
   optional?: boolean;
@@ -35,15 +35,28 @@ export const FormWizard: React.FC<FormWizardProps> = ({
   showStepNumbers = true,
   className = "",
 }) => {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
+  const { language } = useLanguage();
+
+  // Helper function to resolve title/description (translation key or language object)
+  const resolveText = (text: string | Record<Language, string>): string => {
+    if (typeof text === "string") {
+      return t ? t(text) : text; // It's a translation key, use t() to resolve (with safety check)
+    } else {
+      return text?.[language] || text?.en || ""; // It's a language object, use direct lookup
+    }
+  };
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [stepValues, setStepValues] = useState<
     Record<string, Record<string, any>>
   >(
-    steps.reduce((acc, step) => {
-      acc[step.id] = initialValues[step.id] || {};
-      return acc;
-    }, {} as Record<string, Record<string, any>>)
+    steps.reduce(
+      (acc, step) => {
+        acc[step.id] = initialValues[step.id] || {};
+        return acc;
+      },
+      {} as Record<string, Record<string, any>>
+    )
   );
   const [stepErrors, setStepErrors] = useState<
     Record<string, Record<string, string>>
@@ -106,10 +119,13 @@ export const FormWizard: React.FC<FormWizardProps> = ({
 
       if (isLastStep) {
         // Complete the wizard
-        const allValues = steps.reduce((acc, step) => {
-          acc[step.id] = stepValues[step.id] || {};
-          return acc;
-        }, {} as Record<string, any>);
+        const allValues = steps.reduce(
+          (acc, step) => {
+            acc[step.id] = stepValues[step.id] || {};
+            return acc;
+          },
+          {} as Record<string, any>
+        );
         onComplete?.(allValues);
       } else {
         const nextIndex = currentStepIndex + 1;
@@ -168,8 +184,8 @@ export const FormWizard: React.FC<FormWizardProps> = ({
                       status === "completed"
                         ? "bg-green-500 border-green-500 text-white"
                         : status === "current"
-                        ? "bg-blue-500 border-blue-500 text-white"
-                        : "bg-white border-gray-300 text-gray-500"
+                          ? "bg-blue-500 border-blue-500 text-white"
+                          : "bg-white border-gray-300 text-gray-500"
                     }
                   `}
                   onClick={() => isClickable && goToStep(index)}
@@ -202,15 +218,15 @@ export const FormWizard: React.FC<FormWizardProps> = ({
                       status === "current"
                         ? "text-blue-600"
                         : status === "completed"
-                        ? "text-green-600"
-                        : "text-gray-500"
+                          ? "text-green-600"
+                          : "text-gray-500"
                     }`}
                   >
-                    {step.title[language] || step.title.en}
+                    {resolveText(step.title)}
                   </div>
                   {step.description && (
                     <div className="text-xs text-gray-400">
-                      {step.description[language] || step.description.en}
+                      {resolveText(step.description)}
                     </div>
                   )}
                 </div>
@@ -243,19 +259,18 @@ export const FormWizard: React.FC<FormWizardProps> = ({
   };
 
   return (
-    <div className={className}>
+    <div className={`w-full ${className}`}>
       <ProgressIndicator />
 
-      <Card>
+      <Card className="w-full">
         <CardHeader>
           <div>
             <h2 className="text-xl font-semibold text-gray-900">
-              {currentStep.title[language] || currentStep.title.en}
+              {resolveText(currentStep.title)}
             </h2>
             {currentStep.description && (
               <p className="mt-1 text-sm text-gray-600">
-                {currentStep.description[language] ||
-                  currentStep.description.en}
+                {resolveText(currentStep.description)}
               </p>
             )}
           </div>

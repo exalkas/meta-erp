@@ -1,0 +1,109 @@
+[
+  {
+    "permission_id": "11111111-1111-1111-1111-111111111111",
+    "permission_name": "PLATFORM.*.*.*",
+    "display_name": "Platform Super Admin",
+    "description": "Complete platform administration access - for platform owners only",
+    "scope": "PLATFORM",
+    "module": "*",
+    "feature": "*",
+    "action": "*",
+    "is_wildcard": true,
+    "is_critical": true,
+    "requires_approval": true,
+    "customer_visible": false,
+    "billing_tier": "internal_only",
+    "includes_permissions": [
+      "PLATFORM.TENANTS.*.*",
+      "PLATFORM.BILLING.*.*",
+      "PLATFORM.MARKETPLACE.*.*",
+      "PLATFORM.VERTICALS.*.*"
+    ],
+    "metadata_json": {
+      "platform_owner": true,
+      "audit_required": true,
+      "internal_use": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  },
+  {
+    "permission_id": "12222222-2222-2222-2222-222222222222",
+    "permission_name": "PLATFORM.TENANTS.MANAGEMENT.CREATE",
+    "display_name": "Create New Tenants",
+    "description": "Create new customer tenants and configure initial settings",
+    "scope": "PLATFORM",
+    "module": "TENANTS",
+    "feature": "MANAGEMENT",
+    "action": "CREATE",
+    "is_wildcard": false,
+    "is_critical": true,
+    "requires_approval": true,
+    "customer_visible": false,
+    "billing_tier": "internal_only",
+    "metadata_json": {
+      "platform_admin": true,
+      "audit_required": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  },
+  {
+    "permission_id": "13333333-3333-3333-3333-333333333333",
+    "permission_name": "PLATFORM.BILLING.SUBSCRIPTIONS.MANAGE",
+    "display_name": "Manage Customer Billing",
+    "description": "Manage customer subscriptions, invoicing, and payment processing",
+    "scope": "PLATFORM",
+    "module": "BILLING",
+    "feature": "SUBSCRIPTIONS",
+    "action": "MANAGE",
+    "is_wildcard": false,
+    "is_critical": true,
+    "requires_approval": true,
+    "customer_visible": false,
+    "billing_tier": "internal_only",
+    "metadata_json": {
+      "financial_access": true,
+      "audit_required": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  },
+  {
+    "permission_id": "14444444-4444-4444-4444-444444444444",
+    "permission_name": "PLATFORM.MARKETPLACE.COMPONENTS.MODERATE",
+    "display_name": "Moderate Marketplace Components",
+    "description": "Review and approve components before they appear in marketplace",
+    "scope": "PLATFORM",
+    "module": "MARKETPLACE",
+    "feature": "COMPONENTS",
+    "action": "MODERATE",
+    "is_wildcard": false,
+    "is_critical": true,
+    "requires_approval": false,
+    "customer_visible": false,
+    "billing_tier": "internal_only",
+    "metadata_json": {
+      "quality_control": true,
+      "marketplace_admin": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  },
+  {
+    "permission_id": "15555555-5555-5555-5555-555555555555",
+    "permission_name": "PLATFORM.VERTICALS.DEPLOYMENT.EXECUTE",
+    "display_name": "Deploy New Verticals",
+    "description": "Deploy new industry verticals (legal, fintech, healthcare) to platform",
+    "scope": "PLATFORM",
+    "module": "VERTICALS",
+    "feature": "DEPLOYMENT",
+    "action": "EXECUTE",
+    "is_wildcard": false,
+    "is_critical": true,
+    "requires_approval": true,
+    "customer_visible": false,
+    "billing_tier": "internal_only",
+    "metadata_json": {
+      "platform_development": true,
+      "audit_required": true
+    },
+    "created_at": "2025-01-31T00:00:00Z"
+  }
+]

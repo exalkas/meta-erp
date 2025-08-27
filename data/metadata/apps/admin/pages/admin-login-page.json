@@ -1,0 +1,87 @@
+{
+  "page_id": "a0000000-0000-0000-0000-000000000001",
+  "page_name": "admin_login_page",
+  "route": "/admin-login",
+  "title": "Axiologic - Admin Platform",
+  "description": "Administrative Platform - Secure Login for App Building and Management",
+  "page_type": "authentication",
+  "layout_id": "c0000000-0000-0000-0000-000000000001",
+  "sections_data_json": {
+    "header": [
+      {
+        "type": "Logo",
+        "props": {
+          "size": "md",
+          "variant": "admin"
+        }
+      }
+    ],
+    "main": [
+      {
+        "type": "LoginForm",
+        "props": {
+          "app": "admin",
+          "enableTwoFactor": true,
+          "enableMagicLink": false,
+          "adminMode": true,
+          "title": "Admin Platform Login",
+          "subtitle": "Access the application builder and platform management tools"
+        }
+      }
+    ],
+    "footer": [
+      {
+        "type": "LanguageSelector",
+        "props": {
+          "size": "sm",
+          "languages": ["en", "el"]
+        }
+      },
+      {
+        "type": "ThemeSelector",
+        "props": {
+          "size": "sm",
+          "themes": ["light", "dark", "admin-theme"]
+        }
+      }
+    ]
+  },
+  "components": [],
+  "initial_state": {
+    "isLoading": false,
+    "errorMessage": null,
+    "showTwoFactor": false,
+    "adminAccess": true
+  },
+  "state_bindings": {
+    "user.isAuthenticated": "auth.isLoggedIn",
+    "form.isSubmitting": "ui.loading.login"
+  },
+  "api_endpoints": {
+    "login": "/auth/login/password",
+    "twoFactor": "/auth/login/totp"
+  },
+  "callbacks": {
+    "onLoginSuccess": "redirect:/dashboard",
+    "onLoginError": "state.errorMessage",
+    "onTwoFactorRequired": "state.showTwoFactor=true"
+  },
+  "real_time_updates": false,
+  "cache_strategy": "no-cache",
+  "websocket_events": null,
+  "metadata_json": {
+    "background": "admin-gradient",
+    "layout": "centered",
+    "theme": "admin",
+    "security": "enhanced",
+    "seo": {
+      "title": "Admin Login - Axiologic Platform",
+      "description": "Secure administrative access to the application builder platform"
+    }
+  },
+  "access_roles": [],
+  "is_public": true,
+  "tenant_id": null,
+  "created_at": "2025-01-31T00:00:00Z",
+  "updated_at": "2025-01-31T00:00:00Z"
+}

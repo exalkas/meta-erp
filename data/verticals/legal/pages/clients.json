@@ -1,0 +1,268 @@
+{
+  "page_id": "10000000-0000-0000-0000-000000000003",
+  "page_name": "legal_clients",
+  "route": "/clients",
+  "title": "Legal Clients Management",
+  "description": "Comprehensive client management with CRM features and AI insights",
+  "page_type": "legal-clients",
+  "layout_id": "d0000000-0000-0000-0000-000000000001",
+  "sections_data_json": {
+    "header": [
+      {
+        "type": "Navigation",
+        "props": {
+          "variant": "horizontal",
+          "showUserMenu": true,
+          "showThemeSelector": true,
+          "showNotifications": true,
+          "userMenuStyle": "buttons",
+          "legalMode": true,
+          "userMenu": [
+            {
+              "id": "user-profile",
+              "label": "Profile",
+              "action": "navigate:/profile",
+              "icon": "User"
+            },
+            {
+              "id": "user-settings",
+              "label": "Settings",
+              "action": "navigate:/settings",
+              "icon": "Settings"
+            },
+            {
+              "id": "logout",
+              "label": "Logout",
+              "action": "logout",
+              "icon": "LogOut"
+            }
+          ],
+          "items": [
+            {
+              "id": "nav-dashboard",
+              "label": "Dashboard",
+              "route": "/dashboard",
+              "icon": "LayoutDashboard"
+            },
+            {
+              "id": "nav-clients",
+              "label": "Clients",
+              "route": "/clients",
+              "icon": "Users",
+              "active": true
+            },
+            {
+              "id": "nav-matters",
+              "label": "Matters",
+              "route": "/matters",
+              "icon": "Briefcase"
+            },
+            {
+              "id": "nav-time",
+              "label": "Time Entry",
+              "route": "/time-entry",
+              "icon": "Clock"
+            },
+            {
+              "id": "nav-billing",
+              "label": "Billing",
+              "route": "/invoices",
+              "icon": "CreditCard"
+            }
+          ]
+        }
+      }
+    ],
+    "sidebar": [
+      {
+        "type": "SidebarMenu",
+        "props": {
+          "variant": "vertical",
+          "collapsible": true,
+          "legalMode": true,
+          "sections": [
+            {
+              "title_key": "_sidebar_sections.practice_management",
+              "items": [
+                {
+                  "label_key": "_navigation.dashboard",
+                  "route": "/dashboard",
+                  "icon": "Home"
+                },
+                {
+                  "label_key": "_navigation.clients",
+                  "route": "/clients",
+                  "icon": "Users"
+                },
+                {
+                  "label_key": "_navigation.matters",
+                  "route": "/matters",
+                  "icon": "Briefcase"
+                },
+                {
+                  "label_key": "_navigation.calendar",
+                  "route": "/calendar",
+                  "icon": "Calendar"
+                }
+              ]
+            },
+            {
+              "title_key": "_sidebar_sections.time_billing",
+              "items": [
+                {
+                  "label_key": "_navigation.time_entry",
+                  "route": "/time-entry",
+                  "icon": "Clock"
+                },
+                {
+                  "label_key": "_navigation.time_reports",
+                  "route": "/time-reports",
+                  "icon": "BarChart3"
+                },
+                {
+                  "label_key": "_navigation.invoices",
+                  "route": "/invoices",
+                  "icon": "CreditCard"
+                },
+                {
+                  "label_key": "_navigation.trust_accounts",
+                  "route": "/trust-accounts",
+                  "icon": "Shield"
+                }
+              ]
+            },
+            {
+              "title_key": "_sidebar_sections.legal_tools",
+              "items": [
+                {
+                  "label_key": "_navigation.documents",
+                  "route": "/documents",
+                  "icon": "FileText"
+                },
+                {
+                  "label_key": "_navigation.court_filings",
+                  "route": "/court-filings",
+                  "icon": "Scale"
+                },
+                {
+                  "label_key": "_navigation.research",
+                  "route": "/research",
+                  "icon": "Search"
+                },
+                {
+                  "label_key": "_navigation.conflicts",
+                  "route": "/conflicts",
+                  "icon": "AlertTriangle"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "main": [
+      {
+        "type": "DataTable",
+        "props": {
+          "title": "Legal Clients",
+          "description": "Manage your client relationships and contacts",
+          "entity": "Client",
+          "apiEndpoint": "/api/clients",
+          "columns": [
+            {
+              "id": "client_name",
+              "header": "Client Name",
+              "accessorKey": "client_name",
+              "sortable": true,
+              "filterable": true
+            },
+            {
+              "id": "contact_email",
+              "header": "Email",
+              "accessorKey": "contact_email",
+              "sortable": true,
+              "filterable": true
+            },
+            {
+              "id": "lead_score",
+              "header": "Lead Score",
+              "accessorKey": "lead_score",
+              "sortable": true
+            },
+            {
+              "id": "actions",
+              "header": "Actions",
+              "cell": "ActionsCell",
+              "actions": [
+                {
+                  "id": "view",
+                  "label": "View",
+                  "icon": "Eye",
+                  "action": "navigate:/clients/{id}"
+                },
+                {
+                  "id": "edit",
+                  "label": "Edit",
+                  "icon": "Edit",
+                  "action": "navigate:/clients/{id}/edit"
+                }
+              ]
+            }
+          ],
+          "pagination": {
+            "pageSize": 25,
+            "showSizeSelector": true,
+            "pageSizeOptions": [10, 25, 50, 100]
+          },
+          "toolbar": {
+            "search": true,
+            "filters": true,
+            "actions": [
+              {
+                "id": "add-client",
+                "label": "Add Client",
+                "variant": "default",
+                "icon": "Plus",
+                "action": "navigate:/clients/new"
+              }
+            ]
+          },
+          "data": [
+            {
+              "id": "1",
+              "client_name": "Acme Legal Corp",
+              "contact_email": "contact@acmelegal.com",
+              "lead_score": 85
+            },
+            {
+              "id": "2",
+              "client_name": "Smith & Associates",
+              "contact_email": "info@smithlaw.com",
+              "lead_score": 92
+            },
+            {
+              "id": "3",
+              "client_name": "Johnson Law Firm",
+              "contact_email": "admin@johnsonlaw.com",
+              "lead_score": 78
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "requires_auth": true,
+    "permissions": ["view_clients"],
+    "supported_languages": ["en-US", "es-US"],
+    "theme_variants": ["light", "dark"],
+    "accessibility_level": "WCAG_2_1_AA",
+    "cache_duration": 300,
+    "api_dependencies": ["/api/clients", "/api/metadata/entities/Client"],
+    "real_time_updates": true,
+    "mobile_optimized": true,
+    "print_friendly": true
+  },
+  "created_at": "2025-01-31T00:00:00Z",
+  "updated_at": "2025-01-31T00:00:00Z"
+}

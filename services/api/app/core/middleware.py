@@ -137,7 +137,7 @@ class CORSHeadersMiddleware(BaseHTTPMiddleware):
     
     def __init__(self, app: ASGIApp, allowed_origins: list = None):
         super().__init__(app)
-        self.allowed_origins = allowed_origins or ["http://localhost:3000"]
+        self.allowed_origins = allowed_origins or ["http://localhost:3000", "http://localhost:3001", "http://localhost:3006"]
         self.logger = get_logger("cors_middleware")
     
     async def dispatch(self, request: Request, call_next: Callable) -> Response:

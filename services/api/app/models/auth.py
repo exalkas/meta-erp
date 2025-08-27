@@ -81,8 +81,9 @@ class User(Base):
     employee_id = Column(String(50), nullable=True)
     manager_user_id = Column(UUID(as_uuid=True), ForeignKey('users.user_id'), nullable=True)
     
-    # Preferences
-    preferred_language = Column(String(5), default='en-US')
+    # Preferences - NO HARDCODED LANGUAGE DEFAULTS!
+    # Language MUST be set based on tenant's supported locales and user's choice
+    preferred_language = Column(String(5), nullable=True)  # REMOVED hardcoded default
     timezone = Column(String(50), default='UTC')
     date_format = Column(String(20), default='YYYY-MM-DD')
     

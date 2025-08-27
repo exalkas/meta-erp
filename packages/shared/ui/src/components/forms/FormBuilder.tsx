@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "../../contexts/TranslationContext";
+import { useTranslation, useLanguage } from "../../contexts/TranslationContext";
 import { Language } from "../../types";
 import { FormFieldType } from "../../types/forms";
 
@@ -83,7 +83,8 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
   onSave,
   className = "",
 }) => {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const [activeField, setActiveField] = useState<string | null>(null);
   const [draggedField, setDraggedField] = useState<FormField | null>(null);
 

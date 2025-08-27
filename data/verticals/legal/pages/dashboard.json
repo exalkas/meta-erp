@@ -1,0 +1,176 @@
+{
+  "page_id": "10000000-0000-0000-0000-000000000002",
+  "page_name": "legal_dashboard",
+  "route": "/legal-dashboard",
+  "title": "Legal Practice Dashboard",
+  "description": "Comprehensive legal practice management dashboard with AI insights",
+  "page_type": "legal-dashboard",
+  "layout_id": "d0000000-0000-0000-0000-000000000001",
+  "sections_data_json": {
+    "main": [
+      {
+        "type": "DashboardGrid",
+        "props": {
+          "columns": 3,
+          "gap": 6,
+          "legalMode": true,
+          "widgets": [
+            {
+              "type": "KPICard",
+              "props": {
+                "title": "Total Clients",
+                "value": "24",
+                "change": "+3",
+                "changeType": "positive",
+                "icon": "Users",
+                "period": "This month",
+                "legalMode": true
+              }
+            },
+            {
+              "type": "KPICard",
+              "props": {
+                "title": "Active Matters",
+                "value": "18",
+                "change": "+2",
+                "changeType": "positive",
+                "icon": "Briefcase",
+                "period": "This month",
+                "legalMode": true
+              }
+            },
+            {
+              "type": "KPICard",
+              "props": {
+                "title": "Billable Hours",
+                "value": "142.5",
+                "change": "+15.2",
+                "changeType": "positive",
+                "icon": "Clock",
+                "period": "This month",
+                "legalMode": true
+              }
+            },
+            {
+              "type": "RecentMatters",
+              "props": {
+                "title": "Recent Matters",
+                "colspan": 2,
+                "maxItems": 5,
+                "legalMode": true,
+                "showAiInsights": true
+              }
+            },
+            {
+              "type": "DeadlineAlerts",
+              "props": {
+                "title": "Statute of Limitations Alerts",
+                "colspan": 1,
+                "maxItems": 6,
+                "legalMode": true,
+                "showUrgentFirst": true
+              }
+            },
+            {
+              "type": "ItemGrid",
+              "props": {
+                "title": "Quick Actions",
+                "colspan": 3,
+                "legalMode": true,
+                "items": [
+                  {
+                    "id": "new-client",
+                    "title": "Add New Client",
+                    "description": "Register a new client with intake workflow",
+                    "icon": "UserPlus",
+                    "action": "navigate:/clients/new",
+                    "variant": "primary"
+                  },
+                  {
+                    "id": "new-matter",
+                    "title": "Open New Matter",
+                    "description": "Start a new matter with AI case assessment",
+                    "icon": "Plus",
+                    "action": "navigate:/matters/new",
+                    "variant": "primary"
+                  },
+                  {
+                    "id": "time-entry",
+                    "title": "Track Time",
+                    "description": "Log billable time with AI assistance",
+                    "icon": "Clock",
+                    "action": "navigate:/time-entry",
+                    "variant": "secondary"
+                  },
+                  {
+                    "id": "create-invoice",
+                    "title": "Create Invoice",
+                    "description": "Generate client invoices",
+                    "icon": "FileText",
+                    "action": "navigate:/invoices/new",
+                    "variant": "secondary"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "components": [],
+  "initial_state": {
+    "isLoading": true,
+    "selectedTimeRange": "7d",
+    "refreshInterval": 30000,
+    "legalView": true,
+    "widgets": {
+      "clients": { "loading": false, "error": null },
+      "matters": { "loading": false, "error": null },
+      "deadlines": { "loading": false, "error": null }
+    }
+  },
+  "state_bindings": {
+    "user.profile": "auth.currentUser",
+    "legal.timeRange": "ui.timeRange",
+    "legal.autoRefresh": "ui.autoRefresh",
+    "attorney.barStatus": "legal.attorneyVerification"
+  },
+  "api_endpoints": {
+    "dashboardData": "/api/legal/dashboard/overview",
+    "kpiData": "/api/legal/dashboard/kpis",
+    "recentMatters": "/api/legal/matters/recent",
+    "deadlines": "/api/legal/deadlines/upcoming",
+    "complianceStatus": "/api/legal/compliance/status"
+  },
+  "callbacks": {
+    "onDataRefresh": "action.refreshLegalDashboard",
+    "onTimeRangeChange": "action.updateTimeRange",
+    "onQuickAction": "action.executeLegalAction",
+    "onDeadlineAlert": "action.handleDeadlineAlert"
+  },
+  "real_time_updates": true,
+  "cache_strategy": "stale-while-revalidate",
+  "websocket_events": {
+    "legal.matter.update": "action.refreshMatters",
+    "legal.deadline.approaching": "action.updateDeadlines",
+    "legal.compliance.alert": "action.updateCompliance"
+  },
+  "metadata_json": {
+    "layout": "legal-dashboard",
+    "theme": "legal",
+    "autoRefresh": true,
+    "refreshInterval": 30000,
+    "legalMode": true,
+    "iolcoCompliance": true,
+    "seo": {
+      "title": "Legal Practice Dashboard - Comprehensive Overview",
+      "description": "Legal practice management dashboard with AI insights and IOLTA compliance"
+    }
+  },
+  "access_roles": ["attorney", "legal_assistant", "paralegal"],
+  "is_public": false,
+  "tenant_id": null,
+  "created_at": "2025-01-31T00:00:00Z",
+  "updated_at": "2025-01-31T00:00:00Z"
+}

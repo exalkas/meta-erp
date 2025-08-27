@@ -180,7 +180,10 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
       localStorage.setItem(preferencesKey, JSON.stringify(newPreferences));
 
       // Update language if changed
-      if (newPreferences.primaryLanguage !== language) {
+      if (
+        newPreferences.primaryLanguage !== language &&
+        newPreferences.primaryLanguage
+      ) {
         setLanguage(newPreferences.primaryLanguage);
       }
     },

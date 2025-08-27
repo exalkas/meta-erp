@@ -65,7 +65,7 @@ class AuthApiClient {
     this.baseUrl =
       process.env.NODE_ENV === "production"
         ? "/api/auth" // Production: goes through Next.js API routes
-        : "http://localhost:8001/auth"; // Development: direct to FastAPI service
+        : "http://localhost:8001/auth"; // Development: direct to FastAPI auth service on port 8001
 
     // Default tenant for demo/development
     this.defaultTenantId = "89f84fea-b5b9-413c-945b-002c7fd9555d"; // demo-eshop-crm tenant
@@ -186,14 +186,22 @@ class AuthApiClient {
    */
   async validateSession(sessionToken: string): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/validate`, {
-        method: "GET",
+      const response = await fetch(`${this.baseUrl}/validate-token`, {
+        method: "POST",
         headers: {
-          Authorization: `Bearer ${sessionToken}`,
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          token: sessionToken,
+        }),
       });
 
-      return response.ok;
+      if (response.ok) {
+        const data = await response.json();
+        return data.valid === true;
+      }
+
+      return false;
     } catch (error) {
       console.error("❌ Auth API: Session validation failed:", error);
       return false;

@@ -4,7 +4,7 @@
  */
 
 import { useCallback } from "react";
-import { useTranslation } from "../contexts/TranslationContext";
+import { useTranslation, useLanguage } from "../contexts/TranslationContext";
 import { TranslationOptions, Language } from "../types";
 
 interface TranslationWithFallbackOptions extends TranslationOptions {
@@ -33,7 +33,8 @@ export const useTranslationWithFallback = (
   defaultFallbackLanguage: Language = "en",
   enableMissingKeyTracking = true
 ): TranslationWithFallbackResult => {
-  const { t: baseT, language, resources } = useTranslation();
+  const { t: baseT, resources } = useTranslation();
+  const { language } = useLanguage();
 
   // Enhanced translation function with fallback
   const t = useCallback(
