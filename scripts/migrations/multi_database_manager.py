@@ -15,6 +15,7 @@ Architecture Pattern:
 - Master DB: Global metadata, SAP customizing, industry packages
 - Tenant DBs: Business data, tenant-specific customizing overrides
 """
+import os
 
 import asyncio
 import logging
@@ -431,7 +432,7 @@ async def main():
     
     try:
         # Initialize with master database
-        master_url = "postgresql+asyncpg://postgres:postgres@localhost/metadata_platform_master"
+        master_url = os.environ["DATABASE_URL"]
         await manager.initialize(master_url)
         
         # Get tenant list

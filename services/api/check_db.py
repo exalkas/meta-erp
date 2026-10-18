@@ -1,9 +1,10 @@
+import os
 import asyncio
 import asyncpg
 
 async def check_databases():
     try:
-        conn = await asyncpg.connect('postgresql://postgres:@localhost:5432/postgres')
+        conn = await asyncpg.connect(os.environ["DATABASE_URL"].replace("postgresql+asyncpg://", "postgresql://", 1))
         result = await conn.fetch('SELECT datname FROM pg_database WHERE datistemplate = false')
         databases = [r['datname'] for r in result]
         print("Available databases:")

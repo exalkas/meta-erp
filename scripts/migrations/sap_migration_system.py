@@ -236,7 +236,7 @@ async def main():
     
     parser = argparse.ArgumentParser(description="SAP-Style Migration System")
     parser.add_argument("--master-db-url", 
-                       default="postgresql+asyncpg://postgres:postgres@localhost/metadata_platform_master",
+                       default=os.environ["DATABASE_URL"],
                        help="Master database URL")
     parser.add_argument("--target", 
                        choices=["master", "tenants", "all"], 

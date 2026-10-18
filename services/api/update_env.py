@@ -2,6 +2,7 @@
 """
 Update .env file with correct database name
 """
+import os
 
 def update_env_file():
     env_file = '.env'
@@ -11,8 +12,8 @@ def update_env_file():
         content = f.read()
     
     # Replace the database URL
-    old_url = 'postgresql+asyncpg://postgres:@localhost:5432/metadata_tenant_demo_eshop_crm'
-    new_url = 'postgresql+asyncpg://postgres:@localhost:5432/metadata_erp'
+    old_url = os.environ["OLD_DATABASE_URL"]
+    new_url = os.environ["DATABASE_URL"]
     
     updated_content = content.replace(old_url, new_url)
     

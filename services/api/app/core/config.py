@@ -20,15 +20,15 @@ class Settings(BaseSettings):
     environment: str = Field(default="development", env="ENVIRONMENT")
     
     # Database
-    database_url: str = Field(env="DATABASE_URL")
+    database_url: str = Field(min_length=1, env='DATABASE_URL')
     create_tables_on_startup: bool = Field(default=False, env="CREATE_TABLES_ON_STARTUP")
     
     # Redis
     redis_url: str = Field(default="redis://localhost:6379", env="REDIS_URL")
     
     # Security
-    secret_key: str = Field(env="SECRET_KEY")
-    jwt_secret_key: str = Field(env="JWT_SECRET_KEY")
+    secret_key: str = Field(min_length=1, env='SECRET_KEY')
+    jwt_secret_key: str = Field(min_length=1, env='JWT_SECRET_KEY')
     jwt_algorithm: str = Field(default="HS256", env="JWT_ALGORITHM")
     jwt_access_token_expire_minutes: int = Field(default=30, env="JWT_ACCESS_TOKEN_EXPIRE_MINUTES")
     jwt_refresh_token_expire_days: int = Field(default=30, env="JWT_REFRESH_TOKEN_EXPIRE_DAYS")
@@ -80,6 +80,7 @@ class Settings(BaseSettings):
         return v
 
     class Config:
+        extra = "ignore"
         env_file = ".env"
         case_sensitive = False
 

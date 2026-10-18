@@ -2,11 +2,11 @@
   {
     "user_id": "01111111-1111-1111-1111-111111111111",
     "tenant_id": "89f84fea-b5b9-413c-945b-002c7fd9555d",
-    "email": "admin@demo-eshop-crm.local",
-    "first_name": "System",
-    "last_name": "Administrator",
-    "display_name": "System Administrator",
-    "username": "admin",
+    "email": "demo-user-1@example.invalid",
+    "first_name": "Demo",
+    "last_name": "User 1",
+    "display_name": "Demo User 1",
+    "username": "demo-user-1",
     "phone": "+30 210 1234567",
     "avatar_url": null,
     "timezone": "Europe/Athens",
@@ -22,7 +22,6 @@
       "11111111-1111-1111-1111-111111111111",
       "22222222-2222-2222-2222-222222222222"
     ],
-    "password_hash": "",
     "metadata_json": {
       "department": "IT",
       "employee_id": "EMP001",
@@ -37,11 +36,11 @@
   {
     "user_id": "02222222-2222-2222-2222-222222222222",
     "tenant_id": "89f84fea-b5b9-413c-945b-002c7fd9555d",
-    "email": "bizadmin@demo-eshop-crm.local",
-    "first_name": "Maria",
-    "last_name": "Papadopoulos",
-    "display_name": "Maria Papadopoulos",
-    "username": "mpapadopoulos",
+    "email": "demo-user-2@example.invalid",
+    "first_name": "Demo",
+    "last_name": "User 2",
+    "display_name": "Demo User 2",
+    "username": "demo-user-2",
     "phone": "+30 210 2345678",
     "avatar_url": null,
     "timezone": "Europe/Athens",
@@ -57,14 +56,18 @@
       "33333333-3333-3333-3333-333333333333",
       "aaaa1111-1111-1111-1111-111111111111"
     ],
-    "password_hash": "",
     "metadata_json": {
       "department": "Operations",
       "employee_id": "EMP002",
       "hire_date": "2024-02-01",
       "security_clearance": "medium",
-      "languages": ["el", "en"],
-      "certifications": ["Maritime Operations Certificate"]
+      "languages": [
+        "el",
+        "en"
+      ],
+      "certifications": [
+        "Maritime Operations Certificate"
+      ]
     },
     "created_at": "2025-01-29T00:00:00Z",
     "updated_at": "2025-01-29T00:00:00Z"
@@ -72,11 +75,11 @@
   {
     "user_id": "03333333-3333-3333-3333-333333333333",
     "tenant_id": "89f84fea-b5b9-413c-945b-002c7fd9555d",
-    "email": "operations@demo-eshop-crm.local",
-    "first_name": "Nikos",
-    "last_name": "Konstantinou",
-    "display_name": "Nikos Konstantinou",
-    "username": "nkonstantinou",
+    "email": "demo-user-3@example.invalid",
+    "first_name": "Demo",
+    "last_name": "User 3",
+    "display_name": "Demo User 3",
+    "username": "demo-user-3",
     "phone": "+30 210 3456789",
     "avatar_url": null,
     "timezone": "Europe/Athens",
@@ -93,14 +96,19 @@
       "cccc3333-3333-3333-3333-333333333333",
       "a7a77777-7777-7777-7777-777777777777"
     ],
-    "password_hash": "",
     "metadata_json": {
       "department": "Fleet Operations",
       "employee_id": "EMP003",
       "hire_date": "2024-03-01",
       "security_clearance": "medium",
-      "vessel_access": ["VESSEL001", "VESSEL002"],
-      "certifications": ["Captain's License", "Safety Officer"]
+      "vessel_access": [
+        "VESSEL001",
+        "VESSEL002"
+      ],
+      "certifications": [
+        "Captain's License",
+        "Safety Officer"
+      ]
     },
     "created_at": "2025-01-29T00:00:00Z",
     "updated_at": "2025-01-29T00:00:00Z"
@@ -108,11 +116,11 @@
   {
     "user_id": "04444444-4444-4444-4444-444444444444",
     "tenant_id": "89f84fea-b5b9-413c-945b-002c7fd9555d",
-    "email": "commercial@demo-eshop-crm.local",
-    "first_name": "Elena",
-    "last_name": "Dimitriou",
-    "display_name": "Elena Dimitriou",
-    "username": "edimitriou",
+    "email": "demo-user-4@example.invalid",
+    "first_name": "Demo",
+    "last_name": "User 4",
+    "display_name": "Demo User 4",
+    "username": "demo-user-4",
     "phone": "+30 210 4567890",
     "avatar_url": null,
     "timezone": "Europe/Athens",
@@ -128,14 +136,21 @@
       "44444444-4444-4444-4444-444444444444",
       "dddd4444-4444-4444-4444-444444444444"
     ],
-    "password_hash": "",
     "metadata_json": {
       "department": "Commercial",
       "employee_id": "EMP004",
       "hire_date": "2024-04-01",
       "security_clearance": "medium",
-      "customer_portfolio": ["CUST001", "CUST002", "CUST003"],
-      "languages": ["el", "en", "fr"]
+      "customer_portfolio": [
+        "CUST001",
+        "CUST002",
+        "CUST003"
+      ],
+      "languages": [
+        "el",
+        "en",
+        "fr"
+      ]
     },
     "created_at": "2025-01-29T00:00:00Z",
     "updated_at": "2025-01-29T00:00:00Z"
@@ -143,11 +158,11 @@
   {
     "user_id": "05555555-5555-5555-5555-555555555555",
     "tenant_id": "89f84fea-b5b9-413c-945b-002c7fd9555d",
-    "email": "finance@demo-eshop-crm.local",
-    "first_name": "Dimitris",
-    "last_name": "Georgiou",
-    "display_name": "Dimitris Georgiou",
-    "username": "dgeorgiou",
+    "email": "demo-user-5@example.invalid",
+    "first_name": "Demo",
+    "last_name": "User 5",
+    "display_name": "Demo User 5",
+    "username": "demo-user-5",
     "phone": "+30 210 5678901",
     "avatar_url": null,
     "timezone": "Europe/Athens",
@@ -163,7 +178,6 @@
       "44444444-4444-4444-4444-444444444444",
       "eeee5555-5555-5555-5555-555555555555"
     ],
-    "password_hash": "",
     "metadata_json": {
       "department": "Finance",
       "employee_id": "EMP005",
@@ -174,7 +188,10 @@
         "budgets": 500000,
         "contracts": 1000000
       },
-      "certifications": ["CPA", "Financial Risk Management"]
+      "certifications": [
+        "CPA",
+        "Financial Risk Management"
+      ]
     },
     "created_at": "2025-01-29T00:00:00Z",
     "updated_at": "2025-01-29T00:00:00Z"
@@ -182,11 +199,11 @@
   {
     "user_id": "06666666-6666-6666-6666-666666666666",
     "tenant_id": "89f84fea-b5b9-413c-945b-002c7fd9555d",
-    "email": "user@demo-eshop-crm.local",
-    "first_name": "Kostas",
-    "last_name": "Ioannou",
-    "display_name": "Kostas Ioannou",
-    "username": "kioannou",
+    "email": "demo-user-6@example.invalid",
+    "first_name": "Demo",
+    "last_name": "User 6",
+    "display_name": "Demo User 6",
+    "username": "demo-user-6",
     "phone": "+30 210 6789012",
     "avatar_url": null,
     "timezone": "Europe/Athens",
@@ -202,14 +219,16 @@
       "55555555-5555-5555-5555-555555555555",
       "b8b88888-8888-8888-8888-888888888888"
     ],
-    "password_hash": "",
     "metadata_json": {
       "department": "Customer Service",
       "employee_id": "EMP006",
       "hire_date": "2024-06-01",
       "security_clearance": "basic",
       "shift_schedule": "09:00-17:00",
-      "languages": ["el", "en"]
+      "languages": [
+        "el",
+        "en"
+      ]
     },
     "created_at": "2025-01-29T00:00:00Z",
     "updated_at": "2025-01-29T00:00:00Z"

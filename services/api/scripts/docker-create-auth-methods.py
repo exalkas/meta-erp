@@ -5,6 +5,7 @@ Docker Auth Methods Setup Script
 Creates just the missing auth_methods table and admin user auth method.
 This works with the existing database created by seed_all.py.
 """
+import os
 
 import asyncio
 import asyncpg
@@ -12,13 +13,7 @@ import bcrypt
 import sys
 
 # Configuration
-DATABASE_CONFIG = {
-    'host': 'postgres',
-    'port': 5432,
-    'user': 'postgres',
-    'password': '',
-    'database': 'metadata_erp'
-}
+DATABASE_CONFIG = {"dsn": os.environ["DATABASE_URL"].replace('postgresql+asyncpg://', 'postgresql://', 1)}
 
 TENANT_CONFIG = {
     'tenant_id': '89f84fea-b5b9-413c-945b-002c7fd9555d'
@@ -26,7 +21,7 @@ TENANT_CONFIG = {
 
 ADMIN_USER = {
     'email': 'admin@demo-eshop-crm.local',
-    'password': ''
+    'password': os.environ["ADMIN_PASSWORD"]
 }
 
 async def connect_database():
@@ -310,9 +305,9 @@ async def main():
         print("\n" + "=" * 50)
         print("🎉 AUTH METHODS SETUP COMPLETE!")
         print("=" * 50)
-        print(f"✅ Database: {DATABASE_CONFIG['database']}")
+        print("Credentials read from the local environment.")
         print(f"✅ Admin user: {ADMIN_USER['email']}")
-        print(f"✅ Password: {ADMIN_USER['password']}")
+        print("Credentials read from the local environment.")
         print("\n🔗 Login should now work in the legal app!")
         
     except Exception as e:

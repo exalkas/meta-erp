@@ -2,6 +2,7 @@
 """
 Reset database - Drop and recreate with clean schema
 """
+import os
 
 import asyncio
 import asyncpg
@@ -9,7 +10,7 @@ import asyncpg
 async def reset_database():
     try:
         # Connect to postgres database to manage the metadata_erp database
-        conn = await asyncpg.connect('postgresql://postgres:@localhost:5432/postgres')
+        conn = await asyncpg.connect(os.environ["ADMIN_DATABASE_URL"].replace("postgresql+asyncpg://", "postgresql://", 1))
         
         # Terminate any existing connections to the database
         await conn.execute("""
@@ -29,7 +30,7 @@ async def reset_database():
         await conn.close()
         
         # Test connection to new database
-        test_conn = await asyncpg.connect('postgresql://postgres:@localhost:5432/metadata_erp')
+        test_conn = await asyncpg.connect(os.environ["DATABASE_URL"].replace("postgresql+asyncpg://", "postgresql://", 1))
         await test_conn.close()
         print("✅ Database connection test successful")
         

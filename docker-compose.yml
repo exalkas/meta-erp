@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_DB: metadata_erp
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -47,14 +47,14 @@ services:
       dockerfile: Dockerfile
     container_name: metadata-erp-auth
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:@postgres:5432/metadata_erp
+      - DATABASE_URL=${DOCKER_DATABASE_URL:?Set DOCKER_DATABASE_URL in .env}
       - CREATE_TABLES_ON_STARTUP=true
       - REDIS_URL=redis://redis:6379/0
-      - JWT_SECRET_KEY=
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in .env}
       - JWT_ALGORITHM=HS256
       - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
       - JWT_REFRESH_TOKEN_EXPIRE_DAYS=30
-      - SECRET_KEY=
+      - SECRET_KEY=${SECRET_KEY:?Set SECRET_KEY in .env}
       - ENVIRONMENT=development
       - DEBUG=true
       - LOG_LEVEL=INFO
@@ -90,10 +90,12 @@ services:
       dockerfile: Dockerfile
     container_name: metadata-erp-api
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:@postgres:5432/metadata_erp
-      - TENANT_DB_TEMPLATE=postgresql+asyncpg://postgres:@postgres:5432/metadata_erp_tenant_{tenant_id}
+      - DATABASE_URL=${DOCKER_DATABASE_URL:?Set DOCKER_DATABASE_URL in .env}
+      - TENANT_DB_TEMPLATE=${DOCKER_TENANT_DB_TEMPLATE:?Set DOCKER_TENANT_DB_TEMPLATE in .env}
       - REDIS_URL=redis://redis:6379/1
       - AUTH_SERVICE_URL=http://auth-service:8001
+      - SECRET_KEY=${SECRET_KEY:?Set SECRET_KEY in .env}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in .env}
       - ENVIRONMENT=development
       - DEBUG=true
       - LOG_LEVEL=INFO

@@ -1,10 +1,11 @@
+import os
 import asyncio
 import asyncpg
 
 async def create_database():
     try:
         # Connect to postgres database to create new database
-        conn = await asyncpg.connect('postgresql://postgres:@localhost:5432/postgres')
+        conn = await asyncpg.connect(os.environ["ADMIN_DATABASE_URL"].replace("postgresql+asyncpg://", "postgresql://", 1))
         
         # Check if database exists
         result = await conn.fetchval(

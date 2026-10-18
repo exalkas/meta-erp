@@ -162,7 +162,6 @@ temp/
 # ==============================================
 # DOCKER
 # ==============================================
-.dockerignore
 
 # ==============================================
 # OS SPECIFIC
@@ -244,3 +243,13 @@ profiling/
 .gitkeep 
 
 package-lock.json
+# Local credentials and database exports
+.env.*
+**/.env.*
+!**/.env.example
+services/.env.new
+metadata_erp_working.sql
+metadata_erp_working.zip
+services/api/temp_fix_password.py
+services/api/fix_auth_setup.py
+old_stuff/migrations/current_database_data.json

@@ -19,13 +19,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 # Configuration
-DATABASE_CONFIG = {
-    'host': 'postgres',
-    'port': 5432,
-    'user': 'postgres',
-    'password': '',
-    'database': 'metadata_erp'
-}
+DATABASE_CONFIG = {"dsn": os.environ["DATABASE_URL"].replace('postgresql+asyncpg://', 'postgresql://', 1)}
 
 TENANT_CONFIG = {
     'tenant_id': '89f84fea-b5b9-413c-945b-002c7fd9555d',
@@ -36,7 +30,7 @@ TENANT_CONFIG = {
 
 ADMIN_USER = {
     'email': 'admin@demo-eshop-crm.local',
-    'password': '',
+    'password': os.environ["ADMIN_PASSWORD"],
     'first_name': 'System',
     'last_name': 'Administrator',
     'display_name': 'System Administrator'
@@ -317,9 +311,9 @@ async def main():
         print("\n" + "=" * 50)
         print("🎉 DOCKER DATABASE SETUP COMPLETE!")
         print("=" * 50)
-        print(f"✅ Database: {DATABASE_CONFIG['database']}")
+        print("Credentials read from the local environment.")
         print(f"✅ Admin user: {ADMIN_USER['email']}")
-        print(f"✅ Password: {ADMIN_USER['password']}")
+        print("Credentials read from the local environment.")
         print(f"✅ Tenant: {TENANT_CONFIG['tenant_name']}")
         print("\n🔗 You can now login to the legal app!")
         

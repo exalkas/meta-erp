@@ -11,6 +11,7 @@ Usage:
     cd services/api
     poetry run python ../../data/seed-scripts/seed_all.py
 """
+import os
 
 import asyncio
 import json
@@ -564,17 +565,17 @@ class DataSeeder:
                 {
                     "user_id": "01111111-1111-1111-1111-111111111111",
                     "tenant_id": "89f84fea-b5b9-413c-945b-002c7fd9555d",
-                    "password": ""
+                    "password": os.environ["DEMO_USER_PASSWORD"]
                 },
                 {
                     "user_id": "02222222-2222-2222-2222-222222222222", 
                     "tenant_id": "89f84fea-b5b9-413c-945b-002c7fd9555d",
-                    "password": ""
+                    "password": os.environ["DEMO_USER_PASSWORD"]
                 },
                 {
                     "user_id": "03333333-3333-3333-3333-333333333333",
                     "tenant_id": "89f84fea-b5b9-413c-945b-002c7fd9555d", 
-                    "password": ""
+                    "password": os.environ["DEMO_USER_PASSWORD"]
                 }
             ]
             

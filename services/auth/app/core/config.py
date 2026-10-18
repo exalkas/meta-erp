@@ -31,10 +31,7 @@ class AuthSettings(BaseSettings):
     # DATABASE SETTINGS
     # =============================================
     
-    DATABASE_URL: str = Field(
-        default="postgresql+asyncpg://auth_user:@localhost:5432/auth_db",
-        env="DATABASE_URL"
-    )
+    DATABASE_URL: str = Field(min_length=1, env='DATABASE_URL')
     DATABASE_ECHO: bool = Field(default=False, env="DATABASE_ECHO")
     CREATE_TABLES_ON_STARTUP: bool = Field(default=True, env="CREATE_TABLES_ON_STARTUP")
     
@@ -57,10 +54,7 @@ class AuthSettings(BaseSettings):
     # JWT & SECURITY SETTINGS
     # =============================================
     
-    JWT_SECRET_KEY: str = Field(
-        default="super-secret-jwt-key-change-in-production",
-        env="JWT_SECRET_KEY"
-    )
+    JWT_SECRET_KEY: str = Field(min_length=1, env='JWT_SECRET_KEY')
     JWT_ALGORITHM: str = Field(default="HS256", env="JWT_ALGORITHM")
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=15, env="JWT_ACCESS_TOKEN_EXPIRE_MINUTES")
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = Field(default=7, env="JWT_REFRESH_TOKEN_EXPIRE_DAYS")
@@ -419,7 +413,7 @@ def get_testing_settings() -> AuthSettings:
         TESTING=True,
         DEBUG=True,
         LOG_LEVEL="DEBUG",
-        DATABASE_URL="sqlite+aiosqlite:///:memory:",
+        DATABASE_URL=os.environ["TEST_DATABASE_URL"],
         CREATE_TABLES_ON_STARTUP=True,
         ENABLE_TEST_ENDPOINTS=True,
         RESET_DATABASE_ON_STARTUP=True
@@ -465,7 +459,7 @@ if __name__ == "__main__":
     # Test settings loading
     settings = get_settings()
     print(f"Environment: {settings.ENVIRONMENT}")
-    print(f"Database URL: {settings.DATABASE_URL}")
+    print("Database URL: configured")
     print(f"Redis enabled: {settings.redis_enabled}")
     print(f"SMTP enabled: {settings.smtp_enabled}")
     print(f"OAuth providers: {settings.oauth_providers_enabled}")
