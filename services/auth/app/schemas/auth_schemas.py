@@ -188,6 +188,17 @@ class SessionRevokeRequest(BaseModel):
             }
         }
 
+class RefreshTokenRequest(BaseModel):
+    """Token refresh request"""
+    refresh_token: str = Field(..., min_length=1, max_length=512)
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "refresh_token": ""
+            }
+        }
+
 class TenantConfigUpdateRequest(BaseModel):
     """Tenant authentication configuration update"""
     vertical: Optional[str] = Field(None, max_length=50)

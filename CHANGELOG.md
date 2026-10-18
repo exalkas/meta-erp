@@ -6,7 +6,46 @@
 
 ---
 
-## **[1.13.0] - January 31, 2025 (CURRENT)**
+## **[1.13.1] - August 30, 2025 (CURRENT)**
+
+### ✅ **DOCKER INFRASTRUCTURE & DEVELOPMENT WORKFLOW OVERHAUL**
+
+- **MILESTONE:** Complete hybrid development environment with Docker backend + local frontend
+- **STRATEGY:** Eliminated Docker startup issues and optimized development speed
+- **SCOPE:** Docker Compose, authentication, database persistence, documentation organization
+
+#### **🐳 Docker Environment Optimization**
+
+- **✅ Hybrid Architecture**: Backend services in Docker + frontend development locally for optimal speed
+- **✅ Manual Startup Control**: Disabled auto-restart policies to prevent Docker Desktop conflicts
+- **✅ Service Dependencies**: Proper startup order with health checks (PostgreSQL → Redis → Auth → API)
+- **✅ Frontend Removal**: Removed client and legal-app from Docker for faster development iteration
+- **✅ Database Persistence**: Imported working database dump with complete legal vertical data
+
+#### **🔧 Authentication & Database Fixes**
+
+- **✅ Schema Compatibility**: Fixed auth_sessions table schema mismatch between models and imported data
+- **✅ Authentication Recovery**: Resolved login issues with proper column mapping and constraints
+- **✅ Network Reliability**: Fixed Docker networking DNS resolution issues with clean restart procedures
+- **✅ Data Integrity**: Disabled auto-seeding to preserve imported database state
+
+#### **📚 Documentation Reorganization**
+
+- **✅ Docs Cleanup**: Moved setup guides to `docs/` folder and deleted outdated files
+- **✅ Quick Start Guide**: Created 30-second reference for daily development workflow
+- **✅ Docker Guide**: Comprehensive setup documentation with troubleshooting
+- **✅ Workflow Scripts**: Added `npm run morning` and `npm run start` for easy daily startup
+
+#### **⚡ Developer Experience Improvements**
+
+- **✅ Fast Frontend**: Local Next.js with instant hot reload (vs slow Docker rebuilds)
+- **✅ Reliable Backend**: Consistent Docker infrastructure with imported data
+- **✅ Morning Routine**: Single command to start clean development environment
+- **✅ Port Management**: Eliminated port conflicts with frontend apps running locally
+
+---
+
+## **[1.13.0] - January 31, 2025**
 
 ### ✅ **NAVIGATION & LAYOUT SYSTEM OVERHAUL**
 

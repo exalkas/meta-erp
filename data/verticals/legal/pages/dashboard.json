@@ -13,7 +13,6 @@
         "props": {
           "columns": 3,
           "gap": 6,
-          "legalMode": true,
           "widgets": [
             {
               "type": "KPICard",
@@ -23,8 +22,7 @@
                 "change": "+3",
                 "changeType": "positive",
                 "icon": "Users",
-                "period": "This month",
-                "legalMode": true
+                "period": "This month"
               }
             },
             {
@@ -35,8 +33,7 @@
                 "change": "+2",
                 "changeType": "positive",
                 "icon": "Briefcase",
-                "period": "This month",
-                "legalMode": true
+                "period": "This month"
               }
             },
             {
@@ -47,8 +44,7 @@
                 "change": "+15.2",
                 "changeType": "positive",
                 "icon": "Clock",
-                "period": "This month",
-                "legalMode": true
+                "period": "This month"
               }
             },
             {
@@ -57,7 +53,6 @@
                 "title": "Recent Matters",
                 "colspan": 2,
                 "maxItems": 5,
-                "legalMode": true,
                 "showAiInsights": true
               }
             },
@@ -67,7 +62,6 @@
                 "title": "Statute of Limitations Alerts",
                 "colspan": 1,
                 "maxItems": 6,
-                "legalMode": true,
                 "showUrgentFirst": true
               }
             },
@@ -76,7 +70,6 @@
               "props": {
                 "title": "Quick Actions",
                 "colspan": 3,
-                "legalMode": true,
                 "items": [
                   {
                     "id": "new-client",
@@ -120,34 +113,45 @@
   },
   "components": [],
   "initial_state": {
-    "isLoading": true,
-    "selectedTimeRange": "7d",
-    "refreshInterval": 30000,
+    "isLoading": false,
+    "selectedTimeRange": "30d",
+    "refreshInterval": 60000,
     "legalView": true,
     "widgets": {
-      "clients": { "loading": false, "error": null },
-      "matters": { "loading": false, "error": null },
-      "deadlines": { "loading": false, "error": null }
+      "kpiData": { "loading": false, "error": null, "data": null },
+      "recentMatters": { "loading": false, "error": null, "data": null },
+      "deadlines": { "loading": false, "error": null, "data": null },
+      "dashboardData": { "loading": false, "error": null, "data": null }
     }
   },
   "state_bindings": {
-    "user.profile": "auth.currentUser",
-    "legal.timeRange": "ui.timeRange",
-    "legal.autoRefresh": "ui.autoRefresh",
-    "attorney.barStatus": "legal.attorneyVerification"
+    "DashboardGrid.timeRange": "selectedTimeRange",
+    "DashboardGrid.refreshInterval": "refreshInterval",
+    "KPICard.loading": "widgets.kpiData.loading",
+    "KPICard.data": "widgets.kpiData.data",
+    "KPICard.error": "widgets.kpiData.error",
+    "RecentMatters.loading": "widgets.recentMatters.loading",
+    "RecentMatters.data": "widgets.recentMatters.data",
+    "RecentMatters.error": "widgets.recentMatters.error",
+    "DeadlineAlerts.loading": "widgets.deadlines.loading",
+    "DeadlineAlerts.data": "widgets.deadlines.data",
+    "DeadlineAlerts.error": "widgets.deadlines.error"
   },
   "api_endpoints": {
-    "dashboardData": "/api/legal/dashboard/overview",
-    "kpiData": "/api/legal/dashboard/kpis",
-    "recentMatters": "/api/legal/matters/recent",
-    "deadlines": "/api/legal/deadlines/upcoming",
-    "complianceStatus": "/api/legal/compliance/status"
+    "_comment": "Disabled until backend endpoints are implemented",
+    "_dashboardData": "/api/legal/dashboard/overview",
+    "_kpiData": "/api/legal/dashboard/kpis",
+    "_recentMatters": "/api/legal/matters/recent",
+    "_deadlines": "/api/legal/deadlines/upcoming",
+    "_complianceStatus": "/api/legal/compliance/status"
   },
   "callbacks": {
-    "onDataRefresh": "action.refreshLegalDashboard",
-    "onTimeRangeChange": "action.updateTimeRange",
-    "onQuickAction": "action.executeLegalAction",
-    "onDeadlineAlert": "action.handleDeadlineAlert"
+    "onDataRefresh": "api_call:dashboardData",
+    "onLoadClients": "api_call:kpiData",
+    "onLoadMatters": "api_call:recentMatters",
+    "onLoadDeadlines": "api_call:deadlines",
+    "onTimeRangeChange": "state:selectedTimeRange",
+    "onQuickAction": "redirect"
   },
   "real_time_updates": true,
   "cache_strategy": "stale-while-revalidate",
@@ -161,7 +165,6 @@
     "theme": "legal",
     "autoRefresh": true,
     "refreshInterval": 30000,
-    "legalMode": true,
     "iolcoCompliance": true,
     "seo": {
       "title": "Legal Practice Dashboard - Comprehensive Overview",

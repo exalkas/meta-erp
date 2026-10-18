@@ -23,7 +23,6 @@
           "app": "legal",
           "enableTwoFactor": true,
           "enableMagicLink": false,
-          "legalMode": true,
           "title": "Legal Practice Login",
           "subtitle": "Secure access to your legal practice management system",
           "iolcoCompliance": true,
@@ -67,10 +66,11 @@
     "attorneyVerification": "/legal/verify-attorney"
   },
   "callbacks": {
+    "onLogin": "api_call:login",
     "onLoginSuccess": "redirect:/dashboard",
-    "onLoginError": "state.errorMessage",
-    "onTwoFactorRequired": "state.showTwoFactor=true",
-    "onAttorneyVerification": "legal.verifyAttorney"
+    "onLoginError": "state:errorMessage",
+    "onTwoFactorRequired": "state:showTwoFactor=true",
+    "onAttorneyVerification": "api_call:attorneyVerification"
   },
   "real_time_updates": false,
   "cache_strategy": "no-cache",

@@ -2,6 +2,9 @@
 
 **Complete Development Environment Setup for Windows 11**
 
+> **⚡ Quick Alternative**: For faster setup, use our [Docker Setup Guide](../DOCKER_SETUP.md) instead!  
+> This manual setup is comprehensive but requires more time and dependencies.
+
 ---
 
 ## 🎯 **Overview**

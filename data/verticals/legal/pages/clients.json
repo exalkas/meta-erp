@@ -16,7 +16,6 @@
           "showThemeSelector": true,
           "showNotifications": true,
           "userMenuStyle": "buttons",
-          "legalMode": true,
           "userMenu": [
             {
               "id": "user-profile",
@@ -79,7 +78,6 @@
         "props": {
           "variant": "vertical",
           "collapsible": true,
-          "legalMode": true,
           "sections": [
             {
               "title_key": "_sidebar_sections.practice_management",

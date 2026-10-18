@@ -18,7 +18,6 @@
             "showThemeSelector": true,
             "showLanguageSelector": true,
             "userMenuStyle": "buttons",
-            "legalMode": true,
             "logo": {
               "text": "Axiologic",
               "subtitle": "Practice Management",
@@ -60,7 +59,6 @@
           "props": {
             "variant": "vertical",
             "collapsible": true,
-            "legalMode": true,
             "showUserProfile": true,
             "sections": [
               {
@@ -169,7 +167,6 @@
             "showConnectionStatus": true,
             "showLastUpdate": true,
             "showVersion": true,
-            "legalMode": true,
             "showTrustAccountStatus": true,
             "showComplianceStatus": true
           }
@@ -207,7 +204,6 @@
     "responsive_breakpoint": "lg",
     "mobile_sidebar_overlay": true,
     "vertical": "legal",
-    "legalMode": true,
     "primaryColor": "blue",
     "accentColor": "amber"
   },

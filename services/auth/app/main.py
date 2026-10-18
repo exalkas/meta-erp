@@ -20,12 +20,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 
-from app.core.database import create_tables, check_db_connection
-from app.core.logging import setup_logging, get_logger
+from app.core.database import init_database, create_tables, check_database_health
+from app.core.logging import configure_logging, get_logger
 from app.core.exceptions import (
-    AuthenticationException,
-    auth_exception_handler,
-    general_exception_handler
+    AuthenticationException
 )
 from app.api.auth_routes import router as auth_router
 
@@ -34,20 +32,23 @@ async def lifespan(app: FastAPI):
     """Application lifespan events"""
     
     # Setup logging first
-    setup_logging()
+    configure_logging()
     logger = get_logger("sap_auth_startup")
     
     # Startup
     logger.info("Starting SAP-Style Authentication Service...")
     
+    # Initialize database connection
+    await init_database()
+    logger.info("Database initialized")
+    
     # Check database connection
-    if not await check_db_connection():
-        logger.critical("Database connection failed!")
-        raise Exception("Database connection failed")
+    db_health = await check_database_health()
+    if db_health.get("status") != "connected":
+        logger.critical("Database connection failed!", error=db_health.get("error"))
+        raise Exception(f"Database connection failed: {db_health.get('error')}")
     logger.info("Database connection successful")
     
-    # Create customizing tables
-    await create_tables()
     logger.info("SAP-style customizing tables initialized")
     
     yield
@@ -99,6 +100,26 @@ app.add_middleware(
 )
 
 # Error handlers
+async def auth_exception_handler(request, exc: AuthenticationException):
+    """Handle authentication exceptions"""
+    return JSONResponse(
+        status_code=401,
+        content=exc.to_dict()
+    )
+
+async def general_exception_handler(request, exc: Exception):
+    """Handle general exceptions"""
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": {
+                "code": "INTERNAL_ERROR",
+                "message": "Internal server error",
+                "details": {"exception_type": type(exc).__name__}
+            }
+        }
+    )
+
 app.add_exception_handler(AuthenticationException, auth_exception_handler)
 app.add_exception_handler(Exception, general_exception_handler)
 
@@ -122,4 +143,17 @@ async def root():
         ],
         "timestamp": datetime.utcnow().isoformat() + "Z",
         "documentation": "/docs"
+    }
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Docker"""
+    from app.core.database import check_database_health
+    
+    db_health = await check_database_health()
+    
+    return {
+        "status": "healthy" if db_health.get("status") == "connected" else "unhealthy",
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "database": db_health
     } 

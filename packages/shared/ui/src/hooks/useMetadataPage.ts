@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "../contexts/TranslationContext";
 import { useTheme } from "../contexts/ThemeContext";
+import { API_ENDPOINTS, buildApiUrl } from "../config/api";
 
 export interface UseMetadataPageOptions {
   pageRoute: string;
   tenantId: string;
-  enabled?: boolean;
 }
 
 export interface UseMetadataPageResult {
@@ -22,7 +22,6 @@ export interface UseMetadataPageResult {
 export const useMetadataPage = ({
   pageRoute,
   tenantId,
-  enabled = true,
 }: UseMetadataPageOptions): UseMetadataPageResult => {
   const { language } = useTranslation();
   const { theme } = useTheme();
@@ -31,7 +30,13 @@ export const useMetadataPage = ({
   const [error, setError] = useState<string | null>(null);
 
   const fetchPageDefinition = useCallback(async () => {
-    if (!enabled) return;
+    // Validate required parameters
+    if (!pageRoute) {
+      throw new Error("pageRoute is required");
+    }
+    if (!tenantId || tenantId === "undefined" || tenantId === "null") {
+      throw new Error("Valid tenantId is required");
+    }
 
     setLoading(true);
     setError(null);
@@ -42,22 +47,14 @@ export const useMetadataPage = ({
         { language, theme, tenantId }
       );
 
-      // Build API URL with language and theme parameters
-      const url = new URL(`http://localhost:8000/metadata/pages/${pageRoute}`);
+      // Build API URL with query parameters using the centralized config
+      const url = buildApiUrl(API_ENDPOINTS.pages(pageRoute), {
+        tenant_id: tenantId,
+        language,
+        theme,
+      });
 
-      // Only set tenant_id if it's a valid value (not undefined, null, or "undefined")
-      if (tenantId && tenantId !== "undefined" && tenantId !== "null") {
-        url.searchParams.set("tenant_id", tenantId);
-      }
-
-      if (language) {
-        url.searchParams.set("language", language);
-      }
-      if (theme) {
-        url.searchParams.set("theme", theme);
-      }
-
-      const response = await fetch(url.toString());
+      const response = await fetch(url);
 
       if (!response.ok) {
         throw new Error(
@@ -78,7 +75,7 @@ export const useMetadataPage = ({
     } finally {
       setLoading(false);
     }
-  }, [pageRoute, tenantId, language, theme, enabled]);
+  }, [pageRoute, tenantId, language, theme]);
 
   // Fetch on mount and when dependencies change (language, theme, etc.)
   useEffect(() => {

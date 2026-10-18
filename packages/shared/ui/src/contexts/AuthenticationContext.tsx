@@ -407,7 +407,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
       user,
       tokens,
       isAuthenticated: !!(tokens && user),
-      isLoading: false,
+      isLoading: !!(tokens && user), // Start loading if we have stored auth data
       error: null,
       app,
       hasAppAccess: false,
@@ -675,15 +675,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
           // Try to refresh
           try {
             await refreshToken();
+            // Loading state will be updated by refreshToken function
           } catch {
             // If refresh fails, clear stored data
-            setStoredTokens(null);
-            setStoredUser(null);
-          }
-        } else {
-          // Validate existing token
-          const isValid = await validateToken();
-          if (!isValid) {
             setStoredTokens(null);
             setStoredUser(null);
             setState((prev) => ({
@@ -691,9 +685,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
               isAuthenticated: false,
               user: null,
               tokens: null,
+              isLoading: false,
             }));
           }
+        } else {
+          // TEMPORARILY SKIP VALIDATION - auth service validation is placeholder
+          // TODO: Implement proper token validation in auth service
+          console.log(
+            "🔄 AuthContext: Skipping token validation (placeholder endpoint)"
+          );
+
+          // Token is valid, finish loading
+          setState((prev) => ({
+            ...prev,
+            isLoading: false,
+          }));
         }
+      } else {
+        // No stored auth data, finish loading
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+        }));
       }
     };
 

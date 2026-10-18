@@ -6,20 +6,27 @@
 
 ## 🐳 **Recommended: Docker Setup (Super Easy)**
 
-**Install only 1 thing and you're done!**
+**Hybrid development: Docker backend + local frontend for best performance!**
 
 ### **Prerequisites**
 
 1. **Docker Desktop** - https://www.docker.com/products/docker-desktop/
+2. **Node.js 18+** - For frontend development
 
 ### **Setup**
 
-```bash
-# One command to start everything
-npm run docker:dev
+```powershell
+# 1. Start backend services (Docker)
+npm run morning
+
+# 2. Start frontend development (Local)
+npm run dev:legal
 ```
 
-**That's it!** 🎉 Access your platform at http://localhost:3000
+**That's it!** 🎉 Access your platform at:
+
+- **Legal App**: http://localhost:3006
+- **Client App**: http://localhost:3000 (if needed)
 
 👉 **[Full Docker Guide](DOCKER_SETUP.md)** for complete instructions
 

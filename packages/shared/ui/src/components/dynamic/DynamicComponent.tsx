@@ -525,19 +525,26 @@ export const DynamicComponent: React.FC<DynamicComponentProps> = ({
       );
     }
 
-    // ✅ METADATA-FIRST: LoginForm must get callback from metadata (no fallbacks)
+    // ✅ SPECIAL CASE: LoginForm uses contextProps.onLogin (auth service) over metadata callbacks
     if (type === "LoginForm") {
       console.log("🔧 Setting up LoginForm with callbacks:", {
+        hasContextCallback: !!contextProps.onLogin,
         hasMetadataCallback: !!contextProps.metadataCallbacks?.onLogin,
-        callbackType: contextProps.metadataCallbacks?.onLogin
-          ? "metadata"
-          : "MISSING",
+        callbackType: contextProps.onLogin
+          ? "context (auth service)"
+          : contextProps.metadataCallbacks?.onLogin
+            ? "metadata (main API)"
+            : "MISSING",
         metadataCallbackKeys: contextProps.metadataCallbacks
           ? Object.keys(contextProps.metadataCallbacks)
           : [],
       });
 
-      if (!contextProps.metadataCallbacks?.onLogin) {
+      // Prefer contextProps.onLogin (goes to auth service) over metadata callback (goes to main API)
+      const loginCallback =
+        contextProps.onLogin || contextProps.metadataCallbacks?.onLogin;
+
+      if (!loginCallback) {
         console.error(
           "❌ METADATA ERROR: LoginForm requires onLogin callback from metadata! No fallback provided."
         );
@@ -546,7 +553,7 @@ export const DynamicComponent: React.FC<DynamicComponentProps> = ({
           ...enhancedProps,
           onLogin: async () => {
             throw new Error(
-              "LoginForm: onLogin callback missing from metadata. Check page definition callbacks."
+              "LoginForm: onLogin callback missing. Check page definition callbacks."
             );
           },
           language: "el",
@@ -555,7 +562,7 @@ export const DynamicComponent: React.FC<DynamicComponentProps> = ({
       } else {
         enhancedProps = {
           ...enhancedProps,
-          onLogin: contextProps.metadataCallbacks.onLogin, // ✅ METADATA-ONLY
+          onLogin: loginCallback, // ✅ PREFER CONTEXT (auth service) over metadata
           language: "el",
           app: props.app || "client",
         };

@@ -28,6 +28,7 @@ from ..schemas.auth_schemas import (
     # Request schemas
     PasswordAuthRequest, MagicLinkRequest, MagicLinkVerifyRequest,
     UserRegistrationRequest, SessionRevokeRequest, TenantConfigUpdateRequest,
+    RefreshTokenRequest,
     
     # Response schemas
     AuthSuccessResponse, MagicLinkResponse, UserProfileResponse,
@@ -80,12 +81,16 @@ async def get_current_user_from_token(
         # For now, treat token as session access_token
         auth_engine = SAPStyleAuthEngine(db)
         
-        # Look up session by access token
+        # Look up session by session token hash
         from sqlalchemy import select, and_
+        import hashlib
+        # Hash the provided token to match against session_token_hash
+        token_hash = hashlib.sha256(credentials.credentials.encode()).hexdigest()
+        
         stmt = select(AuthSession).where(
             and_(
-                AuthSession.access_token == credentials.credentials,
-                AuthSession.status == SessionStatus.ACTIVE,
+                AuthSession.session_token_hash == token_hash,
+                AuthSession.is_active == True,
                 AuthSession.expires_at > datetime.utcnow()
             )
         )
@@ -346,7 +351,14 @@ async def verify_magic_link(
                 session_id=str(session.session_id)
             )
             
-            return await create_auth_response(user, session, session.access_token, session.refresh_token, db)
+            # For magic link, we need to create new tokens
+            auth_engine = SAPStyleAuthEngine(db)
+            session, session_token, refresh_token = await auth_engine.create_session(
+                user=user,
+                device_name=request_data.device_name,
+                ip_address=get_client_ip(request)
+            )
+            return await create_auth_response(user, session, session_token, refresh_token, db)
             
         except BaseAuthException as e:
             logger.warning("Magic link verification failed", error_code=e.error_code.value)
@@ -425,7 +437,14 @@ async def register_user(
                     session_id=str(session.session_id)
                 )
                 
-                return await create_auth_response(user, session, session.access_token, session.refresh_token, db)
+                # For registration, we need to create new tokens
+                auth_engine = SAPStyleAuthEngine(db)
+                session, session_token, refresh_token = await auth_engine.create_session(
+                    user=user,
+                    device_name=request_data.device_name,
+                    ip_address=get_client_ip(request)
+                )
+                return await create_auth_response(user, session, session_token, refresh_token, db)
             
             else:
                 # Send verification email (magic link)
@@ -709,6 +728,102 @@ async def validate_token(
 # =============================================
 # UTILITY ENDPOINTS
 # =============================================
+
+@router.post("/refresh", response_model=AuthSuccessResponse)
+async def refresh_token(
+    request_data: RefreshTokenRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db_session)
+):
+    """Refresh access token using refresh token"""
+    
+    # Set request context for logging
+    request_id = get_request_id(request)
+    ip_address = get_client_ip(request)
+    set_context(
+        LogContext(
+            request_id=request_id,
+            tenant_id=None,  # Will be set after validation
+            user_id=None     # Will be set after validation
+        )
+    )
+    
+    try:
+        import hashlib
+        
+        # Hash the refresh token to find the session
+        refresh_token_hash = hashlib.sha256(request_data.refresh_token.encode()).hexdigest()
+        
+        # Find active session with this refresh token
+        from sqlalchemy import select, and_
+        stmt = select(AuthSession).where(
+            and_(
+                AuthSession.refresh_token_hash == refresh_token_hash,
+                AuthSession.is_active == True,
+                AuthSession.expires_at > datetime.utcnow()
+            )
+        )
+        result = await db.execute(stmt)
+        session = result.scalar_one_or_none()
+        
+        if not session:
+            logger.warning("Invalid or expired refresh token", ip_address=ip_address)
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired refresh token"
+            )
+        
+        # Get the user
+        user_stmt = select(User).where(User.user_id == session.user_id)
+        user_result = await db.execute(user_stmt)
+        user = user_result.scalar_one_or_none()
+        
+        if not user or not user.is_active:
+            logger.warning("User not found or inactive", user_id=str(session.user_id))
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found or inactive"
+            )
+        
+        # Update logging context
+        set_context(
+            LogContext(
+                request_id=request_id,
+                tenant_id=str(user.tenant_id),
+                user_id=str(user.user_id)
+            )
+        )
+        
+        # Create new tokens
+        auth_engine = SAPStyleAuthEngine(db)
+        new_session, session_token, refresh_token = await auth_engine.create_session(
+            user=user,
+            device_name=session.device_type,  # Keep existing device info
+            ip_address=ip_address
+        )
+        
+        # Revoke the old session
+        session.is_active = False
+        session.revoked_at = datetime.utcnow()
+        await db.commit()
+        
+        logger.info(
+            "Token refresh successful",
+            user_id=str(user.user_id),
+            old_session_id=str(session.session_id),
+            new_session_id=str(new_session.session_id)
+        )
+        
+        return await create_auth_response(user, new_session, session_token, refresh_token, db)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Token refresh error", error=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
 
 @router.get("/health", response_model=HealthCheckResponse)
 async def health_check(db: AsyncSession = Depends(get_db_session)):

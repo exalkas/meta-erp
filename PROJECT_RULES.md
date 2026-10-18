@@ -2,8 +2,8 @@
 
 ## Metadata-Driven No-Code/Low-Code Application Platform
 
-> **Version:** 1.11.0
-> **Last Updated:** August 15, 2025
+> **Version:** 1.13.1
+> **Last Updated:** August 30, 2025
 > **Target:** SAP-Style Vertical-First Industry Solutions Platform
 > **Status:** Admin Application Fully Functional ✅ - RBAC, translations, and app-builder interface operational
 
@@ -21,7 +21,7 @@
 - **Backend:** 6 FastAPI services + 2 AI services with metadata engines
 - **Database:** PostgreSQL (Master DB + Tenant-specific DBs) with component catalog
 - **Cache:** Redis with metadata caching
-- **Infrastructure:** Docker Compose for development, Kubernetes for production
+- **Infrastructure:** Hybrid Docker development (backend) + local frontend, Kubernetes for production
 
 ### **Applications**
 
@@ -537,30 +537,45 @@ ai-services → auth, core
 
 ## 🚀 **DEVELOPMENT WORKFLOW**
 
-### **Environment Setup**
+### **Hybrid Docker Environment**
 
-1. Clone repository
-2. Install dependencies (`npm run install:both`)
-3. Set up environment files
-4. Run migration scripts
-5. Start development servers
+**Architecture:** Backend in Docker + Frontend locally for optimal development speed
 
-### **Development Commands**
+### **Daily Startup (MANDATORY)**
 
 ```powershell
-# Start all services
-npm run dev:all
+# 1. Morning routine (fresh backend start)
+npm run morning
 
-# Start specific services
-npm run dev:client     # Main client app
-npm run dev:api        # Core API
-npm run dev:auth       # Auth service
-
-# Database management
-npm run migrate        # Run migrations
-npm run seed          # Seed reference data
-npm run reset-db      # Reset database
+# 2. Start frontend development
+npm run dev:legal        # Legal app on port 3006
+npm run dev:client       # Client app on port 3000 (if needed)
+npm run watch:shared-ui  # When editing shared components
 ```
+
+### **Docker Backend Management**
+
+```powershell
+# Backend services (Docker)
+npm run start            # Quick start existing backend
+npm run docker:up        # Start all backend services
+npm run docker:down      # Stop all services
+npm run docker:restart   # Restart all services
+npm run docker:status    # Check service health
+
+# Debugging
+npm run docker:logs      # All service logs
+npm run docker:logs:auth # Auth service logs only
+npm run docker:logs:api  # API service logs only
+```
+
+### **Development Rules (MANDATORY)**
+
+- ✅ **Backend:** Always run in Docker for consistency
+- ✅ **Frontend:** Always run locally for hot reload speed
+- ✅ **Manual Control:** Never use Docker auto-restart (prevents conflicts)
+- ✅ **Morning Routine:** Always start with `npm run morning` for clean state
+- ✅ **Data Persistence:** Database persists across Docker restarts
 
 ### **Code Standards**
 

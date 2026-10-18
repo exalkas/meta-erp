@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   DynamicPage,
@@ -9,6 +9,7 @@ import {
   ProtectedRoute,
   useAuth,
   useMetadataPage,
+  FullScreenSpinner,
 } from "@erp/shared-ui";
 
 /**
@@ -93,38 +94,29 @@ function LegalDashboardPageContent({
   );
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading Legal Practice Dashboard...</p>
-        </div>
-      </div>
-    );
+    return <FullScreenSpinner message="Loading Legal Practice Dashboard..." />;
   }
 
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md w-full">
-          <h2 className="text-lg font-semibold text-red-800 mb-2">
-            Failed to Load Legal Dashboard
+        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 max-w-md w-full">
+          <h2 className="text-lg font-semibold text-destructive mb-2">
+            Error Loading Page
           </h2>
-          <p className="text-red-600 mb-4">{error}</p>
-          <div className="text-sm text-red-500 mb-4">
-            This may occur if the real API services are not running or if there
-            are connectivity issues.
-          </div>
+          <p className="text-destructive/80 mb-4">
+            Unable to load the dashboard. Please try again.
+          </p>
           <div className="flex space-x-2">
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              className="px-4 py-2 bg-destructive text-destructive-foreground rounded hover:bg-destructive/90"
             >
               Retry
             </button>
             <button
               onClick={() => router.push("/login")}
-              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+              className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/90"
             >
               Back to Login
             </button>
@@ -153,7 +145,16 @@ function LegalDashboardPageContent({
 
 // Main exported component that sets up providers
 export default function LegalDashboardPage() {
-  const { user } = useAuth(); // Get user from auth context
+  const { user, isLoading } = useAuth(); // Get user and loading state from auth context
+
+  // Show proper loading spinner while auth is initializing
+  if (isLoading || !user?.tenant_id || !user?.user_id) {
+    return (
+      <ProtectedRoute requiredPermissions={[]} redirectToLogin={true}>
+        <FullScreenSpinner message="Initializing Legal Practice Dashboard..." />
+      </ProtectedRoute>
+    );
+  }
 
   return (
     <ProtectedRoute
@@ -161,14 +162,14 @@ export default function LegalDashboardPage() {
       redirectToLogin={true}
     >
       <TranslationProvider
-        tenantId={user?.tenant_id}
+        tenantId={user.tenant_id}
         defaultLanguage="en_US"
         verticalContext="legal"
       >
-        <ThemeProvider tenantId={user?.tenant_id} userId={user?.user_id}>
+        <ThemeProvider tenantId={user.tenant_id} userId={user.user_id}>
           <LegalDashboardPageContent
-            tenantId={user?.tenant_id || ""}
-            userId={user?.user_id || ""}
+            tenantId={user.tenant_id}
+            userId={user.user_id}
           />
         </ThemeProvider>
       </TranslationProvider>

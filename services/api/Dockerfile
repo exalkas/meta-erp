@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     gcc \
     postgresql-client \
+    redis-tools \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
@@ -18,7 +19,7 @@ COPY pyproject.toml poetry.lock* ./
 
 # Configure Poetry
 RUN poetry config virtualenvs.create false \
-    && poetry install --no-dev --no-interaction --no-ansi
+    && poetry install --only=main --no-interaction --no-ansi --no-root
 
 # Copy application code
 COPY . .
@@ -41,4 +42,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 ENTRYPOINT ["/entrypoint.sh"]
 
 # Default command
-CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

@@ -42,7 +42,6 @@ interface ComponentInstance {
 interface DynamicLayoutProps {
   layoutDefinition: LayoutDefinition;
   sectionsData: Record<string, ComponentInstance[]>;
-  tenantId?: string;
   className?: string;
   loading?: boolean;
   error?: string;
@@ -65,6 +64,7 @@ interface DynamicLayoutProps {
     metadataCallbacks?: Record<string, any>;
     pageState?: Record<string, any>;
     setPageState?: (state: Record<string, any>) => void;
+    updatePageState?: (statePath: string, value: any) => void;
     applyStateBindings?: (componentType: string, props: any) => any;
     apiEndpoints?: Record<string, string>;
   };
@@ -73,7 +73,6 @@ interface DynamicLayoutProps {
 export const DynamicLayout: React.FC<DynamicLayoutProps> = ({
   layoutDefinition,
   sectionsData,
-  tenantId,
   className = "",
   loading = false,
   error = null,
@@ -407,7 +406,7 @@ export const DynamicLayout: React.FC<DynamicLayoutProps> = ({
                 }
                 contextProps={{
                   ...contextProps,
-                  tenantId,
+                  tenantId: contextProps.tenantId,
                 }}
               />
             );

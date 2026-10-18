@@ -331,18 +331,34 @@ poetry run python ../../data/seed-scripts/seed_all.py
 
 ## 🚀 **Deployment**
 
+### **Development Environment (Recommended)**
+
+```powershell
+# Quick daily startup
+npm run morning
+
+# Start frontend development
+npm run dev:legal        # Legal app on port 3006
+npm run dev:client       # Client app on port 3000
+npm run watch:shared-ui  # Shared components watch
+
+# Backend services run in Docker automatically
+# See docs/DOCKER_SETUP.md for complete guide
+```
+
 ### **Production Environment**
 
 ```bash
-# Build frontend
-cd apps/client
+# Backend (Docker)
+docker-compose -f docker-compose.prod.yml up -d
+
+# Frontend (Build & Deploy)
+cd apps/legal-app
 npm run build
+npm start
 
-# Start services with PM2
+# Or use PM2 for process management
 pm2 start ecosystem.config.js
-
-# Or use Docker
-docker-compose up -d
 ```
 
 ### **Environment Variables**

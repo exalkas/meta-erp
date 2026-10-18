@@ -19,6 +19,9 @@
     "copy-assets": "node packages/shared-assets/copy-assets.js",
     "dev:admin": "cd apps/admin && npm run dev",
     "dev:legal": "cd apps/legal-app && npm run dev",
+    "docker:logs:legal": "docker-compose logs -f legal-app",
+    "start": "docker-compose up -d && echo '🚀 Backend services started! Now run: npm run dev:legal'",
+    "morning": "docker-compose down && docker-compose up -d && echo '☀️ Fresh start complete!'",
     "dev:marketing": "cd apps/marketing && npm run dev",
     "dev:setup": "cd apps/setup && npm run dev",
     "dev:staff-support": "cd apps/staff-support && npm run dev",
@@ -52,6 +55,7 @@
     "migrate:theme-variants:verify": "node -e \"const { execSync } = require('child_process'); const platform = process.platform; const script = platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File scripts/migrations/migrate-theme-variants.ps1 -Verify' : 'bash scripts/migrations/migrate-theme-variants.sh --verify'; execSync(script, { stdio: 'inherit' });\"",
     "migrate:theme-variants:dry-run": "node -e \"const { execSync } = require('child_process'); const platform = process.platform; const script = platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File scripts/migrations/migrate-theme-variants.ps1 -DryRun' : 'bash scripts/migrations/migrate-theme-variants.sh --dry-run'; execSync(script, { stdio: 'inherit' });\"",
     "setup:laptop": "node -e \"const { execSync } = require('child_process'); const platform = process.platform; const script = platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File scripts/setup/laptop_setup.ps1' : 'bash scripts/setup/laptop_setup.sh'; execSync(script, { stdio: 'inherit' });\"",
+    "setup:docker": "node -e \"const { execSync } = require('child_process'); const platform = process.platform; const script = platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File scripts/docker-setup.ps1' : 'bash scripts/docker-setup.sh'; execSync(script, { stdio: 'inherit' });\"",
     "verify:setup": "node -e \"const { execSync } = require('child_process'); const platform = process.platform; const script = platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File scripts/quick-verify.ps1' : 'bash scripts/quick-verify.sh'; execSync(script, { stdio: 'inherit' });\"",
     "db:seed": "cd services/api && poetry run python data/seed-scripts/seed_all.py",
     "db:reset": "npm run db:seed",
@@ -67,7 +71,12 @@
     "docker:clean": "docker-compose down -v && docker system prune -f",
     "docker:setup": "docker-compose up --build -d",
     "docker:dev": "docker-compose up --build",
-    "docker:status": "docker-compose ps"
+    "docker:status": "docker-compose ps",
+    "docker:logs:api": "docker-compose logs -f api-service",
+    "docker:logs:auth": "docker-compose logs -f auth-service",
+    "docker:logs:client": "docker-compose logs -f client",
+    "docker:logs:db": "docker-compose logs -f postgres",
+    "docker:reset": "docker-compose down -v && docker-compose up --build -d"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.19",

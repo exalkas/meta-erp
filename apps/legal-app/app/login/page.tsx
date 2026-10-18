@@ -7,6 +7,7 @@ import {
   TranslationProvider,
   ThemeProvider,
   useMetadataPage,
+  FullScreenSpinner,
 } from "@erp/shared-ui";
 
 /**
@@ -99,12 +100,27 @@ function LegalLoginPageContent({
               ).toISOString(),
             };
 
+            // Transform auth service user to AuthUser format with legacy fields
+            const authUser = {
+              // Auth service fields
+              ...authResponse.user,
+              // Legacy compatibility fields
+              id: authResponse.user.user_id,
+              name: authResponse.user.display_name,
+              role: authResponse.user.compliance_level,
+              companyId: authResponse.user.tenant_id,
+              permissions: [], // TODO: implement from roles
+              isActive: authResponse.user.status === "active",
+              canBeDeleted: false,
+              canChangePassword: true,
+              lastLogin: authResponse.user.last_login,
+              createdAt: authResponse.user.created_at,
+              updatedAt: authResponse.user.created_at, // TODO: implement
+            };
+
             // Store in localStorage for useAuthGuard
             localStorage.setItem("auth_tokens", JSON.stringify(authTokens));
-            localStorage.setItem(
-              "auth_user",
-              JSON.stringify(authResponse.user)
-            );
+            localStorage.setItem("auth_user", JSON.stringify(authUser));
 
             // Store in cookies for middleware (production-ready format)
             const isSecure = window.location.protocol === "https:";
@@ -114,7 +130,7 @@ function LegalLoginPageContent({
             // Set authentication cookies with proper encoding
             document.cookie = `auth_token=${authResponse.access_token}; ${cookieOptions}`;
             document.cookie = `auth_tokens=${encodeURIComponent(JSON.stringify(authTokens))}; ${cookieOptions}`;
-            document.cookie = `auth_user=${encodeURIComponent(JSON.stringify(authResponse.user))}; ${cookieOptions}`;
+            document.cookie = `auth_user=${encodeURIComponent(JSON.stringify(authUser))}; ${cookieOptions}`;
 
             // Verify tokens are stored (only in development)
             if (process.env.NODE_ENV === "development") {
@@ -159,27 +175,22 @@ function LegalLoginPageContent({
   );
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-          <p className="text-sm text-gray-600">Loading Legal Practice App...</p>
-        </div>
-      </div>
-    );
+    return <FullScreenSpinner message="Loading Legal Practice App..." />;
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md w-full">
-          <h2 className="text-red-800 font-semibold mb-2">
-            Failed to Load Legal Login Page
+      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 max-w-md w-full">
+          <h2 className="text-lg font-semibold text-destructive mb-2">
+            Error Loading Page
           </h2>
-          <p className="text-red-700 mb-4">{error}</p>
+          <p className="text-destructive/80 mb-4">
+            Unable to load the login page. Please try again.
+          </p>
           <button
             onClick={() => window.location.reload()}
-            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+            className="bg-destructive text-destructive-foreground px-4 py-2 rounded hover:bg-destructive/90"
           >
             Retry
           </button>

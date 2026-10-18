@@ -47,6 +47,11 @@ export { useMetadataPage } from "./hooks/useMetadataPage";
 export { Button, LoadingButton, IconButton } from "./components/ui/Button";
 export { Label } from "./components/ui/Label";
 export { Separator } from "./components/ui/Separator";
+export {
+  Spinner,
+  InlineSpinner,
+  FullScreenSpinner,
+} from "./components/ui/Spinner";
 export { Input, PasswordInput } from "./components/ui/Input";
 export { SimplePasswordInput } from "./components/ui/SimplePasswordInput";
 export { Logo } from "./components/ui/Logo";
@@ -350,3 +355,12 @@ export { default as ContactForm } from "./components/contacts/ContactForm";
 
 // Export all services
 export * from "./services";
+
+// API Configuration ✅ COMPLETE
+export {
+  API_BASE_URL,
+  AUTH_BASE_URL,
+  API_ENDPOINTS,
+  buildApiUrl,
+  apiClient,
+} from "./config/api";

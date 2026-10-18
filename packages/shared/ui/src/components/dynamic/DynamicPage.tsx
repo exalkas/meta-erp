@@ -5,11 +5,13 @@
  * Supports layout + sections architecture and tenant-specific overrides.
  */
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { DynamicLayout } from "./DynamicLayout";
 import { DynamicComponent } from "./DynamicComponent";
 import { useTranslation, useLanguage } from "../../contexts/TranslationContext";
 import { useTheme } from "../../contexts/ThemeContext";
+import { API_ENDPOINTS, buildApiUrl, apiClient } from "../../config/api";
+import { FullScreenSpinner } from "../ui/Spinner";
 
 // NEW: Metadata-driven state and callback management
 interface PageState {
@@ -133,12 +135,12 @@ export const DynamicPage: React.FC<DynamicPageProps> = ({
   const [layoutLoading, setLayoutLoading] = useState(false);
   const [layoutError, setLayoutError] = useState<string | null>(null);
 
-  // NEW: Metadata-driven state management
+  // Metadata-driven state management
   const [pageState, setPageState] = useState<PageState>(
     pageDefinition.initial_state || {}
   );
 
-  // NEW: Generate callbacks from metadata
+  // Generate callbacks from metadata
   const generateCallbacks = useCallback(() => {
     const callbacks: Record<string, any> = {};
 
@@ -187,8 +189,65 @@ export const DynamicPage: React.FC<DynamicPageProps> = ({
               case "api_call":
                 if (target && pageDefinition.api_endpoints?.[target]) {
                   const endpoint = pageDefinition.api_endpoints[target];
-                  console.log(`📡 API call to: ${endpoint}`, args);
-                  // TODO: Make actual API call
+                  console.log(`📡 Making API call to: ${endpoint}`, args);
+
+                  try {
+                    // Update loading state if bound
+                    updatePageState(`widgets.${target}.loading`, true);
+
+                    // Make the API call
+                    const response = await apiClient.get(endpoint);
+
+                    console.log(`✅ API call successful:`, {
+                      endpoint,
+                      response,
+                    });
+
+                    // Update state with response data
+                    updatePageState(`widgets.${target}.data`, response);
+                    updatePageState(`widgets.${target}.loading`, false);
+                    updatePageState(`widgets.${target}.error`, null);
+                  } catch (error) {
+                    const errorMessage =
+                      error instanceof Error ? error.message : String(error);
+                    console.error(`❌ API call failed:`, {
+                      endpoint,
+                      target,
+                      error: errorMessage,
+                      errorType: typeof error,
+                      fullError: error,
+                    });
+
+                    // Update error state
+                    updatePageState(`widgets.${target}.loading`, false);
+                    updatePageState(`widgets.${target}.error`, errorMessage);
+                  }
+                }
+                break;
+
+              case "action":
+                // Handle action-based callbacks (like from websockets)
+                console.log(`🎬 Action triggered: ${target}`, args);
+
+                // Actions can trigger other callbacks
+                if (target && target.startsWith("refresh")) {
+                  const dataType = target.replace("refresh", "").toLowerCase();
+                  const apiEndpoint = Object.keys(
+                    pageDefinition.api_endpoints || {}
+                  ).find((key) => key.toLowerCase().includes(dataType));
+
+                  if (apiEndpoint) {
+                    // Recursively call api_call
+                    callbacks[eventName]("api_call", apiEndpoint);
+                  }
+                }
+                break;
+
+              case "navigate":
+                if (target) {
+                  console.log(`🧭 Navigation: ${target}`);
+                  // Could integrate with Next.js router here
+                  window.history.pushState({}, "", target);
                 }
                 break;
 
@@ -202,77 +261,6 @@ export const DynamicPage: React.FC<DynamicPageProps> = ({
           };
         }
       );
-
-      // ✅ ADDED: Special authentication callback for LoginForm
-      if (pageDefinition.callbacks.onLoginSuccess) {
-        callbacks.onLogin = async (loginData: {
-          email: string;
-          password: string;
-          rememberMe?: boolean;
-        }) => {
-          try {
-            console.log("🔐 Attempting login through metadata-driven auth");
-
-            // Import authApiClient dynamically to avoid SSR issues
-            const { authApiClient } = await import(
-              "../../services/authApiClient"
-            );
-
-            console.log("🚀 Using real auth service for authentication");
-            const authResponse = await authApiClient.loginWithPassword(
-              loginData.email,
-              loginData.password,
-              tenantId, // Use tenant from props
-              "Web Browser" // Device name
-            );
-
-            console.log("✅ Authentication successful through auth service");
-
-            // ✅ FIXED: Store tokens properly (localStorage + cookie) without React hook
-            const tokens = {
-              accessToken: authResponse.access_token,
-              refreshToken: authResponse.refresh_token,
-              expiresIn: authResponse.expires_in,
-              expiresAt: new Date(
-                Date.now() + authResponse.expires_in * 1000
-              ).toISOString(),
-            };
-
-            // Set tokens in localStorage and cookies
-            if (typeof window !== "undefined") {
-              localStorage.setItem("auth_tokens", JSON.stringify(tokens));
-              localStorage.setItem(
-                "auth_user",
-                JSON.stringify(authResponse.user)
-              );
-
-              // Set HTTP cookie for middleware (same logic as useAuthGuard)
-              const isSecure = window.location.protocol === "https:";
-              const cookieValue = `auth_token=${tokens.accessToken}; path=/; SameSite=lax${isSecure ? "; Secure" : ""}`;
-              console.log("🍪 Setting auth cookie:", cookieValue);
-              document.cookie = cookieValue;
-            }
-
-            console.log(
-              "✅ Authentication tokens stored (including HTTP cookie for middleware)"
-            );
-
-            // Execute the success callback from metadata
-            if (callbacks.onLoginSuccess) {
-              await callbacks.onLoginSuccess();
-            }
-          } catch (err) {
-            console.error("❌ Login error:", err);
-
-            // Execute error callback if defined
-            if (callbacks.onLoginError) {
-              await callbacks.onLoginError(err);
-            }
-
-            throw err;
-          }
-        };
-      }
     }
 
     return callbacks;
@@ -288,8 +276,28 @@ export const DynamicPage: React.FC<DynamicPageProps> = ({
       Object.entries(pageDefinition.state_bindings).forEach(
         ([componentPath, statePath]) => {
           if (componentPath.startsWith(componentType)) {
-            const propName = componentPath.split(".")[1]; // "MetadataDataTable.filters" -> "filters"
-            enhancedProps[propName] = pageState[statePath];
+            const propName = componentPath.split(".")[1]; // "DashboardGrid.filters" -> "filters"
+
+            // Helper function to get nested state value
+            const getNestedValue = (obj: any, path: string) => {
+              return path
+                .split(".")
+                .reduce((current, key) => current?.[key], obj);
+            };
+
+            const stateValue = getNestedValue(pageState, statePath);
+
+            if (stateValue !== undefined) {
+              enhancedProps[propName] = stateValue;
+
+              // Debug logging for state bindings
+              console.log(`🔗 State binding applied:`, {
+                component: componentType,
+                prop: propName,
+                statePath,
+                value: stateValue,
+              });
+            }
           }
         }
       );
@@ -299,7 +307,85 @@ export const DynamicPage: React.FC<DynamicPageProps> = ({
     [pageDefinition.state_bindings, pageState]
   );
 
-  const metadataCallbacks = generateCallbacks();
+  // Helper function to update nested state
+  const updatePageState = useCallback((statePath: string, value: any) => {
+    setPageState((prevState) => {
+      const newState = { ...prevState };
+      const keys = statePath.split(".");
+      let current = newState;
+
+      // Navigate to the parent of the target key
+      for (let i = 0; i < keys.length - 1; i++) {
+        const key = keys[i];
+        if (!current[key] || typeof current[key] !== "object") {
+          current[key] = {};
+        }
+        current = current[key];
+      }
+
+      // Set the final value
+      current[keys[keys.length - 1]] = value;
+
+      console.log(`🔄 State updated:`, {
+        statePath,
+        value,
+        newState: { ...newState },
+      });
+
+      return newState;
+    });
+  }, []);
+
+  const metadataCallbacks = useMemo(
+    () => generateCallbacks(),
+    [pageDefinition, tenantId]
+  );
+
+  // Auto-load data when page loads - ONLY ONCE on mount
+  useEffect(() => {
+    const autoLoadData = async () => {
+      // Look for callbacks that should be triggered on page load
+      const loadCallbacks = [
+        "onDataRefresh",
+        "onLoadClients",
+        "onLoadMatters",
+        "onLoadDeadlines",
+      ];
+
+      console.log("🔄 DynamicPage: Checking auto-load callbacks:", {
+        availableCallbacks: Object.keys(metadataCallbacks),
+        lookingFor: loadCallbacks,
+        hasApiEndpoints: !!pageDefinition.api_endpoints,
+        apiEndpointCount: Object.keys(pageDefinition.api_endpoints || {})
+          .length,
+      });
+
+      for (const callbackName of loadCallbacks) {
+        if (metadataCallbacks[callbackName]) {
+          console.log(`🚀 Auto-triggering callback: ${callbackName}`);
+          try {
+            await metadataCallbacks[callbackName]();
+          } catch (error) {
+            console.error(`❌ Auto-load failed for ${callbackName}:`, error);
+            // Don't break the loop - continue with other callbacks
+          }
+        }
+      }
+    };
+
+    // Only auto-load if we have API endpoints defined
+    if (
+      pageDefinition.api_endpoints &&
+      Object.keys(pageDefinition.api_endpoints).length > 0
+    ) {
+      console.log("🚀 DynamicPage: Starting auto-load data process");
+      autoLoadData();
+    } else {
+      console.log(
+        "🚫 DynamicPage: No API endpoints defined, skipping auto-load"
+      );
+    }
+  }, [pageDefinition.page_id]); // Only depend on page_id to run once per page
 
   // Fetch layout definition if page uses layout + sections
   useEffect(() => {
@@ -316,9 +402,13 @@ export const DynamicPage: React.FC<DynamicPageProps> = ({
           `📐 Fetching layout definition: ${pageDefinition.layout_id}`
         );
 
-        const response = await fetch(
-          `http://localhost:8000/metadata/layouts/${pageDefinition.layout_id}?tenant_id=${tenantId}`
+        const url = buildApiUrl(
+          API_ENDPOINTS.layouts(pageDefinition.layout_id),
+          {
+            tenant_id: tenantId,
+          }
         );
+        const response = await fetch(url);
 
         if (!response.ok) {
           throw new Error(
@@ -344,11 +434,8 @@ export const DynamicPage: React.FC<DynamicPageProps> = ({
   }, [pageDefinition.layout_id, tenantId]);
 
   if (loading || layoutLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    const message = loading ? "Loading page..." : "Loading layout...";
+    return <FullScreenSpinner message={message} />;
   }
 
   if (error) {
@@ -412,7 +499,6 @@ export const DynamicPage: React.FC<DynamicPageProps> = ({
       <DynamicLayout
         layoutDefinition={layoutDefinition}
         sectionsData={pageDefinition.sections_data_json || {}}
-        tenantId={tenantId}
         className={className}
         onComponentError={(error, componentType, sectionName) => {
           console.error(`Component error in section ${sectionName}:`, error);
@@ -420,11 +506,14 @@ export const DynamicPage: React.FC<DynamicPageProps> = ({
         }}
         contextProps={{
           ...contextProps,
+          // Add tenantId to context
+          tenantId,
           // Metadata-driven callbacks
           metadataCallbacks,
           // State management functions
           pageState,
           setPageState,
+          updatePageState,
           applyStateBindings,
           // API endpoints from metadata
           apiEndpoints: pageDefinition.api_endpoints,
